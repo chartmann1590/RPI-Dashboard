@@ -29,82 +29,100 @@
 - Returns: None
 - Example: `main()` – To start the app, just call this function.
 
-## templates/device_history.html
-### toggle_notify(device_id, action)
-- Description: Updates the notification settings for a specific device.
+### scan_thread()
+- Description: Periodically scans for devices and updates their last seen status.
+- Parameters: None
+- Returns: None
+- Example: `scan_thread()` – To scan for devices, simply call this function.
+
+### scan_devices()
+- Description: Scans for devices and updates their last seen status.
+- Parameters: None
+- Returns: None
+- Example: `scan_devices()` – To scan for devices, simply call this function.
+
+### run_speed_test()
+- Description: Simulates running a speed test.
+- Parameters: None
+- Returns: None
+- Example: `run_speed_test()` – To run a speed test, simply call this function.
+
+### get_device_data()
+- Description: Gets data from the database.
+- Parameters: None
+- Returns: list of dictionaries, each dictionary contains device information
+- Example: `get_device_data()` – To get data about devices, simply call this function.
+
+### add_new_device(device_name, ip_address, mac_address)
+- Description: Adds a new device to the monitoring system.
+- Parameters:
+    - `device_name` (str): The name of the device.
+    - `ip_address` (str): The IP address of the device.
+    - `mac_address` (str): The MAC address of the device.
+- Returns: None
+- Example: `add_new_device("New Device", "192.168.1.100", "AA:BB:CC:DD:EE:FF")`
+
+### update_device_status(device_id, new_status)
+- Description: Updates the status of a device.
 - Parameters:
     - `device_id` (int): The ID of the device to update.
-    - `action` (str): The desired notification action ('home', 'away', 'none').
+    - `new_status` (str): The new status of the device.
 - Returns: None
-- Example:  `toggle_notify(123, 'home')` –  Updates the notification setting for device ID 123 to "home."
+- Example: `update_device_status(1, "Online")`
+
+### remove_device(device_name)
+- Description: Removes a device from the monitoring system.
+- Parameters:
+    - `device_name` (str): The name of the device to remove.
+- Returns: None
+- Example: `remove_device("Living Room Thermostat")`
 
 ## templates/rpi_dashboard.html
-### updateBigClock()
-- Description: Updates the large clock display with the current time.
-- Parameters: None
-- Returns: None
-- Example:  This function is called periodically to update the clock.
-
-### startParticleEffect(particleType)
-- Description: Creates and adds particle elements to the screen based on the `particleType`.
+### updateBigClock(clockData)
+- Description: Updates a large clock element on the page with data from clockData.
 - Parameters:
-    - `particleType` (str): The type of particle effect to create (e.g., 'snow', 'leaf', 'confetti').
+    - `clockData` (dict): Dictionary containing time information
 - Returns: None
-- Example: `startParticleEffect('snow')` – Starts a snow effect.
+- Example: `updateBigClock({hour: 14, minute: 30, second: 0})`
 
-### createSnowParticle()
-- Description: Creates a snow particle element.
-- Parameters: None
-- Returns: None
-- Example:  This function is called to create a snow particle.
-
-### createLeafParticle()
-- Description: Creates a leaf particle element.
-- Parameters: None
-- Returns: None
-- Example:  This function is called to create a leaf particle.
-
-### createConfettiParticle()
-- Description: Creates a confetti particle element.
-- Parameters: None
-- Returns: None
-- Example: This function is called to create confetti particles.
-
-### createHeartParticle()
-- Description: Creates a heart particle element.
-- Parameters: None
-- Returns: None
-- Example: This function is called to create heart particles.
-
-### createStarParticle()
-- Description: Creates a star particle element.
-- Parameters: None
-- Returns: None
-- Example: This function is called to create star particles.
-
-### createShamrockParticle()
-- Description: Creates a shamrock particle element.
-- Parameters: None
-- Returns: None
-- Example: This function is called to create shamrock particles.
-
-### createEggParticle()
-- Description: Creates an egg particle element.
-- Parameters: None
-- Returns: None
-- Example: This function is called to create egg particles.
-
-### createBatParticle()
-- Description: Creates a bat particle element.
-- Parameters: None
-- Returns: None
-- Example: This function is called to create bat particles.
-
-## templates/device_history.html
-### toggle_notify(device_id, action)
-- Description: Updates the notification settings for a specific device.
+### updateWeatherData(weatherData)
+- Description: Updates the weather information on the page with data from weatherData.
 - Parameters:
-    - `device_id` (int): The ID of the device to update.
-    - `action` (str): The desired notification action ('home', 'away', 'none').
+    - `weatherData` (dict): Dictionary containing weather information
 - Returns: None
-- Example:  `toggle_notify(123, 'home')` –  Updates the notification setting for device ID 123 to "home."
+- Example: `updateWeatherData({temperature: 25, condition: "Sunny"})`
+
+### updateEvents(eventsData)
+- Description: Updates the event information on the page with data from eventsData.
+- Parameters:
+    - `eventsData` (dict): Dictionary containing event information
+- Returns: None
+- Example: `updateEvents({event_name: "Meeting", time: "10:00 AM"})`
+
+### clearParticles()
+- Description: Clears all particle effects from the page.
+- Parameters: None
+- Returns: None
+- Example: `clearParticles()`
+
+### clearSpecialCharacters()
+- Description: Clears all special character animations from the page.
+- Parameters: None
+- Returns: None
+- Example: `clearSpecialCharacters()`
+
+### startParticleEffect(effectName, options)
+- Description: Starts a particle effect on the page with the given name and options.
+- Parameters:
+    - `effectName` (str): The name of the particle effect to start.
+    - `options` (dict): Dictionary containing options for the particle effect.
+- Returns: None
+- Example: `startParticleEffect("snow", {"speed": 0.5})`
+
+### startSpecialCharacterAnimation(animationName, options)
+- Description: Starts a special character animation on the page with the given name and options.
+- Parameters:
+    - `animationName` (str): The name of the special character animation to start.
+    - `options` (dict): Dictionary containing options for the animation.
+- Returns: None
+- Example: `startSpecialCharacterAnimation("leaf", {"direction": "left"})`

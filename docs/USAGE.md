@@ -57,9 +57,8 @@ This project offers several key features:
     *   The `run_holiday_theme()` function loads a relevant theme based on the current date.
     *   Visual effects are used to enhance the visual experience (snow, confetti, etc.).
     *   The `test_holiday` parameter can be set in the URL to choose the theme.
-*   **Examples:**
-    *   `
-    *   `
+    *   Examples:
+        *   `
 
 **4. Data Persistence (SQLite Database):**
 
@@ -69,29 +68,21 @@ This project offers several key features:
 
 **5. Alerting (Future):**
 
-*   The project currently doesn't have alerting, but this is a planned feature.  It's designed to trigger alerts when a device goes offline or exceeds a predefined threshold (temperature, etc.).
+*   The project currently doesn't have alerting, but this is a planned feature.  It’s designed to trigger alerts when a device goes offline or exceeds a predefined threshold (e.g., temperature).
 
 ## Examples
 
-**1. Basic Monitoring:**
+**Example 1: Viewing Device Status**
 
-Run `python app.py`.  You will see a list of devices that are discovered on your network and their current status.
+When you run `python app.py`, the application will display a list of devices it has discovered, including their names, current status, and the timestamp of the last update.
 
-**2. Running a Holiday Theme:**
+**Example 2:  Holiday Theme**
 
-Visit ` in your web browser.  You'll see the weather displayed with a Christmas-themed visual effect.  Try other holiday themes as well.
-
-**3. Examining Device Data:**
-
-The application saves the state of each device to the database, `devices.db`. This allows you to examine the history of the device's status.
+The application can toggle between holiday themes.  To set a holiday, use the `test_holiday` parameter in the URL. For example, to view the application with the Christmas theme, use `
 
 ## Tips
 
-*   **Network Configuration:** Ensure your firewall allows the application to scan your network.
-*   **Device Discovery Issues:** If devices aren't being discovered, double-check your network configuration and firewall settings.
-*   **Database Inspection:** You can use a SQLite browser to explore and query the `devices.db` database.
-*   **Future Enhancements:**  The project is a prototype, and the core features are designed to be extended and improved upon. This is a great starting point for contributing to the development of this system.
-
----
-
-**Important Note:** This usage guide is based on the information provided in the code analysis. Since the project is a prototype, some features may be incomplete or require further development.  This is primarily a conceptual guide, reflecting the project’s current state.  The development team continues to work on enhancements, so expect updates to this documentation.
+*   Ensure that your firewall allows connections to the application on the specified port (default: 5000).
+*   Monitor the application logs for any errors or warnings.
+*   Consider adding more devices to the network to test the automatic discovery functionality.
+*   To disable the holiday theme, simply remove the `?test_holiday=christmas` parameter from the URL.

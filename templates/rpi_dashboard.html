@@ -399,6 +399,158 @@
             line-height: 1.6;
         }
         
+        /* Sports Screen */
+        .sports-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e, #2d1b1b, #1a2e1a);
+            padding: calc(40px * var(--scale-factor));
+        }
+        
+        .sports-container {
+            width: 100%;
+            max-width: calc(900px * var(--scale-factor));
+            text-align: center;
+        }
+        
+        .sports-header {
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(40px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .sports-card {
+            background: rgba(255,255,255,0.1);
+            padding: calc(40px * var(--scale-factor));
+            border-radius: calc(25px * var(--scale-factor));
+            backdrop-filter: blur(10px);
+            border: calc(2px * var(--scale-factor)) solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .sports-status-badge {
+            display: inline-block;
+            padding: calc(8px * var(--scale-factor)) calc(20px * var(--scale-factor));
+            border-radius: calc(20px * var(--scale-factor));
+            font-size: calc(1rem * var(--scale-factor));
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: calc(25px * var(--scale-factor));
+        }
+        
+        .sports-status-badge.upcoming {
+            background: rgba(33, 150, 243, 0.3);
+            color: #64b5f6;
+            border: calc(1px * var(--scale-factor)) solid #2196F3;
+        }
+        
+        .sports-status-badge.completed {
+            background: rgba(76, 175, 80, 0.3);
+            color: #81c784;
+            border: calc(1px * var(--scale-factor)) solid #4caf50;
+        }
+        
+        .sports-status-badge.live {
+            background: rgba(244, 67, 54, 0.3);
+            color: #e57373;
+            border: calc(1px * var(--scale-factor)) solid #f44336;
+            animation: pulse 2s infinite;
+        }
+        
+        .sports-league {
+            color: #90caf9;
+            font-size: calc(1.2rem * var(--scale-factor));
+            margin-bottom: calc(15px * var(--scale-factor));
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+        
+        .sports-teams-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: calc(30px * var(--scale-factor)) 0;
+            gap: calc(20px * var(--scale-factor));
+        }
+        
+        .sports-team {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .sports-team-name {
+            font-size: calc(1.8rem * var(--scale-factor));
+            font-weight: bold;
+            margin-bottom: calc(10px * var(--scale-factor));
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+        
+        .sports-score-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: calc(150px * var(--scale-factor));
+        }
+        
+        .sports-score {
+            font-size: calc(5rem * var(--scale-factor));
+            font-weight: bold;
+            line-height: 1;
+            margin: calc(10px * var(--scale-factor)) 0;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+        
+        .sports-score-separator {
+            font-size: calc(3rem * var(--scale-factor));
+            opacity: 0.7;
+            margin: 0 calc(10px * var(--scale-factor));
+        }
+        
+        .sports-team-score {
+            font-size: calc(4rem * var(--scale-factor));
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .sports-game-info {
+            margin-top: calc(30px * var(--scale-factor));
+            padding-top: calc(25px * var(--scale-factor));
+            border-top: calc(1px * var(--scale-factor)) solid rgba(255,255,255,0.2);
+        }
+        
+        .sports-game-date {
+            font-size: calc(1.3rem * var(--scale-factor));
+            color: #ddd;
+            margin-bottom: calc(10px * var(--scale-factor));
+        }
+        
+        .sports-game-time {
+            font-size: calc(1.5rem * var(--scale-factor));
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .sports-no-data {
+            text-align: center;
+            padding: calc(40px * var(--scale-factor));
+            color: #999;
+        }
+        
+        .sports-no-data-title {
+            font-size: calc(2rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+        }
+        
+        .sports-no-data-description {
+            font-size: calc(1.3rem * var(--scale-factor));
+            color: #777;
+        }
+        
         /* Joke Screen */
         .joke-screen {
             flex-direction: column;
@@ -965,6 +1117,200 @@
         .leaf-particle {
             filter: drop-shadow(0 0 2px rgba(255, 140, 0, 0.6));
         }
+        
+        /* Traffic Alerts Styles */
+        .traffic-alerts-container {
+            margin-top: calc(20px * var(--scale-factor));
+            max-height: calc(300px * var(--scale-factor));
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: calc(10px * var(--scale-factor));
+            border-radius: calc(10px * var(--scale-factor));
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            scroll-behavior: auto; /* Let JavaScript control smoothness */
+        }
+        
+        .traffic-alerts-container::-webkit-scrollbar {
+            width: calc(8px * var(--scale-factor));
+        }
+        
+        .traffic-alerts-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: calc(4px * var(--scale-factor));
+        }
+        
+        .traffic-alerts-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: calc(4px * var(--scale-factor));
+        }
+        
+        .traffic-alerts-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .traffic-alert-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: calc(15px * var(--scale-factor));
+            margin-bottom: calc(12px * var(--scale-factor));
+            border-radius: calc(10px * var(--scale-factor));
+            border-left: calc(5px * var(--scale-factor)) solid;
+            backdrop-filter: blur(10px);
+            border: calc(1px * var(--scale-factor)) solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .traffic-alert-card:last-child {
+            margin-bottom: 0;
+        }
+        
+        .traffic-alert-card:hover {
+            transform: translateX(calc(5px * var(--scale-factor)));
+            box-shadow: 0 calc(4px * var(--scale-factor)) calc(8px * var(--scale-factor)) rgba(0, 0, 0, 0.3);
+        }
+        
+        .traffic-alert-header {
+            display: flex;
+            align-items: center;
+            gap: calc(10px * var(--scale-factor));
+            margin-bottom: calc(8px * var(--scale-factor));
+        }
+        
+        .traffic-alert-icon {
+            font-size: calc(1.5rem * var(--scale-factor));
+            line-height: 1;
+        }
+        
+        .traffic-alert-level {
+            font-size: calc(1.2rem * var(--scale-factor));
+            font-weight: bold;
+            flex: 1;
+        }
+        
+        .traffic-alert-time {
+            font-size: calc(0.9rem * var(--scale-factor));
+            opacity: 0.8;
+            white-space: nowrap;
+        }
+        
+        .traffic-alert-location {
+            font-size: calc(1rem * var(--scale-factor));
+            margin-bottom: calc(6px * var(--scale-factor));
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .traffic-alert-description {
+            font-size: calc(0.95rem * var(--scale-factor));
+            line-height: 1.4;
+            opacity: 0.85;
+        }
+        
+        .traffic-alert-card.alert-heavy {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.15);
+        }
+        
+        .traffic-alert-card.alert-medium {
+            border-left-color: #ffc107;
+            background: rgba(255, 193, 7, 0.15);
+        }
+        
+        .traffic-alert-card.alert-light {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.15);
+        }
+        
+        .traffic-alert-card.alert-crash {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.25);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 calc(5px * var(--scale-factor)) rgba(244, 67, 54, 0);
+            }
+        }
+        
+        .no-traffic-message {
+            text-align: center;
+            padding: calc(20px * var(--scale-factor));
+            background: rgba(76, 175, 80, 0.2);
+            border-left: calc(4px * var(--scale-factor)) solid #4caf50;
+            border-radius: calc(10px * var(--scale-factor));
+            font-size: calc(1.1rem * var(--scale-factor));
+            color: #4caf50;
+        }
+        
+        /* Map Marker Tooltips */
+        .marker-tooltip {
+            background: rgba(0, 0, 0, 0.85) !important;
+            color: white !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: calc(8px * var(--scale-factor)) !important;
+            padding: calc(8px * var(--scale-factor)) calc(12px * var(--scale-factor)) !important;
+            font-size: calc(1rem * var(--scale-factor)) !important;
+            font-weight: 500 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            backdrop-filter: blur(5px) !important;
+        }
+        
+        .marker-tooltip::before {
+            border-top-color: rgba(0, 0, 0, 0.85) !important;
+        }
+        
+        .marker-tooltip-start {
+            border-color: rgba(76, 175, 80, 0.6) !important;
+        }
+        
+        .marker-tooltip-finish {
+            border-color: rgba(244, 67, 54, 0.6) !important;
+        }
+        
+        /* Crash Marker Animation */
+        @keyframes pulse-crash {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 2px 10px rgba(244, 67, 54, 0.6);
+            }
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 4px 20px rgba(244, 67, 54, 0.9);
+            }
+        }
+        
+        .crash-marker {
+            background: transparent !important;
+            border: none !important;
+        }
+        
+        /* Crash Popup Styling */
+        .crash-popup .leaflet-popup-content-wrapper {
+            background: rgba(244, 67, 54, 0.95) !important;
+            color: white !important;
+            border: 2px solid white !important;
+            border-radius: calc(8px * var(--scale-factor)) !important;
+            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.5) !important;
+        }
+        
+        .crash-popup .leaflet-popup-content {
+            margin: calc(12px * var(--scale-factor)) !important;
+            font-size: calc(0.95rem * var(--scale-factor)) !important;
+            line-height: 1.5 !important;
+        }
+        
+        .crash-popup .leaflet-popup-tip {
+            background: rgba(244, 67, 54, 0.95) !important;
+            border: 2px solid white !important;
+            border-top: none !important;
+            border-left: none !important;
+        }
     </style>
     <script>
         // Set CSS variables based on screen size passed from Flask
@@ -1082,8 +1428,20 @@
         </div>
     </div>
     
+    <!-- Weather Alerts Screen -->
+    <div class="screen news-screen" id="screen-4">
+        <div class="news-container">
+            <h2 class="news-header">Weather Alerts</h2>
+            <div class="news-article" id="weather-alert-content">
+                <div class="news-source" id="alert-type"></div>
+                <div class="news-title" id="alert-headline"></div>
+                <div class="news-description" id="alert-description"></div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Weather Radar Screen -->
-    <div class="screen radar-screen" id="screen-4">
+    <div class="screen radar-screen" id="screen-5">
         <div class="radar-container">
             <h2 class="radar-title">Weather Radar</h2>
             <img class="radar-image" id="radar-image" src="" alt="Weather Radar">
@@ -1091,7 +1449,7 @@
     </div>
     
     <!-- News Screen -->
-    <div class="screen news-screen" id="screen-5">
+    <div class="screen news-screen" id="screen-6">
         <div class="news-container">
             <h2 class="news-header">Local News</h2>
             <div class="news-article" id="news-article">
@@ -1103,7 +1461,7 @@
     </div>
     
     <!-- Joke Screen -->
-    <div class="screen joke-screen" id="screen-6">
+    <div class="screen joke-screen" id="screen-7">
         <div class="joke-container">
             <h2 class="joke-header">Daily Joke</h2>
             <div class="joke-card" id="joke-card">
@@ -1114,7 +1472,7 @@
     </div>
     
     <!-- Calendar Screen -->
-    <div class="screen news-screen" id="screen-7">
+    <div class="screen news-screen" id="screen-8">
         <div class="news-container">
             <h2 class="news-header" id="calendar-header">Calendar</h2>
             <div class="news-article" id="calendar-event">
@@ -1126,17 +1484,18 @@
     </div>
     
     <!-- Commute Screen -->
-    <div class="screen weather-screen" id="screen-8">
+    <div class="screen weather-screen" id="screen-9">
         <div class="weather-container">
             <h2 class="weather-location" id="commute-title">Commute</h2>
             <div class="temperature" id="commute-time"></div>
             <div class="weather-description" id="commute-route"></div>
             <div class="weather-details" id="commute-details"></div>
+            <div class="traffic-alerts-container" id="traffic-alerts-container"></div>
         </div>
     </div>
     
     <!-- Commute Map Screen -->
-    <div class="screen radar-screen" id="screen-9">
+    <div class="screen radar-screen" id="screen-10">
         <div class="radar-container">
             <h2 class="radar-title">Commute Route</h2>
             <div id="commute-map-rpi" style="width: 100%; height: calc(100% - 80px); border-radius: 10px;"></div>
@@ -1144,7 +1503,7 @@
     </div>
     
     <!-- Air Quality Screen -->
-    <div class="screen weather-screen" id="screen-10">
+    <div class="screen weather-screen" id="screen-11">
         <div class="weather-container">
             <h2 class="weather-location">Air Quality</h2>
             <div class="temperature" id="aqi-number"></div>
@@ -1154,7 +1513,7 @@
     </div>
     
     <!-- Quote Screen -->
-    <div class="screen joke-screen" id="screen-11">
+    <div class="screen joke-screen" id="screen-12">
         <div class="joke-container">
             <h2 class="joke-header">Daily Quote</h2>
             <div class="joke-card">
@@ -1165,7 +1524,7 @@
     </div>
     
     <!-- Astronomy Screen -->
-    <div class="screen weather-screen" id="screen-12">
+    <div class="screen weather-screen" id="screen-13">
         <div class="weather-container">
             <h2 class="weather-location">Moon & Sun</h2>
             <div class="weather-icon" id="moon-icon"></div>
@@ -1184,7 +1543,7 @@
     </div>
     
     <!-- Internet Speed Screen -->
-    <div class="screen weather-screen" id="screen-13">
+    <div class="screen weather-screen" id="screen-14">
         <div class="weather-container">
             <h2 class="weather-location">Internet Speed</h2>
             <div class="weather-details">
@@ -1206,22 +1565,55 @@
     </div>
     
     <!-- Sports Screen -->
-    <div class="screen news-screen" id="screen-14">
-        <div class="news-container">
-            <h2 class="news-header">Sports Scores</h2>
-            <div class="news-article" id="sports-event">
-                <div class="news-source" id="sports-team"></div>
-                <div class="news-title" id="sports-title"></div>
-                <div class="news-description" id="sports-details"></div>
+    <div class="screen sports-screen" id="screen-15">
+        <div class="sports-container">
+            <h2 class="sports-header">Sports Scores</h2>
+            <div class="sports-card" id="sports-event">
+                <div class="sports-status-badge" id="sports-status-badge"></div>
+                <div class="sports-league" id="sports-league"></div>
+                <div class="sports-teams-container" id="sports-teams-container">
+                    <div class="sports-team">
+                        <div class="sports-team-name" id="sports-team-home"></div>
+                        <div class="sports-team-score" id="sports-score-home"></div>
+                    </div>
+                    <div class="sports-score-container">
+                        <span class="sports-score-separator" id="sports-score-separator">-</span>
+                        <div class="sports-score" id="sports-score-display"></div>
+                    </div>
+                    <div class="sports-team">
+                        <div class="sports-team-name" id="sports-team-away"></div>
+                        <div class="sports-team-score" id="sports-score-away"></div>
+                    </div>
+                </div>
+                <div class="sports-game-info" id="sports-game-info">
+                    <div class="sports-game-date" id="sports-game-date"></div>
+                    <div class="sports-game-time" id="sports-game-time"></div>
+                </div>
+            </div>
+            <div class="sports-no-data" id="sports-no-data" style="display: none;">
+                <div class="sports-no-data-title">No scores available</div>
+                <div class="sports-no-data-description">Configure favorite teams in main dashboard</div>
             </div>
         </div>
     </div>
     
     <!-- Photo Gallery Screen -->
-    <div class="screen radar-screen" id="screen-15">
+    <div class="screen radar-screen" id="screen-16">
         <div class="radar-container">
             <h2 class="radar-title">Photo Gallery</h2>
             <img class="radar-image" id="gallery-photo" src="" alt="Gallery Photo">
+        </div>
+    </div>
+    
+    <!-- Package Tracking Screen -->
+    <div class="screen news-screen" id="screen-17">
+        <div class="news-container">
+            <h2 class="news-header">Package Tracking</h2>
+            <div class="news-article" id="package-content">
+                <div class="news-source" id="package-carrier"></div>
+                <div class="news-title" id="package-tracking"></div>
+                <div class="news-description" id="package-status"></div>
+            </div>
         </div>
     </div>
     
@@ -1242,11 +1634,13 @@
         <div class="indicator" id="indicator-13"></div>
         <div class="indicator" id="indicator-14"></div>
         <div class="indicator" id="indicator-15"></div>
+        <div class="indicator" id="indicator-16"></div>
+        <div class="indicator" id="indicator-17"></div>
     </div>
     
     <script>
         let currentScreen = 0;
-        const totalScreens = 16;
+        let totalScreens = 18; // Will be adjusted based on available screens
         const screenDuration = 10000; // 10 seconds per screen
         let data = {};
         let retryCount = 0;
@@ -1260,6 +1654,9 @@
         let particles = [];
         let particleInterval = null;
         let specialCharacterInterval = null;
+        let trafficScrollInterval = null;
+        let trafficScrollDirection = 1; // 1 for down, -1 for up
+        let trafficScrollPaused = false;
         
         // Log detected screen size
         console.log(`Screen detected: ${screenWidth}x${screenHeight}, Scale factor: ${scaleFactor}`);
@@ -1278,6 +1675,86 @@
                 day: 'numeric',
                 year: 'numeric'
             });
+        }
+        
+        // Auto-scroll traffic alerts container
+        function startTrafficAlertsAutoScroll() {
+            // Clear any existing scroll interval
+            if (trafficScrollInterval) {
+                clearInterval(trafficScrollInterval);
+                trafficScrollInterval = null;
+            }
+            
+            const container = document.getElementById('traffic-alerts-container');
+            if (!container) return;
+            
+            // Wait a bit for content to render
+            setTimeout(() => {
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
+                
+                // Only auto-scroll if content exceeds container height
+                if (scrollHeight <= clientHeight) {
+                    return;
+                }
+                
+                // Reset scroll position to top
+                container.scrollTop = 0;
+                trafficScrollDirection = 1;
+                trafficScrollPaused = false;
+                
+                // Scroll speed: 30px per second (adjustable)
+                const scrollSpeed = 30; // pixels per second
+                const scrollStep = scrollSpeed / 60; // pixels per frame (60fps)
+                const pauseDuration = 2000; // 2 seconds pause at top/bottom
+                let pauseStartTime = null;
+                
+                trafficScrollInterval = setInterval(() => {
+                    if (!container || container.scrollHeight <= container.clientHeight) {
+                        clearInterval(trafficScrollInterval);
+                        trafficScrollInterval = null;
+                        return;
+                    }
+                    
+                    // Check if we're paused
+                    if (trafficScrollPaused) {
+                        if (pauseStartTime && Date.now() - pauseStartTime >= pauseDuration) {
+                            trafficScrollPaused = false;
+                            pauseStartTime = null;
+                            trafficScrollDirection *= -1; // Reverse direction
+                        }
+                        return;
+                    }
+                    
+                    const currentScroll = container.scrollTop;
+                    const maxScroll = scrollHeight - clientHeight;
+                    
+                    // Check if we've reached the bottom
+                    if (trafficScrollDirection === 1 && currentScroll >= maxScroll - 1) {
+                        trafficScrollPaused = true;
+                        pauseStartTime = Date.now();
+                        return;
+                    }
+                    
+                    // Check if we've reached the top
+                    if (trafficScrollDirection === -1 && currentScroll <= 1) {
+                        trafficScrollPaused = true;
+                        pauseStartTime = Date.now();
+                        return;
+                    }
+                    
+                    // Scroll in the current direction
+                    container.scrollTop += scrollStep * trafficScrollDirection;
+                }, 1000 / 60); // ~60fps
+            }, 500);
+        }
+        
+        // Stop traffic alerts auto-scroll
+        function stopTrafficAlertsAutoScroll() {
+            if (trafficScrollInterval) {
+                clearInterval(trafficScrollInterval);
+                trafficScrollInterval = null;
+            }
         }
         
         // Show error message with countdown
@@ -1472,27 +1949,9 @@
                 document.getElementById('commute-time').textContent = data.commute.duration_formatted;
                 document.getElementById('commute-route').textContent = `${data.commute.distance_miles} miles`;
                 const details = document.getElementById('commute-details');
+                const trafficContainer = document.getElementById('traffic-alerts-container');
                 
-                // Build traffic notices
-                let trafficNotices = '';
-                if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
-                    trafficNotices = '<div style="margin-top: calc(20px * var(--scale-factor)); padding: calc(15px * var(--scale-factor)); background: rgba(255, 193, 7, 0.2); border-left: calc(4px * var(--scale-factor)) solid #ffc107; border-radius: calc(5px * var(--scale-factor)); font-size: calc(1rem * var(--scale-factor));">';
-                    data.commute.traffic_events.forEach(event => {
-                        const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
-                        const levelText = event.traffic_level.charAt(0).toUpperCase() + event.traffic_level.slice(1);
-                        const eventIcon = event.type === 'crash' ? '🚨' : '⚠️';
-                        trafficNotices += `<div style="margin-bottom: calc(8px * var(--scale-factor));">
-                            <strong style="color: ${levelColor};">${eventIcon} ${levelText}</strong> ${event.type === 'crash' ? '<span style="color: #f44336;">CRASH</span>' : ''} - ${event.description} (${event.time})
-                        </div>`;
-                    });
-                    trafficNotices += '</div>';
-                } else {
-                    // Show light traffic when no issues
-                    trafficNotices = '<div style="margin-top: calc(20px * var(--scale-factor)); padding: calc(15px * var(--scale-factor)); background: rgba(76, 175, 80, 0.2); border-left: calc(4px * var(--scale-factor)) solid #4caf50; border-radius: calc(5px * var(--scale-factor)); font-size: calc(1rem * var(--scale-factor)); text-align: center;">';
-                    trafficNotices += '<div style="color: #155724;"><strong style="color: #4caf50;">✓ Light Traffic</strong> - No traffic issues</div>';
-                    trafficNotices += '</div>';
-                }
-                
+                // Update commute details (origin/destination)
                 details.innerHTML = `
                     <div class="weather-detail">
                         <div>From</div>
@@ -1502,11 +1961,64 @@
                         <div>To</div>
                         <div>${data.commute.destination}</div>
                     </div>
-                    ${trafficNotices}
                 `;
+                
+                // Build traffic alerts with card-based layout
+                if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
+                    let trafficAlertsHTML = '';
+                    data.commute.traffic_events.forEach(event => {
+                        const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
+                        const levelText = event.traffic_level.charAt(0).toUpperCase() + event.traffic_level.slice(1);
+                        
+                        // Determine icon and alert class
+                        let eventIcon = '📊';
+                        let alertClass = 'alert-light';
+                        if (event.type === 'crash') {
+                            eventIcon = '🚨';
+                            alertClass = 'alert-crash';
+                        } else if (event.traffic_level === 'heavy') {
+                            eventIcon = '⚠️';
+                            alertClass = 'alert-heavy';
+                        } else if (event.traffic_level === 'medium') {
+                            eventIcon = '📊';
+                            alertClass = 'alert-medium';
+                        } else {
+                            alertClass = 'alert-light';
+                        }
+                        
+                        trafficAlertsHTML += `
+                            <div class="traffic-alert-card ${alertClass}">
+                                <div class="traffic-alert-header">
+                                    <span class="traffic-alert-icon">${eventIcon}</span>
+                                    <span class="traffic-alert-level" style="color: ${levelColor};">
+                                        ${levelText}${event.type === 'crash' ? ' - CRASH' : ''}
+                                    </span>
+                                    <span class="traffic-alert-time">${event.time}</span>
+                                </div>
+                                ${event.location ? `<div class="traffic-alert-location">📍 ${event.location}</div>` : ''}
+                                <div class="traffic-alert-description">${event.description}</div>
+                            </div>
+                        `;
+                    });
+                    trafficContainer.innerHTML = trafficAlertsHTML;
+                    // Reset scroll position to top
+                    trafficContainer.scrollTop = 0;
+                    // Start auto-scrolling if content exceeds container height
+                    startTrafficAlertsAutoScroll();
+                } else {
+                    // Show light traffic message when no issues
+                    trafficContainer.innerHTML = `
+                        <div class="no-traffic-message">
+                            <strong>✓ Light Traffic</strong><br>
+                            No traffic issues detected
+                        </div>
+                    `;
+                    stopTrafficAlertsAutoScroll();
+                }
             } else {
                 document.getElementById('commute-time').textContent = 'Not Configured';
                 document.getElementById('commute-route').textContent = 'Set up commute route in main dashboard';
+                document.getElementById('traffic-alerts-container').innerHTML = '';
             }
             
             // Commute map will be rendered when screen-9 is displayed (handled in switchScreen)
@@ -1564,22 +2076,200 @@
             }
             
             // Update sports
+            const sportsEvent = document.getElementById('sports-event');
+            const sportsNoData = document.getElementById('sports-no-data');
+            
             if (data.sports_scores && data.sports_scores.length > 0) {
                 const score = data.sports_scores[0];
-                document.getElementById('sports-team').textContent = score.team;
-                document.getElementById('sports-title').textContent = score.event;
-                document.getElementById('sports-details').textContent = 
-                    `${score.status}${score.score ? ' • ' + score.score : ''}${score.date ? ' • ' + score.date : ''}`;
+                
+                // Show sports card, hide no data message
+                sportsEvent.style.display = 'block';
+                sportsNoData.style.display = 'none';
+                
+                // Parse event string to extract team names
+                // Common formats: "Team A vs Team B", "Team A v Team B", "Team A @ Team B"
+                let homeTeam = '';
+                let awayTeam = '';
+                const eventStr = score.event || '';
+                
+                // Try to parse team names from event string
+                const vsPatterns = [
+                    /^(.+?)\s+vs\.?\s+(.+)$/i,
+                    /^(.+?)\s+v\.?\s+(.+)$/i,
+                    /^(.+?)\s+@\s+(.+)$/i,
+                    /^(.+?)\s+at\s+(.+)$/i
+                ];
+                
+                let teamsParsed = false;
+                for (const pattern of vsPatterns) {
+                    const match = eventStr.match(pattern);
+                    if (match) {
+                        homeTeam = match[1].trim();
+                        awayTeam = match[2].trim();
+                        teamsParsed = true;
+                        break;
+                    }
+                }
+                
+                // If parsing failed, try to split by common separators
+                if (!teamsParsed) {
+                    const separators = [' vs ', ' v ', ' @ ', ' at '];
+                    for (const sep of separators) {
+                        if (eventStr.includes(sep)) {
+                            const parts = eventStr.split(sep);
+                            if (parts.length === 2) {
+                                homeTeam = parts[0].trim();
+                                awayTeam = parts[1].trim();
+                                teamsParsed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Fallback: if we can't parse, use the event string as team name
+                if (!teamsParsed) {
+                    homeTeam = eventStr || score.team || 'Team 1';
+                    awayTeam = score.team || 'Team 2';
+                }
+                
+                // Update status badge
+                const statusBadge = document.getElementById('sports-status-badge');
+                const status = (score.status || '').toLowerCase();
+                statusBadge.textContent = status === 'completed' ? 'Final' : 
+                                         status === 'upcoming' ? 'Upcoming' : 
+                                         status === 'live' ? 'Live' : status;
+                statusBadge.className = 'sports-status-badge ' + 
+                    (status === 'completed' ? 'completed' : 
+                     status === 'live' ? 'live' : 'upcoming');
+                
+                // Update league
+                document.getElementById('sports-league').textContent = score.league || '';
+                
+                // Handle completed games with scores
+                if (status === 'completed' && score.score) {
+                    // Parse score string (format: "X - Y" or "X-Y")
+                    const scoreMatch = score.score.match(/(\d+)\s*[-–]\s*(\d+)/);
+                    let homeScore = '?';
+                    let awayScore = '?';
+                    
+                    if (scoreMatch) {
+                        homeScore = scoreMatch[1];
+                        awayScore = scoreMatch[2];
+                    }
+                    
+                    // Display teams with scores
+                    document.getElementById('sports-team-home').textContent = homeTeam;
+                    document.getElementById('sports-team-away').textContent = awayTeam;
+                    document.getElementById('sports-score-home').textContent = homeScore;
+                    document.getElementById('sports-score-away').textContent = awayScore;
+                    document.getElementById('sports-score-separator').textContent = '-';
+                    document.getElementById('sports-score-display').style.display = 'none';
+                    
+                    // Show individual team scores
+                    document.getElementById('sports-score-home').style.display = 'block';
+                    document.getElementById('sports-score-away').style.display = 'block';
+                } else {
+                    // For upcoming games or games without scores, show teams only
+                    document.getElementById('sports-team-home').textContent = homeTeam;
+                    document.getElementById('sports-team-away').textContent = awayTeam;
+                    document.getElementById('sports-score-home').style.display = 'none';
+                    document.getElementById('sports-score-away').style.display = 'none';
+                    document.getElementById('sports-score-separator').style.display = 'none';
+                    document.getElementById('sports-score-display').style.display = 'none';
+                }
+                
+                // Format and display date/time
+                const gameDateEl = document.getElementById('sports-game-date');
+                const gameTimeEl = document.getElementById('sports-game-time');
+                
+                if (score.date) {
+                    try {
+                        // Parse date string (format: "YYYY-MM-DD" or similar)
+                        const dateObj = new Date(score.date);
+                        if (!isNaN(dateObj.getTime())) {
+                            const today = new Date();
+                            const tomorrow = new Date(today);
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            
+                            let dateStr = '';
+                            if (dateObj.toDateString() === today.toDateString()) {
+                                dateStr = 'Today';
+                            } else if (dateObj.toDateString() === tomorrow.toDateString()) {
+                                dateStr = 'Tomorrow';
+                            } else {
+                                dateStr = dateObj.toLocaleDateString('en-US', { 
+                                    weekday: 'long', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                });
+                            }
+                            
+                            gameDateEl.textContent = dateStr;
+                        } else {
+                            gameDateEl.textContent = score.date;
+                        }
+                    } catch (e) {
+                        gameDateEl.textContent = score.date;
+                    }
+                } else {
+                    gameDateEl.textContent = '';
+                }
+                
+                if (score.time) {
+                    // Format time (assuming format like "HH:MM:SS" or "HH:MM")
+                    try {
+                        const timeParts = score.time.split(':');
+                        if (timeParts.length >= 2) {
+                            const hours = parseInt(timeParts[0]);
+                            const minutes = timeParts[1];
+                            const ampm = hours >= 12 ? 'PM' : 'AM';
+                            const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+                            gameTimeEl.textContent = `${displayHours}:${minutes} ${ampm}`;
+                        } else {
+                            gameTimeEl.textContent = score.time;
+                        }
+                    } catch (e) {
+                        gameTimeEl.textContent = score.time;
+                    }
+                } else if (status === 'completed') {
+                    gameTimeEl.textContent = 'Game Finished';
+                } else {
+                    gameTimeEl.textContent = '';
+                }
             } else {
-                document.getElementById('sports-team').textContent = 'Sports';
-                document.getElementById('sports-title').textContent = 'No scores available';
-                document.getElementById('sports-details').textContent = 'Configure favorite teams in main dashboard';
+                // No sports data available
+                sportsEvent.style.display = 'none';
+                sportsNoData.style.display = 'block';
             }
             
             // Update photo gallery
             if (data.random_photo) {
                 const galleryPhoto = document.getElementById('gallery-photo');
                 galleryPhoto.src = data.random_photo.url + '?t=' + new Date().getTime();
+            }
+            
+            
+            // Update package tracking
+            if (data.packages && data.packages.length > 0) {
+                const pkg = data.packages[0]; // Show first package
+                const statusColor = pkg.status === 'Delivered' ? '#4caf50' : 
+                                   pkg.status === 'Error' ? '#f44336' : '#2196F3';
+                document.getElementById('package-carrier').textContent = pkg.carrier;
+                document.getElementById('package-tracking').textContent = `${pkg.description || 'Package'} - ${pkg.tracking_number}`;
+                document.getElementById('package-status').textContent = 
+                    `Status: ${pkg.status}${pkg.last_location ? `\nLocation: ${pkg.last_location}` : ''}${pkg.estimated_delivery ? `\nETA: ${pkg.estimated_delivery}` : ''}`;
+                document.getElementById('package-status').style.color = statusColor;
+            } else {
+                document.getElementById('package-carrier').textContent = 'Package Tracking';
+                document.getElementById('package-tracking').textContent = 'No packages being tracked';
+                document.getElementById('package-status').textContent = 'Add packages on the main dashboard';
+            }
+            
+            // Adjust total screens based on available content
+            totalScreens = 17; // Base screens (0-16, weather alerts is now screen-4)
+            if (data.packages && data.packages.length > 0) {
+                totalScreens++; // Add package tracking screen
             }
             
             // Hide loading
@@ -1622,15 +2312,48 @@
                         maxZoom: 19
                     }).addTo(commuteMapRpi);
                     
-                    // Add origin marker
-                    L.marker([data.commute.origin_lat, data.commute.origin_lon])
+                    // Add origin marker with always-visible tooltip
+                    const originMarker = L.marker([data.commute.origin_lat, data.commute.origin_lon])
                         .addTo(commuteMapRpi)
-                        .bindPopup(`Origin: ${data.commute.origin}`);
+                        .bindTooltip(`<strong>📍 Start</strong><br>${data.commute.origin}`, {
+                            permanent: true,
+                            direction: 'top',
+                            className: 'marker-tooltip marker-tooltip-start',
+                            offset: [0, -10]
+                        })
+                        .openTooltip();
                     
-                    // Add destination marker
-                    L.marker([data.commute.dest_lat, data.commute.dest_lon])
+                    // Add destination marker with always-visible tooltip
+                    const destMarker = L.marker([data.commute.dest_lat, data.commute.dest_lon])
                         .addTo(commuteMapRpi)
-                        .bindPopup(`Destination: ${data.commute.destination}`);
+                        .bindTooltip(`<strong>🏁 Finish</strong><br>${data.commute.destination}`, {
+                            permanent: true,
+                            direction: 'top',
+                            className: 'marker-tooltip marker-tooltip-finish',
+                            offset: [0, -10]
+                        })
+                        .openTooltip();
+                    
+                    // Add crash markers from traffic events
+                    if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
+                        data.commute.traffic_events.forEach(event => {
+                            if (event.type === 'crash' && event.lat && event.lon) {
+                                // Create custom crash icon (red circle with warning symbol)
+                                const crashIcon = L.divIcon({
+                                    className: 'crash-marker',
+                                    html: '<div style="background-color: #f44336; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(244, 67, 54, 0.6); display: flex; align-items: center; justify-content: center; font-size: 20px; animation: pulse-crash 2s infinite;">🚨</div>',
+                                    iconSize: [32, 32],
+                                    iconAnchor: [16, 16]
+                                });
+                                
+                                const crashMarker = L.marker([event.lat, event.lon], { icon: crashIcon })
+                                    .addTo(commuteMapRpi)
+                                    .bindPopup(`<strong style="color: #f44336; font-size: 14px;">🚨 CRASH DETECTED</strong><br><strong>${event.location || 'Route'}</strong><br><small>${event.description || ''}</small><br><small style="color: #666;">${event.time || ''}</small>`, {
+                                        className: 'crash-popup'
+                                    });
+                            }
+                        });
+                    }
                     
                     // Draw route with color-coded segments - ONLY use colored segments
                     if (data.commute.route_segments && data.commute.route_segments.length > 0) {
@@ -1687,22 +2410,67 @@
         // Switch screens
         function switchScreen() {
             // Hide current screen
-            document.getElementById(`screen-${currentScreen}`).classList.remove('active');
-            document.getElementById(`indicator-${currentScreen}`).classList.remove('active');
+            const currentScreenEl = document.getElementById(`screen-${currentScreen}`);
+            const currentIndicatorEl = document.getElementById(`indicator-${currentScreen}`);
+            if (currentScreenEl) currentScreenEl.classList.remove('active');
+            if (currentIndicatorEl) currentIndicatorEl.classList.remove('active');
             
-            // Show next screen
-            currentScreen = (currentScreen + 1) % totalScreens;
-            document.getElementById(`screen-${currentScreen}`).classList.add('active');
-            document.getElementById(`indicator-${currentScreen}`).classList.add('active');
+            // Skip screens that shouldn't be shown
+            let nextScreen = (currentScreen + 1) % 18; // Max possible screens
+            let attempts = 0;
+            
+            // Skip weather alerts screen (4) if no alerts
+            while (attempts < 18) {
+                if (nextScreen === 4 && (!data.weather_alerts || data.weather_alerts.length === 0)) {
+                    nextScreen = (nextScreen + 1) % 18;
+                    attempts++;
+                    continue;
+                }
+                // Skip package screen (17) if no packages
+                if (nextScreen === 17 && (!data.packages || data.packages.length === 0)) {
+                    nextScreen = (nextScreen + 1) % 18;
+                    attempts++;
+                    continue;
+                }
+                break;
+            }
+            
+            currentScreen = nextScreen;
+            const nextScreenEl = document.getElementById(`screen-${currentScreen}`);
+            const nextIndicatorEl = document.getElementById(`indicator-${currentScreen}`);
+            if (nextScreenEl) nextScreenEl.classList.add('active');
+            if (nextIndicatorEl) nextIndicatorEl.classList.add('active');
             
             // Refresh radar image when showing radar screen
-            if (currentScreen === 4 && data.weather_radar_url) {
+            if (currentScreen === 5 && data.weather_radar_url) {
                 const radarImage = document.getElementById('radar-image');
                 radarImage.src = data.weather_radar_url + '?t=' + new Date().getTime();
             }
             
-            // Render commute map when showing commute map screen
+            // Update weather alerts when showing alerts screen
+            if (currentScreen === 4 && data.weather_alerts && data.weather_alerts.length > 0) {
+                const alert = data.weather_alerts[0];
+                const severityColor = alert.severity === 'Extreme' ? '#f44336' : 
+                                     alert.severity === 'Severe' ? '#ff9800' : 
+                                     alert.severity === 'Moderate' ? '#ffc107' : '#2196F3';
+                document.getElementById('alert-type').textContent = `${alert.severity} - ${alert.type}`;
+                document.getElementById('alert-type').style.color = severityColor;
+                document.getElementById('alert-headline').textContent = alert.headline || 'Weather Alert';
+                document.getElementById('alert-description').textContent = 
+                    `${alert.area || ''}\n\n${alert.description.substring(0, 500)}${alert.description.length > 500 ? '...' : ''}`;
+            }
+            
+            // Start/stop traffic alerts auto-scroll when showing/hiding commute screen
             if (currentScreen === 9 && data.commute) {
+                // Start auto-scrolling when entering commute screen
+                startTrafficAlertsAutoScroll();
+            } else {
+                // Stop auto-scrolling when leaving commute screen
+                stopTrafficAlertsAutoScroll();
+            }
+            
+            // Render commute map when showing commute map screen
+            if (currentScreen === 10 && data.commute) {
                 renderCommuteMapRpi();
             } else if (commuteMapRpi) {
                 // Clean up map when leaving commute map screen
@@ -1711,7 +2479,7 @@
             }
             
             // Refresh photo when showing photo gallery screen
-            if (currentScreen === 15 && data.random_photo) {
+            if (currentScreen === 16 && data.random_photo) {
                 const galleryPhoto = document.getElementById('gallery-photo');
                 galleryPhoto.src = data.random_photo.url + '?t=' + new Date().getTime();
             }
@@ -2132,6 +2900,7 @@
             if (screenRotationInterval) clearInterval(screenRotationInterval);
             if (dataFetchInterval) clearInterval(dataFetchInterval);
             if (clockInterval) clearInterval(clockInterval);
+            stopTrafficAlertsAutoScroll();
             clearParticles();
             clearSpecialCharacters();
         });

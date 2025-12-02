@@ -249,6 +249,51 @@ def create_db(retry_count=5, delay=0.1):
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             ''')
+            # Create weather_alerts table
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS weather_alerts (
+                id INTEGER PRIMARY KEY,
+                alert_id TEXT UNIQUE NOT NULL,
+                alert_type TEXT NOT NULL,
+                severity TEXT NOT NULL,
+                headline TEXT,
+                description TEXT,
+                area TEXT,
+                effective TIMESTAMP,
+                expires TIMESTAMP,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            # Create packages table
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS packages (
+                id INTEGER PRIMARY KEY,
+                tracking_number TEXT NOT NULL,
+                carrier TEXT NOT NULL,
+                description TEXT,
+                status TEXT,
+                last_location TEXT,
+                estimated_delivery TIMESTAMP,
+                delivered_date TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            # Create packages_archive table
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS packages_archive (
+                id INTEGER PRIMARY KEY,
+                tracking_number TEXT NOT NULL,
+                carrier TEXT NOT NULL,
+                description TEXT,
+                status TEXT,
+                last_location TEXT,
+                estimated_delivery TIMESTAMP,
+                delivered_date TIMESTAMP,
+                created_at TIMESTAMP,
+                archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
             conn.commit()
             conn.close()
             logging.info("Database created and initialized.")
@@ -518,6 +563,7 @@ def dashboard_data():
         forecast = get_weather_forecast()
         news = get_news()
         joke = get_joke()
+        weather_alerts = get_weather_alerts()
         
         # Fetch new features
         calendar_events = get_calendar_events()
@@ -528,6 +574,28 @@ def dashboard_data():
         internet_speed = get_internet_speed()
         sports_scores = get_sports_scores()
         photos = get_photos()
+        
+        # Fetch active packages
+        c.execute("""
+            SELECT id, tracking_number, carrier, description, status, last_location, 
+                   estimated_delivery, delivered_date, updated_at
+            FROM packages
+            ORDER BY created_at DESC
+        """)
+        packages_data = c.fetchall()
+        packages = []
+        for pkg in packages_data:
+            packages.append({
+                'id': pkg[0],
+                'tracking_number': pkg[1],
+                'carrier': pkg[2],
+                'description': pkg[3] or '',
+                'status': pkg[4] or 'Unknown',
+                'last_location': pkg[5] or '',
+                'estimated_delivery': pkg[6],
+                'delivered_date': pkg[7],
+                'updated_at': pkg[8]
+            })
         
         # For RPi dashboard, select one random news article
         random_news = None
@@ -556,6 +624,7 @@ def dashboard_data():
             'news': news,
             'random_news': random_news,
             'joke': joke,
+            'weather_alerts': weather_alerts,
             'calendar_events': calendar_events,
             'random_calendar_event': random_calendar_event,
             'commute': commute,
@@ -566,6 +635,7 @@ def dashboard_data():
             'sports_scores': sports_scores,
             'photos': photos,
             'random_photo': random_photo,
+            'packages': packages,
             'time': datetime.now().strftime('%I:%M %p'),
             'date': datetime.now().strftime('%A, %B %d'),
             'weather_radar_url': f"https://radar.weather.gov/ridge/standard/KENX_loop.gif"  # Albany, NY radar
@@ -1005,6 +1075,13 @@ def api_astronomy():
     astronomy = get_astronomy_data()
     return jsonify(astronomy)
 
+# ==================== WEATHER ALERTS API ENDPOINTS ====================
+@app.route('/api/weather-alerts')
+def api_weather_alerts():
+    """Get weather alerts"""
+    alerts = get_weather_alerts()
+    return jsonify(alerts)
+
 # ==================== INTERNET SPEED API ENDPOINTS ====================
 @app.route('/api/internet-speed')
 def api_internet_speed():
@@ -1115,6 +1192,202 @@ def api_delete_photo(filename):
         return jsonify({'status': 'success'})
     else:
         return jsonify({'error': 'File not found'}), 404
+
+# ==================== PACKAGE TRACKING API ENDPOINTS ====================
+@app.route('/api/packages', methods=['GET', 'POST'])
+def api_packages():
+    """Get active packages or add a new package"""
+    if request.method == 'GET':
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("""
+                SELECT id, tracking_number, carrier, description, status, last_location, 
+                       estimated_delivery, delivered_date, created_at, updated_at
+                FROM packages
+                ORDER BY created_at DESC
+            """)
+            packages_data = c.fetchall()
+            conn.close()
+            
+            packages = []
+            for pkg in packages_data:
+                packages.append({
+                    'id': pkg[0],
+                    'tracking_number': pkg[1],
+                    'carrier': pkg[2],
+                    'description': pkg[3] or '',
+                    'status': pkg[4] or 'Unknown',
+                    'last_location': pkg[5] or '',
+                    'estimated_delivery': pkg[6],
+                    'delivered_date': pkg[7],
+                    'created_at': pkg[8],
+                    'updated_at': pkg[9]
+                })
+            
+            return jsonify(packages)
+        except Exception as e:
+            logging.error(f"Error fetching packages: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    elif request.method == 'POST':
+        try:
+            data = request.json
+            tracking_number = data.get('tracking_number', '').strip()
+            description = data.get('description', '').strip()
+            
+            if not tracking_number:
+                return jsonify({'error': 'Tracking number is required'}), 400
+            
+            # Detect carrier
+            carrier = detect_carrier(tracking_number)
+            
+            # Get initial status
+            status_data = get_package_status(tracking_number, carrier)
+            
+            # Insert into database
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("""
+                INSERT INTO packages (tracking_number, carrier, description, status, last_location, estimated_delivery)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                tracking_number,
+                carrier,
+                description,
+                status_data['status'],
+                status_data['last_location'],
+                status_data['estimated_delivery']
+            ))
+            package_id = c.lastrowid
+            conn.commit()
+            conn.close()
+            
+            logging.info(f"Added package: {tracking_number} ({carrier})")
+            return jsonify({'id': package_id, 'status': 'success'})
+        except Exception as e:
+            logging.error(f"Error adding package: {e}")
+            return jsonify({'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>', methods=['DELETE'])
+def api_delete_package(package_id):
+    """Delete a package"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("DELETE FROM packages WHERE id = ?", (package_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logging.error(f"Error deleting package: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>/refresh', methods=['POST'])
+def api_refresh_package(package_id):
+    """Refresh package tracking status"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("SELECT tracking_number, carrier FROM packages WHERE id = ?", (package_id,))
+        result = c.fetchone()
+        
+        if not result:
+            conn.close()
+            return jsonify({'error': 'Package not found'}), 404
+        
+        tracking_number, carrier = result
+        
+        # Get updated status
+        status_data = get_package_status(tracking_number, carrier)
+        
+        # Check if delivered
+        delivered_date = None
+        if status_data['status'].lower() == 'delivered':
+            delivered_date = datetime.now()
+        
+        # Update package
+        c.execute("""
+            UPDATE packages 
+            SET status = ?, last_location = ?, estimated_delivery = ?, 
+                delivered_date = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (
+            status_data['status'],
+            status_data['last_location'],
+            status_data['estimated_delivery'],
+            delivered_date,
+            package_id
+        ))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'status': 'success', 'package_status': status_data})
+    except Exception as e:
+        logging.error(f"Error refreshing package: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/packages/archive', methods=['GET'])
+def api_packages_archive():
+    """Get archived packages with pagination"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 5, type=int)
+        
+        page = max(1, page)
+        per_page = max(1, min(per_page, 100))
+        
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        
+        # Get total count
+        c.execute("SELECT COUNT(*) FROM packages_archive")
+        total_count = c.fetchone()[0]
+        
+        # Calculate offset
+        offset = (page - 1) * per_page
+        
+        # Get paginated packages
+        c.execute("""
+            SELECT id, tracking_number, carrier, description, status, last_location, 
+                   estimated_delivery, delivered_date, created_at, archived_at
+            FROM packages_archive
+            ORDER BY archived_at DESC
+            LIMIT ? OFFSET ?
+        """, (per_page, offset))
+        packages_data = c.fetchall()
+        conn.close()
+        
+        packages = []
+        for pkg in packages_data:
+            packages.append({
+                'id': pkg[0],
+                'tracking_number': pkg[1],
+                'carrier': pkg[2],
+                'description': pkg[3] or '',
+                'status': pkg[4] or 'Unknown',
+                'last_location': pkg[5] or '',
+                'estimated_delivery': pkg[6],
+                'delivered_date': pkg[7],
+                'created_at': pkg[8],
+                'archived_at': pkg[9]
+            })
+        
+        total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 1
+        
+        return jsonify({
+            'packages': packages,
+            'count': len(packages),
+            'total_count': total_count,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': total_pages,
+            'has_next': page < total_pages,
+            'has_prev': page > 1
+        })
+    except Exception as e:
+        logging.error(f"Error fetching archived packages: {e}")
+        return jsonify({'error': str(e)}), 500
 
 def ping_device(ip):
     logging.debug(f"Pinging IP: {ip}")
@@ -1314,6 +1587,8 @@ def periodic_scan():
     while True:
         logging.info("Starting periodic scan...")
         update_device_status()
+        # Check weather alerts every 5 minutes
+        get_weather_alerts(use_cache=False)
         time.sleep(60)
 
 def get_weather(use_cache=True, retry_count=3):
@@ -2584,6 +2859,186 @@ def get_joke(use_cache=True, retry_count=3):
         'updated': datetime.now().strftime('%I:%M %p')
     }
 
+# ==================== PACKAGE TRACKING FUNCTIONS ====================
+def detect_carrier(tracking_number):
+    """Detect carrier from tracking number format"""
+    tracking = tracking_number.strip().replace(' ', '').replace('-', '')
+    
+    # USPS: 20-22 digits, often starts with 9
+    if tracking.isdigit() and len(tracking) >= 20 and len(tracking) <= 22:
+        if tracking.startswith('9'):
+            return 'USPS'
+        return 'USPS'  # Most USPS tracking numbers are 20-22 digits
+    
+    # UPS: 18 characters, alphanumeric, often starts with 1Z
+    if len(tracking) == 18 and tracking.startswith('1Z'):
+        return 'UPS'
+    
+    # FedEx: 12-14 digits, or alphanumeric patterns
+    if tracking.isdigit() and (len(tracking) == 12 or len(tracking) == 14):
+        return 'FedEx'
+    if len(tracking) >= 12 and len(tracking) <= 14 and any(c.isalpha() for c in tracking):
+        return 'FedEx'
+    
+    # Amazon: varies - often 10-11 digits or alphanumeric starting with TBA
+    if tracking.startswith('TBA') or tracking.startswith('TBC'):
+        return 'Amazon'
+    if len(tracking) >= 10 and len(tracking) <= 11:
+        return 'Amazon'
+    
+    # Default to USPS if uncertain
+    return 'USPS'
+
+def get_package_status(tracking_number, carrier):
+    """Fetch package tracking status from carrier using public tracking pages"""
+    tracking = tracking_number.strip().replace(' ', '').replace('-', '')
+    
+    try:
+        # Try using AfterShip public tracking (no API key required for basic lookups)
+        # Alternative: use carrier-specific public tracking pages
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        # Try carrier-specific tracking URLs and parse basic info
+        # Note: This is a simplified implementation - full parsing would require BeautifulSoup
+        if carrier == 'USPS':
+            url = f"https://tools.usps.com/go/TrackConfirmAction?tLabels={tracking}"
+        elif carrier == 'UPS':
+            url = f"https://www.ups.com/track?tracknum={tracking}"
+        elif carrier == 'FedEx':
+            url = f"https://www.fedex.com/fedextrack/?trknbr={tracking}"
+        elif carrier == 'Amazon':
+            # Amazon tracking varies - use generic status
+            return {
+                'status': 'In Transit',
+                'last_location': 'Processing',
+                'estimated_delivery': None
+            }
+        else:
+            url = None
+        
+        if url:
+            try:
+                response = requests.get(url, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    # Basic status detection from response
+                    content = response.text.lower()
+                    if 'delivered' in content:
+                        return {
+                            'status': 'Delivered',
+                            'last_location': 'Delivered',
+                            'estimated_delivery': None
+                        }
+                    elif 'out for delivery' in content:
+                        return {
+                            'status': 'Out for Delivery',
+                            'last_location': 'Out for Delivery',
+                            'estimated_delivery': None
+                        }
+                    elif 'in transit' in content or 'tracking' in content:
+                        return {
+                            'status': 'In Transit',
+                            'last_location': 'In Transit',
+                            'estimated_delivery': None
+                        }
+            except Exception as e:
+                logging.debug(f"Error parsing tracking page: {e}")
+        
+        # Default status if unable to determine
+        return {
+            'status': 'In Transit',
+            'last_location': 'Processing',
+            'estimated_delivery': None
+        }
+        
+    except Exception as e:
+        logging.error(f"Error fetching package status for {tracking_number}: {e}")
+        return {
+            'status': 'Error',
+            'last_location': '',
+            'estimated_delivery': None
+        }
+
+# ==================== WEATHER ALERTS FUNCTIONS ====================
+def get_weather_alerts(use_cache=True):
+    """Fetch weather alerts from NWS API (free, no API key required)"""
+    cache_key = "weather_alerts"
+    
+    if use_cache:
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            return cached_data
+    
+    try:
+        # NWS API endpoint - no API key required
+        url = f"https://api.weather.gov/alerts/active?point={WEATHER_LAT},{WEATHER_LON}"
+        headers = {
+            'User-Agent': 'HomeDashboard/1.0 (contact@example.com)'  # NWS requires User-Agent
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        alerts = []
+        if 'features' in data and data['features']:
+            for feature in data['features']:
+                properties = feature.get('properties', {})
+                alert_id = properties.get('id', '')
+                
+                # Check if alert already exists in database
+                conn = sqlite3.connect(db_path)
+                c = conn.cursor()
+                c.execute("SELECT id FROM weather_alerts WHERE alert_id = ?", (alert_id,))
+                exists = c.fetchone()
+                
+                if not exists:
+                    # Insert new alert
+                    c.execute('''
+                        INSERT INTO weather_alerts (alert_id, alert_type, severity, headline, description, area, effective, expires)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        alert_id,
+                        properties.get('event', 'Unknown'),
+                        properties.get('severity', 'Unknown'),
+                        properties.get('headline', ''),
+                        properties.get('description', ''),
+                        properties.get('areaDesc', ''),
+                        properties.get('effective'),
+                        properties.get('expires')
+                    ))
+                    conn.commit()
+                
+                # Format alert for response
+                effective_str = properties.get('effective', '')
+                expires_str = properties.get('expires', '')
+                
+                alerts.append({
+                    'id': alert_id,
+                    'type': properties.get('event', 'Unknown'),
+                    'severity': properties.get('severity', 'Unknown'),
+                    'headline': properties.get('headline', ''),
+                    'description': properties.get('description', ''),
+                    'area': properties.get('areaDesc', ''),
+                    'effective': effective_str,
+                    'expires': expires_str
+                })
+            
+            conn.close()
+        
+        # Cache for 5 minutes
+        set_cached_data(cache_key, alerts)
+        logging.info(f"Fetched {len(alerts)} weather alerts")
+        return alerts
+        
+    except Exception as e:
+        logging.error(f"Error fetching weather alerts: {e}")
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            return cached_data
+        return []
+
 # ==================== HOLIDAY THEMING FUNCTIONS ====================
 def calculate_easter(year):
     """Calculate Easter date for a given year using the Anonymous Gregorian algorithm"""
@@ -2948,6 +3403,98 @@ def periodic_speed_test():
         logging.info("Running periodic speed test...")
         run_speed_test()
 
+def periodic_package_updates():
+    """Update package statuses every 30 minutes"""
+    while True:
+        time.sleep(30 * 60)  # 30 minutes
+        logging.info("Updating package statuses...")
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("SELECT id, tracking_number, carrier FROM packages WHERE delivered_date IS NULL")
+            packages = c.fetchall()
+            conn.close()
+            
+            for package_id, tracking_number, carrier in packages:
+                try:
+                    status_data = get_package_status(tracking_number, carrier)
+                    
+                    delivered_date = None
+                    if status_data['status'].lower() == 'delivered':
+                        delivered_date = datetime.now()
+                    
+                    conn = sqlite3.connect(db_path)
+                    c = conn.cursor()
+                    c.execute("""
+                        UPDATE packages 
+                        SET status = ?, last_location = ?, estimated_delivery = ?, 
+                            delivered_date = ?, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                    """, (
+                        status_data['status'],
+                        status_data['last_location'],
+                        status_data['estimated_delivery'],
+                        delivered_date,
+                        package_id
+                    ))
+                    conn.commit()
+                    conn.close()
+                except Exception as e:
+                    logging.error(f"Error updating package {package_id}: {e}")
+        except Exception as e:
+            logging.error(f"Error in periodic package updates: {e}")
+
+def periodic_package_archiving():
+    """Archive delivered packages 24 hours after delivery"""
+    while True:
+        time.sleep(60 * 60)  # Check every hour
+        logging.info("Checking for packages to archive...")
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            
+            # Find packages delivered more than 24 hours ago
+            c.execute("""
+                SELECT id, tracking_number, carrier, description, status, last_location, 
+                       estimated_delivery, delivered_date, created_at
+                FROM packages
+                WHERE delivered_date IS NOT NULL 
+                AND datetime(delivered_date) <= datetime('now', '-1 day')
+            """)
+            packages_to_archive = c.fetchall()
+            
+            for pkg in packages_to_archive:
+                # Move to archive
+                c.execute("""
+                    INSERT INTO packages_archive 
+                    (tracking_number, carrier, description, status, last_location, 
+                     estimated_delivery, delivered_date, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, pkg[1:])  # Skip id (first element)
+                
+                # Delete from active packages
+                c.execute("DELETE FROM packages WHERE id = ?", (pkg[0],))
+                
+                logging.info(f"Archived package: {pkg[1]}")
+            
+            # Keep only last 50 archived packages
+            c.execute("""
+                DELETE FROM packages_archive 
+                WHERE id NOT IN (
+                    SELECT id FROM packages_archive 
+                    ORDER BY archived_at DESC 
+                    LIMIT 50
+                )
+            """)
+            
+            conn.commit()
+            conn.close()
+            
+            if packages_to_archive:
+                logging.info(f"Archived {len(packages_to_archive)} packages")
+        except Exception as e:
+            logging.error(f"Error in periodic package archiving: {e}")
+
 if __name__ == '__main__':
     create_db()
     add_alert_shown_column()
@@ -2961,5 +3508,13 @@ if __name__ == '__main__':
     speed_test_thread = threading.Thread(target=periodic_speed_test)
     speed_test_thread.daemon = True
     speed_test_thread.start()
+    
+    package_update_thread = threading.Thread(target=periodic_package_updates)
+    package_update_thread.daemon = True
+    package_update_thread.start()
+    
+    package_archive_thread = threading.Thread(target=periodic_package_archiving)
+    package_archive_thread.daemon = True
+    package_archive_thread.start()
 
     app.run(host='0.0.0.0', port=5000, debug=True)

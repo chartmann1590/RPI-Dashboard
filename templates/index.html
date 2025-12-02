@@ -502,6 +502,14 @@
                 </div>
             </div>
             
+            <!-- Weather Alerts Card -->
+            <div class="card">
+                <h2>⚠️ Weather Alerts</h2>
+                <div id="weather-alerts-widget" class="loading">
+                    Loading weather alerts...
+                </div>
+            </div>
+            
             <!-- Calendar Card -->
             <div class="card">
                 <h2>📅 Calendar Events</h2>
@@ -628,6 +636,31 @@
                 </div>
                 <div id="photo-gallery" class="loading">
                     Loading photos...
+                </div>
+            </div>
+            
+            <!-- Package Tracking Card -->
+            <div class="card forecast-card">
+                <h2>📦 Package Tracking</h2>
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Add Package</h3>
+                    <form id="add-package-form" style="display: grid; gap: 0.5rem;">
+                        <input type="text" id="package-tracking" placeholder="Tracking Number" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" id="package-description" placeholder="Description (optional)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem;">Add Package</button>
+                    </form>
+                </div>
+                <div id="packages-widget" class="loading">
+                    Loading packages...
+                </div>
+                <div id="packages-archive" style="margin-top: 2rem; display: none;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Archived Packages</h3>
+                    <div id="packages-archive-list" style="max-height: 400px; overflow-y: auto;"></div>
+                    <div id="packages-archive-pagination" style="margin-top: 1rem; display: flex; justify-content: center; align-items: center; gap: 1rem; display: none;">
+                        <button id="archive-prev-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Previous</button>
+                        <span id="archive-page-info" style="color: #666;"></span>
+                        <button id="archive-next-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Next</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -769,6 +802,61 @@
                 
                 // Load joke history
                 loadJokeHistory();
+                
+                // Update weather alerts
+                if (data.weather_alerts && data.weather_alerts.length > 0) {
+                    const alertsWidget = document.getElementById('weather-alerts-widget');
+                    alertsWidget.innerHTML = '<div class="news-list">' + 
+                        data.weather_alerts.map(alert => {
+                            const severityColor = alert.severity === 'Extreme' ? '#f44336' : 
+                                                 alert.severity === 'Severe' ? '#ff9800' : 
+                                                 alert.severity === 'Moderate' ? '#ffc107' : '#2196F3';
+                            return `
+                                <div class="news-item" style="border-left: 4px solid ${severityColor};">
+                                    <div class="news-source" style="color: ${severityColor};">${alert.severity} - ${alert.type}</div>
+                                    <div class="news-title">${alert.headline || 'Weather Alert'}</div>
+                                    <div class="news-desc">${alert.area || ''}</div>
+                                    <div class="news-desc" style="margin-top: 0.5rem;">${alert.description.substring(0, 300)}${alert.description.length > 300 ? '...' : ''}</div>
+                                </div>
+                            `;
+                        }).join('') + '</div>';
+                } else {
+                    document.getElementById('weather-alerts-widget').innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No weather alerts</div>';
+                }
+                
+                // Update packages
+                if (data.packages && data.packages.length > 0) {
+                    const packagesWidget = document.getElementById('packages-widget');
+                    packagesWidget.innerHTML = '<div class="news-list">' + 
+                        data.packages.map(pkg => {
+                            const statusColor = pkg.status === 'Delivered' ? '#4caf50' : 
+                                               pkg.status === 'Error' ? '#f44336' : '#2196F3';
+                            return `
+                                <div class="news-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <div class="news-source">${pkg.carrier} - ${pkg.tracking_number}</div>
+                                            <div class="news-title">${pkg.description || 'Package'}</div>
+                                        </div>
+                                        <div>
+                                            <button onclick="refreshPackage(${pkg.id})" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.9rem; margin-right: 0.5rem;">Refresh</button>
+                                            <button onclick="deletePackage(${pkg.id})" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.9rem;">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="news-desc">
+                                        <strong style="color: ${statusColor};">Status:</strong> ${pkg.status}
+                                        ${pkg.last_location ? ` • ${pkg.last_location}` : ''}
+                                        ${pkg.estimated_delivery ? ` • ETA: ${pkg.estimated_delivery}` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('') + '</div>';
+                } else {
+                    document.getElementById('packages-widget').innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No packages being tracked</div>';
+                }
+                
+                // Load archived packages
+                loadPackagesArchive();
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
                 document.getElementById('weather-widget').innerHTML = '<div class="error">Failed to load weather data</div>';
@@ -1555,6 +1643,130 @@
                 console.error('Error starting speed test:', error);
                 btn.disabled = false;
                 btn.textContent = 'Run Speed Test';
+            }
+        });
+        
+        // ==================== PACKAGE TRACKING FUNCTIONS ====================
+        let archivePage = 1;
+        const archivePerPage = 5;
+        
+        async function loadPackagesArchive(page = 1) {
+            try {
+                const response = await fetch(`/api/packages/archive?page=${page}&per_page=${archivePerPage}`);
+                const data = await response.json();
+                
+                const archiveDiv = document.getElementById('packages-archive');
+                const archiveList = document.getElementById('packages-archive-list');
+                const paginationDiv = document.getElementById('packages-archive-pagination');
+                const pageInfo = document.getElementById('archive-page-info');
+                const prevBtn = document.getElementById('archive-prev-btn');
+                const nextBtn = document.getElementById('archive-next-btn');
+                
+                if (data.packages && data.packages.length > 0) {
+                    archiveDiv.style.display = 'block';
+                    archiveList.innerHTML = data.packages.map(pkg => `
+                        <div class="news-item">
+                            <div class="news-source">${pkg.carrier} - ${pkg.tracking_number}</div>
+                            <div class="news-title">${pkg.description || 'Package'}</div>
+                            <div class="news-desc">Status: ${pkg.status}${pkg.last_location ? ` • ${pkg.last_location}` : ''}</div>
+                            <div class="news-desc" style="font-size: 0.85rem; color: #999;">Archived: ${pkg.archived_at}</div>
+                        </div>
+                    `).join('');
+                    
+                    if (data.total_pages > 1) {
+                        paginationDiv.style.display = 'flex';
+                        pageInfo.textContent = `Page ${data.page} of ${data.total_pages} (${data.total_count} total)`;
+                        prevBtn.disabled = !data.has_prev;
+                        nextBtn.disabled = !data.has_next;
+                        archivePage = data.page;
+                        setupArchivePagination();
+                    } else {
+                        paginationDiv.style.display = 'none';
+                    }
+                } else if (data.total_count > 0) {
+                    archiveDiv.style.display = 'block';
+                    archiveList.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No packages on this page</div>';
+                    paginationDiv.style.display = 'flex';
+                    pageInfo.textContent = `Page ${data.page} of ${data.total_pages}`;
+                    prevBtn.disabled = !data.has_prev;
+                    nextBtn.disabled = !data.has_next;
+                    archivePage = data.page;
+                    setupArchivePagination();
+                } else {
+                    archiveDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading archived packages:', error);
+            }
+        }
+        
+        function setupArchivePagination() {
+            const prevBtn = document.getElementById('archive-prev-btn');
+            const nextBtn = document.getElementById('archive-next-btn');
+            
+            if (prevBtn && !prevBtn.hasAttribute('data-listener-added')) {
+                prevBtn.setAttribute('data-listener-added', 'true');
+                prevBtn.addEventListener('click', () => {
+                    if (archivePage > 1) {
+                        loadPackagesArchive(archivePage - 1);
+                    }
+                });
+            }
+            
+            if (nextBtn && !nextBtn.hasAttribute('data-listener-added')) {
+                nextBtn.setAttribute('data-listener-added', 'true');
+                nextBtn.addEventListener('click', () => {
+                    loadPackagesArchive(archivePage + 1);
+                });
+            }
+        }
+        
+        async function refreshPackage(packageId) {
+            try {
+                const response = await fetch(`/api/packages/${packageId}/refresh`, { method: 'POST' });
+                if (response.ok) {
+                    loadDashboardData();
+                }
+            } catch (error) {
+                console.error('Error refreshing package:', error);
+                alert('Error refreshing package');
+            }
+        }
+        
+        async function deletePackage(packageId) {
+            if (!confirm('Delete this package?')) return;
+            try {
+                const response = await fetch(`/api/packages/${packageId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadDashboardData();
+                }
+            } catch (error) {
+                console.error('Error deleting package:', error);
+                alert('Error deleting package');
+            }
+        }
+        
+        document.getElementById('add-package-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tracking = document.getElementById('package-tracking').value.trim();
+            const description = document.getElementById('package-description').value.trim();
+            
+            try {
+                const response = await fetch('/api/packages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tracking_number: tracking, description: description })
+                });
+                if (response.ok) {
+                    document.getElementById('add-package-form').reset();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    alert('Error adding package: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error adding package:', error);
+                alert('Error adding package');
             }
         });
         

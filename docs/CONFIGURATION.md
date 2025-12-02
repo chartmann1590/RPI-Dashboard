@@ -2,8 +2,6 @@
 
 ## Environment Variables
 
-This section details all environment variables used within the application.  These variables are accessed using `os.getenv()` or `os.environ`.
-
 | Name             | Description                               | Required/Optional | Default Value |
 |------------------|-------------------------------------------|--------------------|---------------|
 | `DATABASE_URL`   | URL for connecting to the SQLite database.  | Required           | `sqlite:///smart_home.db` |

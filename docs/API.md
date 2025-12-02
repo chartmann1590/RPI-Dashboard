@@ -68,7 +68,7 @@
 
 *   **HTTP Method:** GET
 *   **Path:** /api/holiday-theme
-*   **Description:**  Loads the current holiday theme.
+*   **Description:** Loads the current holiday theme.
 *   **Parameters:** None
 *   **Response Format:** None (Updates the website’s appearance).
 *   **Example Usage:** `GET /api/holiday-theme`
