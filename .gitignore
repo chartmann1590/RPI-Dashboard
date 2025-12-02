@@ -1,0 +1,165 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+*.env
+secrets/
+.secrets
+*.pem
+*.key
+*.cert
+credentials.json
+config.local.*
+*.secret
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*.sql
+*.dump
+pgdata/
+postgres-data/
+mysql-data/
+mongodb-data/
+*.sql.gz
+*.db-journal
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Build outputs
+build/
+dist/
+target/
+out/
+bin/
+*.o
+*.a
+*.exe
+*.dll
+*.dylib
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+*.log.*
+
+# Cache and temporary files
+.cache/
+*.cache
+.tmp/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*~
+
+# Documentation backups (keep docs folder but ignore backups)
+docs/*.bak
+README.md.bak
+
+# Automation scripts (should not be tracked)
+push.sh
+
+# Package manager lock files (optional - uncomment if you don't want to track these)
+# package-lock.json
+# yarn.lock
+# Pipfile.lock
+# poetry.lock
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Local configuration
+local_settings.py
+local_config.*
+config.local.*

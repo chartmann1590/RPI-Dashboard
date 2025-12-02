@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} - Device History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .history-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .search-container {
+            margin-bottom: 2rem;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a5dcf;
+        }
+        
+        .notification-settings {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .notification-settings h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .notification-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .notify-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .notify-home {
+            border-color: #28a745;
+            color: #28a745;
+        }
+        
+        .notify-home:hover,
+        .notify-home.active {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .notify-away {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        .notify-away:hover,
+        .notify-away.active {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .notify-none {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        
+        .notify-none:hover,
+        .notify-none.active {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .history-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .status-home {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-away {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .history-section {
+                padding: 1rem;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .notification-buttons {
+                flex-direction: column;
+            }
+            
+            .notify-btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .history-table {
+                font-size: 0.9rem;
+            }
+            
+            .history-table th,
+            .history-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ name }}</h1>
+        <p>Device History & Settings</p>
+    </header>
+    
+    <div class="container">
+        <a href="/" class="back-link">← Back to Dashboard</a>
+        
+        <div class="history-section">
+            <div class="notification-settings">
+                <h3>Notification Settings</h3>
+                <div class="notification-buttons">
+                    <a href="{{ url_for('toggle_notify', id=device_id, action='home') }}" 
+                       class="notify-btn notify-home {% if notify_status == 'home' %}active{% endif %}">
+                        🏠 Notify When Home
+                    </a>
+                    <a href="{{ url_for('toggle_notify', id=device_id, action='away') }}" 
+                       class="notify-btn notify-away {% if notify_status == 'away' %}active{% endif %}">
+                        🚪 Notify When Away
+                    </a>
+                    <a href="{{ url_for('toggle_notify', id=device_id, action='none') }}" 
+                       class="notify-btn notify-none {% if notify_status == 'none' %}active{% endif %}">
+                        🔕 Notifications Off
+                    </a>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <form method="get" action="{{ url_for('device_history', name=name) }}" class="search-form">
+                    <input type="text" name="search" class="search-input" 
+                           placeholder="Search by date/time (e.g., 2024-10, 10:30)..." 
+                           value="{{ search_query }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('device_history', name=name) }}" class="btn btn-primary">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+            
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Date & Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if history %}
+                        {% for entry in history | reverse %}
+                        <tr>
+                            <td>
+                                <span class="status-badge status-{{ entry[0].lower() }}">
+                                    {{ entry[0] }}
+                                </span>
+                            </td>
+                            <td>{{ entry[1] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="2" class="no-data">
+                                {% if search_query %}
+                                    No history found matching "{{ search_query }}"
+                                {% else %}
+                                    No history available for this device yet.
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            
+            <div class="action-buttons">
+                <a href="/admin/edit_device/{{ device_id }}" class="btn btn-primary">Edit Device</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

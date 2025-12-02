@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .devices-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .devices-table th,
+        .devices-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .devices-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .devices-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-home {
+            background-color: #4caf50;
+        }
+        
+        .status-away {
+            background-color: #f44336;
+        }
+        
+        .device-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .device-link:hover {
+            text-decoration: underline;
+        }
+        
+        .weather-widget {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+        
+        .weather-main {
+            text-align: center;
+        }
+        
+        .weather-temp {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .weather-desc {
+            font-size: 1.2rem;
+            color: #666;
+            text-transform: capitalize;
+        }
+        
+        .weather-details {
+            display: grid;
+            gap: 0.5rem;
+        }
+        
+        .weather-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        /* Forecast styles */
+        .forecast-container {
+            margin-top: 1.5rem;
+        }
+        
+        .forecast-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .forecast-section h3 {
+            font-size: 1.2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .hourly-forecast {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .hourly-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .hourly-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .hourly-time {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hourly-temp {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+        
+        .hourly-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .daily-forecast {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .daily-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .daily-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .daily-day {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .daily-temps {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .daily-high {
+            font-weight: bold;
+        }
+        
+        .daily-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .news-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .news-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+        
+        .news-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        
+        .news-source {
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .news-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        
+        .news-desc {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .joke-current {
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .joke-updated {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        .joke-history-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+        
+        .joke-history-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .joke-history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .joke-history-text {
+            margin-bottom: 0.3rem;
+            line-height: 1.5;
+        }
+        
+        .joke-history-timestamp {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .quote-history-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+        
+        .quote-history-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .quote-history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .quote-history-text {
+            margin-bottom: 0.3rem;
+            line-height: 1.5;
+            font-style: italic;
+        }
+        
+        .quote-history-author {
+            color: #667eea;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+        
+        .quote-history-timestamp {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a5dcf;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 2rem;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        /* Make forecast card full width */
+        .forecast-card {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .weather-widget {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .hourly-forecast,
+            .daily-forecast {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏠 Home Dashboard</h1>
+        <p>Real-time home monitoring and information</p>
+    </header>
+    
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- Who's Home Card -->
+            <div class="card">
+                <h2>👥 Who's Home</h2>
+                <table class="devices-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Last Seen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('device_history', name=device[0]) }}" class="device-link">
+                                    {{ device[0] }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="status-indicator status-{{ device[1] }}"></span>
+                                {{ device[1] | capitalize }}
+                            </td>
+                            <td>{{ device[2] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Weather Card -->
+            <div class="card">
+                <h2>🌤️ Current Weather</h2>
+                <div id="weather-widget" class="loading">
+                    Loading weather data...
+                </div>
+            </div>
+            
+            <!-- News Card -->
+            <div class="card">
+                <h2>📰 Latest News</h2>
+                <div id="news-widget" class="loading">
+                    Loading news...
+                </div>
+            </div>
+            
+            <!-- Joke Card -->
+            <div class="card">
+                <h2>😄 Daily Joke</h2>
+                <div id="joke-widget" class="loading">
+                    Loading joke...
+                </div>
+                <div id="joke-history" style="margin-top: 1.5rem; display: none;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Joke History (Last 100)</h3>
+                    <div id="joke-history-list" style="max-height: 400px; overflow-y: auto;"></div>
+                    <div id="joke-history-pagination" style="margin-top: 1rem; display: flex; justify-content: center; align-items: center; gap: 1rem; display: none;">
+                        <button id="joke-prev-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Previous</button>
+                        <span id="joke-page-info" style="color: #666;"></span>
+                        <button id="joke-next-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Next</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weather Forecast Card (Full Width) -->
+            <div class="card forecast-card">
+                <h2>📅 Weather Forecast</h2>
+                <div id="forecast-widget" class="loading">
+                    Loading forecast...
+                </div>
+            </div>
+            
+            <!-- Calendar Card -->
+            <div class="card">
+                <h2>📅 Calendar Events</h2>
+                <div id="calendar-widget" class="loading">
+                    Loading calendar events...
+                </div>
+            </div>
+            
+            <!-- Calendar Management Card -->
+            <div class="card forecast-card">
+                <h2>⚙️ Calendar Management</h2>
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Add iCal Feed</h3>
+                    <form id="add-feed-form" style="display: grid; gap: 1rem; grid-template-columns: 1fr 2fr auto;">
+                        <input type="text" id="feed-name" placeholder="Feed Name (optional)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" id="feed-url" placeholder="iCal Feed URL" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Add Feed</button>
+                    </form>
+                    <div id="feeds-list" style="margin-top: 1rem;"></div>
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Add Local Event</h3>
+                    <form id="add-event-form" style="display: grid; gap: 1rem;">
+                        <input type="text" id="event-title" placeholder="Event Title" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <input type="datetime-local" id="event-start" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            <input type="datetime-local" id="event-end" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <input type="text" id="event-location" placeholder="Location (optional)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <textarea id="event-description" placeholder="Description (optional)" rows="3" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                        <button type="submit" class="btn btn-primary">Add Event</button>
+                    </form>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Local Events</h3>
+                    <div id="local-events-list"></div>
+                </div>
+            </div>
+            
+            <!-- Commute Card -->
+            <div class="card">
+                <h2>🚗 Commute</h2>
+                <div id="commute-config" style="margin-bottom: 1rem;">
+                    <form id="commute-form" style="display: grid; gap: 0.5rem;">
+                        <input type="text" id="commute-origin" placeholder="Origin Address" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" id="commute-destination" placeholder="Destination Address" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem;">Save</button>
+                    </form>
+                </div>
+                <div id="commute-widget" class="loading">
+                    Loading commute info...
+                </div>
+                <div id="commute-map" style="height: 400px; width: 100%; margin-top: 1rem; border-radius: 8px; display: none;"></div>
+                <div id="traffic-history" style="margin-top: 1.5rem; display: none;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Traffic Event History</h3>
+                    <div id="traffic-history-list" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            
+            <!-- Air Quality Card -->
+            <div class="card">
+                <h2>🌬️ Air Quality</h2>
+                <div id="air-quality-widget" class="loading">
+                    Loading air quality data...
+                </div>
+            </div>
+            
+            <!-- Quotes Card -->
+            <div class="card">
+                <h2>💭 Daily Quote</h2>
+                <div id="quote-widget" class="loading">
+                    Loading quote...
+                </div>
+                <div id="quote-history" style="margin-top: 1.5rem; display: none;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Quote History (Last 100)</h3>
+                    <div id="quote-history-list" style="max-height: 400px; overflow-y: auto;"></div>
+                    <div id="quote-history-pagination" style="margin-top: 1rem; display: flex; justify-content: center; align-items: center; gap: 1rem; display: none;">
+                        <button id="quote-prev-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Previous</button>
+                        <span id="quote-page-info" style="color: #666;"></span>
+                        <button id="quote-next-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Next</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Astronomy Card -->
+            <div class="card">
+                <h2>🌙 Moon & Sun</h2>
+                <div id="astronomy-widget" class="loading">
+                    Loading astronomy data...
+                </div>
+            </div>
+            
+            <!-- Internet Speed Card -->
+            <div class="card">
+                <h2>⚡ Internet Speed</h2>
+                <div id="speed-widget" class="loading">
+                    Loading speed test data...
+                </div>
+                <button id="run-speed-test" class="btn btn-secondary" style="margin-top: 1rem; width: 100%;">Run Speed Test</button>
+            </div>
+            
+            <!-- Sports Card -->
+            <div class="card">
+                <h2>⚽ Sports Scores</h2>
+                <div id="sports-config" style="margin-bottom: 1rem;">
+                    <form id="sports-form" style="display: grid; gap: 0.5rem;">
+                        <input type="text" id="sports-teams" placeholder="Team names (comma-separated)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem;">Save Teams</button>
+                    </form>
+                </div>
+                <div id="sports-widget" class="loading">
+                    Loading sports scores...
+                </div>
+            </div>
+            
+            <!-- Photo Gallery Card -->
+            <div class="card forecast-card">
+                <h2>📸 Photo Gallery</h2>
+                <div id="photo-upload" style="margin-bottom: 1.5rem; padding: 1rem; border: 2px dashed #ddd; border-radius: 8px; text-align: center;">
+                    <input type="file" id="photo-input" accept="image/*" multiple style="display: none;">
+                    <button onclick="document.getElementById('photo-input').click()" class="btn btn-primary" style="margin-bottom: 0.5rem;">Choose Photos</button>
+                    <p style="color: #666; font-size: 0.9rem;">or drag and drop photos here</p>
+                    <div id="upload-progress" style="margin-top: 1rem; display: none;"></div>
+                </div>
+                <div id="photo-gallery" class="loading">
+                    Loading photos...
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="/admin" class="btn btn-primary">Admin Panel</a>
+            <a href="/rpi-dashboard" class="btn btn-secondary">RPi Dashboard</a>
+        </div>
+    </div>
+    
+    <script>
+        // Fetch and display weather and news data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard-data');
+                const data = await response.json();
+                
+                // Update weather
+                if (data.weather) {
+                    const weatherWidget = document.getElementById('weather-widget');
+                    weatherWidget.innerHTML = `
+                        <div class="weather-widget">
+                            <div class="weather-main">
+                                <div class="weather-temp">${data.weather.temp}°F</div>
+                                <div class="weather-desc">${data.weather.description}</div>
+                            </div>
+                            <div class="weather-details">
+                                <div class="weather-detail">
+                                    <span>Feels Like</span>
+                                    <span>${data.weather.feels_like}°F</span>
+                                </div>
+                                <div class="weather-detail">
+                                    <span>Humidity</span>
+                                    <span>${data.weather.humidity}%</span>
+                                </div>
+                                <div class="weather-detail">
+                                    <span>Wind</span>
+                                    <span>${data.weather.wind_speed} mph</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('weather-widget').innerHTML = '<div class="error">Weather data unavailable</div>';
+                }
+                
+                // Update forecast
+                if (data.forecast) {
+                    const forecastWidget = document.getElementById('forecast-widget');
+                    let forecastHTML = '<div class="forecast-container">';
+                    
+                    // Hourly forecast
+                    if (data.forecast.hourly && data.forecast.hourly.length > 0) {
+                        forecastHTML += `
+                            <div class="forecast-section">
+                                <h3>Hourly Forecast</h3>
+                                <div class="hourly-forecast">
+                        `;
+                        
+                        data.forecast.hourly.forEach(hour => {
+                            forecastHTML += `
+                                <div class="hourly-item">
+                                    <div class="hourly-time">${hour.time}</div>
+                                    <div class="hourly-temp">${hour.temp}°F</div>
+                                    <div class="hourly-desc">${hour.description}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        forecastHTML += '</div></div>';
+                    }
+                    
+                    // Daily forecast
+                    if (data.forecast.daily && data.forecast.daily.length > 0) {
+                        forecastHTML += `
+                            <div class="forecast-section">
+                                <h3>3-Day Forecast</h3>
+                                <div class="daily-forecast">
+                        `;
+                        
+                        data.forecast.daily.forEach(day => {
+                            forecastHTML += `
+                                <div class="daily-item">
+                                    <div class="daily-day">${day.day}</div>
+                                    <div class="daily-temps">
+                                        <span class="daily-high">${day.high}°</span> / ${day.low}°
+                                    </div>
+                                    <div class="daily-desc">${day.description}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        forecastHTML += '</div></div>';
+                    }
+                    
+                    forecastHTML += '</div>';
+                    forecastWidget.innerHTML = forecastHTML;
+                } else {
+                    document.getElementById('forecast-widget').innerHTML = '<div class="error">Forecast data unavailable</div>';
+                }
+                
+                // Update news
+                if (data.news && data.news.length > 0) {
+                    const newsWidget = document.getElementById('news-widget');
+                    
+                    // Get the news type from the first article (they should all be the same type)
+                    const newsType = data.news[0].news_type || 'News';
+                    
+                    // Update the news header to show what type of news we're displaying
+                    const newsHeader = document.querySelector('.card h2');
+                    if (newsHeader && newsHeader.textContent.includes('News')) {
+                        newsHeader.innerHTML = `📰 ${newsType}`;
+                    }
+                    
+                    newsWidget.innerHTML = '<div class="news-list">' + 
+                        data.news.map(article => `
+                            <div class="news-item">
+                                <div class="news-source">${article.source}</div>
+                                <div class="news-title">${article.title}</div>
+                                ${article.description ? `<div class="news-desc">${article.description}</div>` : ''}
+                            </div>
+                        `).join('') + '</div>';
+                } else {
+                    document.getElementById('news-widget').innerHTML = '<div class="error">News data unavailable</div>';
+                }
+                
+                // Update joke
+                if (data.joke) {
+                    const jokeWidget = document.getElementById('joke-widget');
+                    jokeWidget.innerHTML = `
+                        <div class="joke-current">
+                            ${data.joke.text || 'No joke available'}
+                            <div class="joke-updated">Updated: ${data.joke.updated || ''}</div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('joke-widget').innerHTML = '<div class="error">Joke data unavailable</div>';
+                }
+                
+                // Load joke history
+                loadJokeHistory();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.getElementById('weather-widget').innerHTML = '<div class="error">Failed to load weather data</div>';
+                document.getElementById('forecast-widget').innerHTML = '<div class="error">Failed to load forecast data</div>';
+                document.getElementById('news-widget').innerHTML = '<div class="error">Failed to load news data</div>';
+                document.getElementById('joke-widget').innerHTML = '<div class="error">Failed to load joke data</div>';
+            }
+        }
+        
+        // Joke history pagination state
+        let jokeHistoryPage = 1;
+        const jokeHistoryPerPage = 5;
+        
+        // Load joke history with pagination
+        async function loadJokeHistory(page = 1) {
+            try {
+                const response = await fetch(`/api/joke-history?page=${page}&per_page=${jokeHistoryPerPage}`);
+                const data = await response.json();
+                
+                const historyDiv = document.getElementById('joke-history');
+                const historyList = document.getElementById('joke-history-list');
+                const paginationDiv = document.getElementById('joke-history-pagination');
+                const pageInfo = document.getElementById('joke-page-info');
+                const prevBtn = document.getElementById('joke-prev-btn');
+                const nextBtn = document.getElementById('joke-next-btn');
+                
+                if (data.jokes && data.jokes.length > 0) {
+                    historyDiv.style.display = 'block';
+                    historyList.innerHTML = data.jokes.map(joke => `
+                        <div class="joke-history-item">
+                            <div class="joke-history-text">${joke.text}</div>
+                            <div class="joke-history-timestamp">${joke.timestamp}</div>
+                        </div>
+                    `).join('');
+                    
+                    // Update pagination controls
+                    if (data.total_pages > 1) {
+                        paginationDiv.style.display = 'flex';
+                        pageInfo.textContent = `Page ${data.page} of ${data.total_pages} (${data.total_count} total)`;
+                        prevBtn.disabled = !data.has_prev;
+                        nextBtn.disabled = !data.has_next;
+                        jokeHistoryPage = data.page;
+                        setupJokePagination();
+                    } else {
+                        paginationDiv.style.display = 'none';
+                    }
+                } else if (data.total_count > 0) {
+                    // No jokes on this page but there are jokes
+                    historyDiv.style.display = 'block';
+                    historyList.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No jokes on this page</div>';
+                    paginationDiv.style.display = 'flex';
+                    pageInfo.textContent = `Page ${data.page} of ${data.total_pages}`;
+                    prevBtn.disabled = !data.has_prev;
+                    nextBtn.disabled = !data.has_next;
+                    jokeHistoryPage = data.page;
+                    setupJokePagination();
+                } else {
+                    historyDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading joke history:', error);
+            }
+        }
+        
+        // Joke history pagination event handlers (set up after DOM is ready)
+        function setupJokePagination() {
+            const jokePrevBtn = document.getElementById('joke-prev-btn');
+            const jokeNextBtn = document.getElementById('joke-next-btn');
+            
+            if (jokePrevBtn && !jokePrevBtn.hasAttribute('data-listener-added')) {
+                jokePrevBtn.setAttribute('data-listener-added', 'true');
+                jokePrevBtn.addEventListener('click', () => {
+                    if (jokeHistoryPage > 1) {
+                        loadJokeHistory(jokeHistoryPage - 1);
+                    }
+                });
+            }
+            
+            if (jokeNextBtn && !jokeNextBtn.hasAttribute('data-listener-added')) {
+                jokeNextBtn.setAttribute('data-listener-added', 'true');
+                jokeNextBtn.addEventListener('click', () => {
+                    loadJokeHistory(jokeHistoryPage + 1);
+                });
+            }
+        }
+        
+        // ==================== CALENDAR FUNCTIONS ====================
+        async function loadCalendarEvents() {
+            try {
+                const response = await fetch('/api/calendar-events');
+                const events = await response.json();
+                
+                const widget = document.getElementById('calendar-widget');
+                if (events && events.length > 0) {
+                    widget.innerHTML = '<div class="news-list">' + 
+                        events.slice(0, 5).map(event => `
+                            <div class="news-item">
+                                <div class="news-source">${event.source}</div>
+                                <div class="news-title">${event.title}</div>
+                                <div class="news-desc">${event.date} at ${event.time}${event.location ? ' • ' + event.location : ''}</div>
+                            </div>
+                        `).join('') + '</div>';
+                } else {
+                    widget.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No upcoming events</div>';
+                }
+            } catch (error) {
+                console.error('Error loading calendar events:', error);
+                document.getElementById('calendar-widget').innerHTML = '<div class="error">Failed to load calendar events</div>';
+            }
+        }
+        
+        async function loadCalendarFeeds() {
+            try {
+                const response = await fetch('/api/calendar-feeds');
+                const feeds = await response.json();
+                
+                const list = document.getElementById('feeds-list');
+                if (feeds && feeds.length > 0) {
+                    list.innerHTML = '<h4 style="margin-bottom: 0.5rem;">Existing Feeds:</h4>' +
+                        feeds.map(feed => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f8f9fa; border-radius: 5px; margin-bottom: 0.5rem;">
+                                <span><strong>${feed.name || 'Unnamed'}</strong>: ${feed.url.substring(0, 50)}...</span>
+                                <button onclick="deleteFeed(${feed.id})" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.9rem;">Delete</button>
+                            </div>
+                        `).join('');
+                } else {
+                    list.innerHTML = '<p style="color: #666;">No calendar feeds added yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading feeds:', error);
+            }
+        }
+        
+        async function deleteFeed(feedId) {
+            if (!confirm('Delete this calendar feed?')) return;
+            try {
+                const response = await fetch(`/api/calendar-feeds/${feedId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadCalendarFeeds();
+                    loadCalendarEvents();
+                }
+            } catch (error) {
+                console.error('Error deleting feed:', error);
+                alert('Error deleting feed');
+            }
+        }
+        
+        async function loadLocalEvents() {
+            try {
+                const response = await fetch('/api/calendar-events/local');
+                const events = await response.json();
+                
+                const list = document.getElementById('local-events-list');
+                if (events && events.length > 0) {
+                    list.innerHTML = events.map(event => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8f9fa; border-radius: 5px; margin-bottom: 0.5rem;">
+                            <div>
+                                <strong>${event.title}</strong><br>
+                                <small style="color: #666;">${event.start_time}${event.location ? ' • ' + event.location : ''}</small>
+                            </div>
+                            <div>
+                                <button onclick="editEvent(${event.id})" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.9rem; margin-right: 0.5rem;">Edit</button>
+                                <button onclick="deleteEvent(${event.id})" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.9rem;">Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<p style="color: #666;">No local events added yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading local events:', error);
+            }
+        }
+        
+        async function deleteEvent(eventId) {
+            if (!confirm('Delete this event?')) return;
+            try {
+                const response = await fetch(`/api/calendar-events/local/${eventId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadLocalEvents();
+                    loadCalendarEvents();
+                }
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                alert('Error deleting event');
+            }
+        }
+        
+        function editEvent(eventId) {
+            // Simple edit - reload and populate form
+            loadLocalEvents();
+            alert('Edit functionality - populate form with event data');
+        }
+        
+        // ==================== COMMUTE FUNCTIONS ====================
+        let commuteMap = null;
+        
+        async function loadCommuteInfo() {
+            try {
+                const response = await fetch('/api/commute-info');
+                const commute = await response.json();
+                
+                const widget = document.getElementById('commute-widget');
+                const mapDiv = document.getElementById('commute-map');
+                
+                if (commute) {
+                    // Display text info with traffic events
+                    let trafficNotices = '';
+                    if (commute.traffic_events && commute.traffic_events.length > 0) {
+                        trafficNotices = '<div style="margin-top: 1rem; padding: 0.75rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">';
+                        commute.traffic_events.forEach(event => {
+                            const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
+                            const levelText = event.traffic_level.charAt(0).toUpperCase() + event.traffic_level.slice(1);
+                            const eventIcon = event.type === 'crash' ? '🚨' : '⚠️';
+                            trafficNotices += `<div style="margin-bottom: 0.5rem; font-size: 0.9rem;">
+                                ${eventIcon} <strong style="color: ${levelColor};">${levelText} Traffic</strong> at ${event.location} - ${event.description} (${event.time})
+                            </div>`;
+                        });
+                        trafficNotices += '</div>';
+                    } else {
+                        // Show light traffic when no issues
+                        trafficNotices = '<div style="margin-top: 1rem; padding: 0.75rem; background: #d4edda; border-left: 4px solid #4caf50; border-radius: 4px; text-align: center;">';
+                        trafficNotices += '<div style="font-size: 0.9rem; color: #155724;"><strong style="color: #4caf50;">✓ Light Traffic</strong> - No traffic issues detected</div>';
+                        trafficNotices += '</div>';
+                    }
+                    
+                    widget.innerHTML = `
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #667eea; margin-bottom: 0.5rem;">${commute.duration_formatted}</div>
+                            <div style="color: #666; margin-bottom: 0.5rem;">${commute.distance_miles} miles</div>
+                            <div style="font-size: 0.9rem; color: #999;">${commute.origin} → ${commute.destination}</div>
+                            <div style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">Updated: ${commute.updated}</div>
+                        </div>
+                        <div style="margin-top: 0.5rem; text-align: center; font-size: 0.75rem; color: #999;">
+                            <span style="color: #4caf50;">●</span> Light Traffic &nbsp;
+                            <span style="color: #ffc107;">●</span> Medium Traffic &nbsp;
+                            <span style="color: #f44336;">●</span> Heavy Traffic
+                        </div>
+                        ${trafficNotices}
+                    `;
+                    
+                    // Load traffic history
+                    loadTrafficHistory();
+                    
+                    // Render map if route coordinates are available
+                    if (commute.route_coordinates && commute.route_coordinates.length > 0) {
+                        // Clear any existing map
+                        if (commuteMap) {
+                            commuteMap.remove();
+                            commuteMap = null;
+                        }
+                        
+                        // Show map container first
+                        mapDiv.style.display = 'block';
+                        
+                        // Wait a bit to ensure map container is ready (fixes MutationObserver error)
+                        setTimeout(() => {
+                            try {
+                                // Calculate bounds from route coordinates
+                                const latLngs = commute.route_coordinates.map(coord => [coord[1], coord[0]]);
+                                const bounds = L.latLngBounds(latLngs);
+                                
+                                // Create map - don't set view initially, let fitBounds handle it
+                                commuteMap = L.map('commute-map', {
+                                    zoomControl: true,
+                                    preferCanvas: false
+                                });
+                                
+                                // Add OpenStreetMap tiles
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                    attribution: '© OpenStreetMap contributors',
+                                    maxZoom: 19
+                                }).addTo(commuteMap);
+                                
+                                // Add origin marker
+                                L.marker([commute.origin_lat, commute.origin_lon])
+                                    .addTo(commuteMap)
+                                    .bindPopup(`Origin: ${commute.origin}`);
+                                
+                                // Add destination marker
+                                L.marker([commute.dest_lat, commute.dest_lon])
+                                    .addTo(commuteMap)
+                                    .bindPopup(`Destination: ${commute.destination}`);
+                                
+                                // Draw route with color-coded segments - ONLY use colored segments
+                                if (commute.route_segments && commute.route_segments.length > 0) {
+                                    // Draw each segment with appropriate color based on traffic level
+                                    commute.route_segments.forEach(segment => {
+                                        if (segment.coordinates && segment.coordinates.length > 0) {
+                                            // Determine color based on traffic level
+                                            let color = '#4caf50'; // Green for light traffic (default)
+                                            if (segment.traffic_level === 'medium') {
+                                                color = '#ffc107'; // Yellow for medium traffic
+                                            } else if (segment.traffic_level === 'heavy') {
+                                                color = '#f44336'; // Red for heavy traffic
+                                            }
+                                            
+                                            // Convert coordinates from [lon, lat] to [lat, lon] for Leaflet
+                                            const segmentLatLngs = segment.coordinates.map(coord => [coord[1], coord[0]]);
+                                            
+                                            // Draw the segment with the traffic color
+                                            L.polyline(segmentLatLngs, {
+                                                color: color,
+                                                weight: 6,
+                                                opacity: 0.9
+                                            }).addTo(commuteMap);
+                                        }
+                                    });
+                                } else {
+                                    // If no segments, divide route into equal parts and show as light traffic (green)
+                                    // This should rarely happen, but ensures we always show something
+                                    const numSegments = Math.max(1, Math.floor(latLngs.length / 10));
+                                    const segmentSize = Math.floor(latLngs.length / numSegments);
+                                    for (let i = 0; i < latLngs.length; i += segmentSize) {
+                                        const segment = latLngs.slice(i, i + segmentSize);
+                                        if (segment.length > 1) {
+                                            L.polyline(segment, {
+                                                color: '#4caf50', // Green for light traffic
+                                                weight: 6,
+                                                opacity: 0.9
+                                            }).addTo(commuteMap);
+                                        }
+                                    }
+                                }
+                                
+                                // Fit map bounds to show entire route with padding - this will set the zoom
+                                commuteMap.fitBounds(bounds, {
+                                    padding: [30, 30],
+                                    maxZoom: 15
+                                });
+                            } catch (error) {
+                                console.error('Error rendering commute map:', error);
+                                mapDiv.style.display = 'none';
+                            }
+                        }, 200);
+                    } else {
+                        mapDiv.style.display = 'none';
+                    }
+                } else {
+                    widget.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">Configure commute route above</div>';
+                    mapDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading commute info:', error);
+                document.getElementById('commute-widget').innerHTML = '<div class="error">Failed to load commute info</div>';
+                document.getElementById('commute-map').style.display = 'none';
+            }
+        }
+        
+        // Load traffic history
+        async function loadTrafficHistory() {
+            try {
+                const response = await fetch('/api/traffic-history');
+                const data = await response.json();
+                
+                const historyDiv = document.getElementById('traffic-history');
+                const historyList = document.getElementById('traffic-history-list');
+                
+                if (data.events && data.events.length > 0) {
+                    historyDiv.style.display = 'block';
+                    historyList.innerHTML = data.events.map(event => {
+                        const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
+                        const levelText = event.traffic_level.charAt(0).toUpperCase() + event.traffic_level.slice(1);
+                        const eventIcon = event.type === 'crash' ? '🚨' : event.type === 'heavy_traffic' ? '⚠️' : '📊';
+                        return `
+                            <div style="padding: 0.75rem; border-bottom: 1px solid #eee; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.3rem;">
+                                    <div>
+                                        <strong style="color: ${levelColor};">${eventIcon} ${levelText} Traffic</strong>
+                                        ${event.type === 'crash' ? '<span style="color: #f44336; font-weight: bold;"> - CRASH DETECTED</span>' : ''}
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #666;">${event.date} ${event.time}</div>
+                                </div>
+                                <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.3rem;">${event.location}</div>
+                                <div style="font-size: 0.85rem; color: #999;">${event.description}</div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    historyDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading traffic history:', error);
+            }
+        }
+        
+        // ==================== AIR QUALITY FUNCTIONS ====================
+        async function loadAirQuality() {
+            try {
+                const response = await fetch('/api/air-quality');
+                const aq = await response.json();
+                
+                const widget = document.getElementById('air-quality-widget');
+                if (aq) {
+                    widget.innerHTML = `
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; font-weight: bold; color: ${aq.color}; margin-bottom: 0.5rem;">${aq.aqi}</div>
+                            <div style="font-size: 1.2rem; margin-bottom: 1rem;">${aq.level}</div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; font-size: 0.9rem;">
+                                <div>PM2.5: ${aq.pm25} µg/m³</div>
+                                <div>PM10: ${aq.pm10} µg/m³</div>
+                                <div>NO₂: ${aq.no2} µg/m³</div>
+                                <div>O₃: ${aq.o3} µg/m³</div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">Updated: ${aq.updated}</div>
+                        </div>
+                    `;
+                } else {
+                    widget.innerHTML = '<div class="error">Air quality data unavailable</div>';
+                }
+            } catch (error) {
+                console.error('Error loading air quality:', error);
+                document.getElementById('air-quality-widget').innerHTML = '<div class="error">Failed to load air quality</div>';
+            }
+        }
+        
+        // ==================== QUOTES FUNCTIONS ====================
+        // Quote history pagination state
+        let quoteHistoryPage = 1;
+        const quoteHistoryPerPage = 5;
+        
+        async function loadQuote() {
+            try {
+                const response = await fetch('/api/daily-quote');
+                const quote = await response.json();
+                
+                const widget = document.getElementById('quote-widget');
+                if (quote) {
+                    widget.innerHTML = `
+                        <div style="padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px;">
+                            <div style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 0.5rem;">"${quote.text}"</div>
+                            <div style="text-align: right; font-style: italic;">— ${quote.author}</div>
+                        </div>
+                    `;
+                } else {
+                    widget.innerHTML = '<div class="error">Quote unavailable</div>';
+                }
+                
+                // Load quote history
+                loadQuoteHistory();
+            } catch (error) {
+                console.error('Error loading quote:', error);
+                document.getElementById('quote-widget').innerHTML = '<div class="error">Failed to load quote</div>';
+            }
+        }
+        
+        // Load quote history with pagination
+        async function loadQuoteHistory(page = 1) {
+            try {
+                const response = await fetch(`/api/quote-history?page=${page}&per_page=${quoteHistoryPerPage}`);
+                const data = await response.json();
+                
+                const historyDiv = document.getElementById('quote-history');
+                const historyList = document.getElementById('quote-history-list');
+                const paginationDiv = document.getElementById('quote-history-pagination');
+                const pageInfo = document.getElementById('quote-page-info');
+                const prevBtn = document.getElementById('quote-prev-btn');
+                const nextBtn = document.getElementById('quote-next-btn');
+                
+                if (data.quotes && data.quotes.length > 0) {
+                    historyDiv.style.display = 'block';
+                    historyList.innerHTML = data.quotes.map(quote => `
+                        <div class="quote-history-item">
+                            <div class="quote-history-text">"${quote.text}"</div>
+                            <div class="quote-history-author">— ${quote.author}</div>
+                            <div class="quote-history-timestamp">${quote.timestamp}</div>
+                        </div>
+                    `).join('');
+                    
+                    // Update pagination controls
+                    if (data.total_pages > 1) {
+                        paginationDiv.style.display = 'flex';
+                        pageInfo.textContent = `Page ${data.page} of ${data.total_pages} (${data.total_count} total)`;
+                        prevBtn.disabled = !data.has_prev;
+                        nextBtn.disabled = !data.has_next;
+                        quoteHistoryPage = data.page;
+                        setupQuotePagination();
+                    } else {
+                        paginationDiv.style.display = 'none';
+                    }
+                } else if (data.total_count > 0) {
+                    // No quotes on this page but there are quotes
+                    historyDiv.style.display = 'block';
+                    historyList.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No quotes on this page</div>';
+                    paginationDiv.style.display = 'flex';
+                    pageInfo.textContent = `Page ${data.page} of ${data.total_pages}`;
+                    prevBtn.disabled = !data.has_prev;
+                    nextBtn.disabled = !data.has_next;
+                    quoteHistoryPage = data.page;
+                } else {
+                    historyDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading quote history:', error);
+            }
+        }
+        
+        // Quote history pagination event handlers (set up after DOM is ready)
+        function setupQuotePagination() {
+            const quotePrevBtn = document.getElementById('quote-prev-btn');
+            const quoteNextBtn = document.getElementById('quote-next-btn');
+            
+            if (quotePrevBtn && !quotePrevBtn.hasAttribute('data-listener-added')) {
+                quotePrevBtn.setAttribute('data-listener-added', 'true');
+                quotePrevBtn.addEventListener('click', () => {
+                    if (quoteHistoryPage > 1) {
+                        loadQuoteHistory(quoteHistoryPage - 1);
+                    }
+                });
+            }
+            
+            if (quoteNextBtn && !quoteNextBtn.hasAttribute('data-listener-added')) {
+                quoteNextBtn.setAttribute('data-listener-added', 'true');
+                quoteNextBtn.addEventListener('click', () => {
+                    loadQuoteHistory(quoteHistoryPage + 1);
+                });
+            }
+        }
+        
+        // ==================== ASTRONOMY FUNCTIONS ====================
+        async function loadAstronomy() {
+            try {
+                const response = await fetch('/api/astronomy');
+                const astro = await response.json();
+                
+                const widget = document.getElementById('astronomy-widget');
+                if (astro) {
+                    widget.innerHTML = `
+                        <div style="text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 0.5rem;">${astro.moon_icon}</div>
+                            <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;">${astro.moon_phase_name}</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #666;">Sunrise</div>
+                                    <div style="font-size: 1.2rem; font-weight: bold;">${astro.sunrise}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #666;">Sunset</div>
+                                    <div style="font-size: 1.2rem; font-weight: bold;">${astro.sunset}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    widget.innerHTML = '<div class="error">Astronomy data unavailable</div>';
+                }
+            } catch (error) {
+                console.error('Error loading astronomy:', error);
+                document.getElementById('astronomy-widget').innerHTML = '<div class="error">Failed to load astronomy data</div>';
+            }
+        }
+        
+        // ==================== INTERNET SPEED FUNCTIONS ====================
+        async function loadInternetSpeed() {
+            try {
+                const response = await fetch('/api/internet-speed');
+                const speed = await response.json();
+                
+                const widget = document.getElementById('speed-widget');
+                if (speed) {
+                    widget.innerHTML = `
+                        <div style="text-align: center;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #666;">Download</div>
+                                    <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${speed.download_mbps} Mbps</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #666;">Upload</div>
+                                    <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${speed.upload_mbps} Mbps</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #666;">Ping</div>
+                                    <div style="font-size: 1.5rem; font-weight: bold; color: #667eea;">${speed.ping_ms} ms</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #999;">Last test: ${speed.last_test}</div>
+                        </div>
+                    `;
+                } else {
+                    widget.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No speed test data. Click "Run Speed Test" to start.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading speed:', error);
+                document.getElementById('speed-widget').innerHTML = '<div class="error">Failed to load speed data</div>';
+            }
+        }
+        
+        // ==================== SPORTS FUNCTIONS ====================
+        async function loadSportsScores() {
+            try {
+                const response = await fetch('/api/sports-scores');
+                const scores = await response.json();
+                
+                const widget = document.getElementById('sports-widget');
+                if (scores && scores.length > 0) {
+                    widget.innerHTML = '<div class="news-list">' + 
+                        scores.map(score => `
+                            <div class="news-item">
+                                <div class="news-source">${score.team}</div>
+                                <div class="news-title">${score.event}</div>
+                                <div class="news-desc">${score.status}${score.score ? ' • ' + score.score : ''}${score.date ? ' • ' + score.date : ''}</div>
+                            </div>
+                        `).join('') + '</div>';
+                } else {
+                    widget.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">Configure favorite teams above</div>';
+                }
+            } catch (error) {
+                console.error('Error loading sports scores:', error);
+                document.getElementById('sports-widget').innerHTML = '<div class="error">Failed to load sports scores</div>';
+            }
+        }
+        
+        // ==================== PHOTO GALLERY FUNCTIONS ====================
+        async function loadPhotos() {
+            try {
+                const response = await fetch('/api/photos');
+                const photos = await response.json();
+                
+                const gallery = document.getElementById('photo-gallery');
+                if (photos && photos.length > 0) {
+                    gallery.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">' +
+                        photos.map(photo => `
+                            <div style="position: relative;">
+                                <img src="${photo.url}" alt="${photo.filename}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="deletePhoto('${photo.filename}')">
+                                <button onclick="deletePhoto('${photo.filename}')" class="btn btn-secondary" style="position: absolute; top: 5px; right: 5px; padding: 0.25rem 0.5rem; font-size: 0.8rem;">×</button>
+                            </div>
+                        `).join('') + '</div>';
+                } else {
+                    gallery.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No photos uploaded yet</div>';
+                }
+            } catch (error) {
+                console.error('Error loading photos:', error);
+                document.getElementById('photo-gallery').innerHTML = '<div class="error">Failed to load photos</div>';
+            }
+        }
+        
+        async function deletePhoto(filename) {
+            if (!confirm('Delete this photo?')) return;
+            try {
+                const response = await fetch(`/api/delete-photo/${filename}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadPhotos();
+                }
+            } catch (error) {
+                console.error('Error deleting photo:', error);
+                alert('Error deleting photo');
+            }
+        }
+        
+        // ==================== FORM HANDLERS ====================
+        document.getElementById('add-feed-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('feed-name').value;
+            const url = document.getElementById('feed-url').value;
+            
+            try {
+                const response = await fetch('/api/calendar-feeds', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, url })
+                });
+                if (response.ok) {
+                    document.getElementById('feed-name').value = '';
+                    document.getElementById('feed-url').value = '';
+                    loadCalendarFeeds();
+                    loadCalendarEvents();
+                }
+            } catch (error) {
+                console.error('Error adding feed:', error);
+                alert('Error adding feed');
+            }
+        });
+        
+        document.getElementById('add-event-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('event-title').value;
+            const start_time = document.getElementById('event-start').value.replace('T', ' ') + ':00';
+            const end_time = document.getElementById('event-end').value ? document.getElementById('event-end').value.replace('T', ' ') + ':00' : null;
+            const location = document.getElementById('event-location').value;
+            const description = document.getElementById('event-description').value;
+            
+            try {
+                const response = await fetch('/api/calendar-events/local', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, start_time, end_time, location, description })
+                });
+                if (response.ok) {
+                    document.getElementById('add-event-form').reset();
+                    loadLocalEvents();
+                    loadCalendarEvents();
+                }
+            } catch (error) {
+                console.error('Error adding event:', error);
+                alert('Error adding event');
+            }
+        });
+        
+        document.getElementById('commute-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const origin = document.getElementById('commute-origin').value;
+            const destination = document.getElementById('commute-destination').value;
+            
+            try {
+                const response = await fetch('/api/settings/commute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ origin, destination })
+                });
+                if (response.ok) {
+                    loadCommuteInfo();
+                }
+            } catch (error) {
+                console.error('Error saving commute:', error);
+                alert('Error saving commute settings');
+            }
+        });
+        
+        document.getElementById('sports-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const teamsStr = document.getElementById('sports-teams').value;
+            const teams = teamsStr.split(',').map(t => t.trim()).filter(t => t);
+            
+            try {
+                const response = await fetch('/api/settings/sports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teams })
+                });
+                if (response.ok) {
+                    loadSportsScores();
+                }
+            } catch (error) {
+                console.error('Error saving teams:', error);
+                alert('Error saving teams');
+            }
+        });
+        
+        document.getElementById('photo-input').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            const progressDiv = document.getElementById('upload-progress');
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = `Uploading ${files.length} photo(s)...`;
+            
+            for (let file of files) {
+                const formData = new FormData();
+                formData.append('photo', file);
+                
+                try {
+                    const response = await fetch('/api/upload-photo', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (!response.ok) throw new Error('Upload failed');
+                } catch (error) {
+                    console.error('Error uploading photo:', error);
+                    alert(`Error uploading ${file.name}`);
+                }
+            }
+            
+            progressDiv.innerHTML = 'Upload complete!';
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+                loadPhotos();
+            }, 2000);
+        });
+        
+        document.getElementById('run-speed-test').addEventListener('click', async () => {
+            const btn = document.getElementById('run-speed-test');
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            
+            try {
+                const response = await fetch('/api/internet-speed/run', { method: 'POST' });
+                if (response.ok) {
+                    setTimeout(() => {
+                        loadInternetSpeed();
+                        btn.disabled = false;
+                        btn.textContent = 'Run Speed Test';
+                    }, 30000); // Wait 30 seconds for test to complete
+                }
+            } catch (error) {
+                console.error('Error starting speed test:', error);
+                btn.disabled = false;
+                btn.textContent = 'Run Speed Test';
+            }
+        });
+        
+        // Load all data on page load
+        loadDashboardData();
+        loadCalendarEvents();
+        loadCalendarFeeds();
+        loadLocalEvents();
+        loadCommuteInfo();
+        loadAirQuality();
+        loadQuote();
+        loadAstronomy();
+        loadInternetSpeed();
+        loadSportsScores();
+        loadPhotos();
+        
+        // Refresh data every 5 minutes
+        setInterval(() => {
+            loadDashboardData();
+            loadCalendarEvents();
+            loadCommuteInfo();
+            loadAirQuality();
+            loadQuote();
+            loadAstronomy();
+            loadInternetSpeed();
+            loadSportsScores();
+            loadTrafficHistory();
+        }, 300000);
+        
+        // Auto-refresh page every 60 seconds for device status
+        setTimeout(() => {
+            location.reload();
+        }, 60000);
+    </script>
+</body>
+</html>

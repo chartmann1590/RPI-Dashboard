@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Home Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Screen size detection */
+        :root {
+            --screen-width: {{ screen_width }}px;
+            --screen-height: {{ screen_height }}px;
+            --scale-factor: 1;
+        }
+        
+        /* Calculate scale factor based on screen size */
+        @media (max-width: 480px) {
+            :root {
+                --scale-factor: 0.75;
+            }
+        }
+        
+        @media (min-width: 481px) and (max-width: 800px) {
+            :root {
+                --scale-factor: 0.85;
+            }
+        }
+        
+        @media (min-width: 801px) and (max-width: 1024px) {
+            :root {
+                --scale-factor: 0.95;
+            }
+        }
+        
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: calc(20px * var(--scale-factor));
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        /* Date/Time Screen */
+        .datetime-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
+        
+        .datetime-container {
+            text-align: center;
+        }
+        
+        .big-time {
+            font-size: calc(8rem * var(--scale-factor));
+            font-weight: bold;
+            margin-bottom: calc(20px * var(--scale-factor));
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+        
+        .big-date {
+            font-size: calc(3rem * var(--scale-factor));
+            color: #ddd;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        /* Who's Home Screen */
+        .home-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        }
+        
+        .home-screen h1 {
+            font-size: calc(3rem * var(--scale-factor));
+            margin-bottom: calc(30px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(calc(200px * var(--scale-factor)), 1fr));
+            gap: calc(20px * var(--scale-factor));
+            width: 100%;
+            max-width: calc(800px * var(--scale-factor));
+        }
+        
+        .device-card {
+            background: rgba(255,255,255,0.1);
+            padding: calc(20px * var(--scale-factor));
+            border-radius: calc(15px * var(--scale-factor));
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .device-name {
+            font-size: calc(1.5rem * var(--scale-factor));
+            font-weight: bold;
+            margin-bottom: calc(10px * var(--scale-factor));
+        }
+        
+        .device-status {
+            font-size: calc(1.2rem * var(--scale-factor));
+            padding: calc(5px * var(--scale-factor)) calc(15px * var(--scale-factor));
+            border-radius: calc(20px * var(--scale-factor));
+            display: inline-block;
+        }
+        
+        .status-home {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .status-away {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        /* Weather Screen */
+        .weather-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #2b5876, #4e4376);
+        }
+        
+        .weather-container {
+            text-align: center;
+            max-width: calc(600px * var(--scale-factor));
+        }
+        
+        .weather-location {
+            font-size: calc(2rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+            opacity: 0.9;
+        }
+        
+        .weather-icon {
+            font-size: calc(8rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+        }
+        
+        .temperature {
+            font-size: calc(5rem * var(--scale-factor));
+            font-weight: bold;
+            margin-bottom: calc(10px * var(--scale-factor));
+        }
+        
+        .weather-description {
+            font-size: calc(2rem * var(--scale-factor));
+            margin-bottom: calc(30px * var(--scale-factor));
+            text-transform: capitalize;
+        }
+        
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: calc(20px * var(--scale-factor));
+            font-size: calc(1.2rem * var(--scale-factor));
+        }
+        
+        .weather-detail {
+            background: rgba(255,255,255,0.1);
+            padding: calc(15px * var(--scale-factor));
+            border-radius: calc(10px * var(--scale-factor));
+            backdrop-filter: blur(10px);
+        }
+        
+        .weather-updated {
+            position: absolute;
+            bottom: calc(30px * var(--scale-factor));
+            font-size: calc(1rem * var(--scale-factor));
+            opacity: 0.7;
+        }
+        
+        /* Forecast Screen */
+        .forecast-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b);
+        }
+        
+        .forecast-container {
+            width: 100%;
+            max-width: calc(1000px * var(--scale-factor));
+        }
+        
+        .forecast-header {
+            text-align: center;
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(40px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .hourly-forecast {
+            margin-bottom: calc(50px * var(--scale-factor));
+        }
+        
+        .hourly-title {
+            font-size: calc(1.8rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+            text-align: center;
+            opacity: 0.9;
+        }
+        
+        .hourly-items {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: calc(20px * var(--scale-factor));
+        }
+        
+        .hourly-item {
+            background: rgba(255,255,255,0.1);
+            padding: calc(20px * var(--scale-factor));
+            border-radius: calc(15px * var(--scale-factor));
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .hourly-time {
+            font-size: calc(1.3rem * var(--scale-factor));
+            margin-bottom: calc(10px * var(--scale-factor));
+            font-weight: bold;
+        }
+        
+        .hourly-icon {
+            font-size: calc(3rem * var(--scale-factor));
+            margin-bottom: calc(10px * var(--scale-factor));
+        }
+        
+        .hourly-temp {
+            font-size: calc(2rem * var(--scale-factor));
+            font-weight: bold;
+        }
+        
+        .hourly-desc {
+            font-size: calc(1rem * var(--scale-factor));
+            opacity: 0.9;
+            margin-top: calc(5px * var(--scale-factor));
+        }
+        
+        .daily-forecast {
+            margin-top: calc(30px * var(--scale-factor));
+        }
+        
+        .daily-title {
+            font-size: calc(1.8rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+            text-align: center;
+            opacity: 0.9;
+        }
+        
+        .daily-items {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: calc(20px * var(--scale-factor));
+        }
+        
+        .daily-item {
+            background: rgba(255,255,255,0.1);
+            padding: calc(20px * var(--scale-factor));
+            border-radius: calc(15px * var(--scale-factor));
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .daily-day {
+            font-size: calc(1.5rem * var(--scale-factor));
+            margin-bottom: calc(10px * var(--scale-factor));
+            font-weight: bold;
+        }
+        
+        .daily-icon {
+            font-size: calc(3rem * var(--scale-factor));
+            margin-bottom: calc(10px * var(--scale-factor));
+        }
+        
+        .daily-temps {
+            font-size: calc(1.3rem * var(--scale-factor));
+            margin-bottom: calc(5px * var(--scale-factor));
+        }
+        
+        .daily-high {
+            font-weight: bold;
+        }
+        
+        .daily-desc {
+            font-size: calc(1rem * var(--scale-factor));
+            opacity: 0.9;
+        }
+        
+        /* Weather Radar Screen */
+        .radar-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+        
+        .radar-container {
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .radar-title {
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .radar-image {
+            max-width: 90%;
+            max-height: 70%;
+            border-radius: calc(10px * var(--scale-factor));
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        /* News Screen */
+        .news-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #232526, #414345);
+            padding: calc(40px * var(--scale-factor));
+        }
+        
+        .news-container {
+            width: 100%;
+            max-width: calc(800px * var(--scale-factor));
+            text-align: center;
+        }
+        
+        .news-header {
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(40px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .news-article {
+            background: rgba(255,255,255,0.08);
+            padding: calc(40px * var(--scale-factor));
+            border-radius: calc(20px * var(--scale-factor));
+            border-left: calc(5px * var(--scale-factor)) solid #2196F3;
+            backdrop-filter: blur(10px);
+        }
+        
+        .news-source {
+            color: #2196F3;
+            font-size: calc(1.2rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .news-title {
+            font-size: calc(2rem * var(--scale-factor));
+            font-weight: bold;
+            margin-bottom: calc(20px * var(--scale-factor));
+            line-height: 1.4;
+        }
+        
+        .news-description {
+            font-size: calc(1.3rem * var(--scale-factor));
+            color: #ddd;
+            line-height: 1.6;
+        }
+        
+        /* Joke Screen */
+        .joke-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            padding: calc(40px * var(--scale-factor));
+        }
+        
+        .joke-container {
+            width: 100%;
+            max-width: calc(900px * var(--scale-factor));
+            text-align: center;
+        }
+        
+        .joke-header {
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(40px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .joke-card {
+            background: rgba(255,255,255,0.15);
+            padding: calc(50px * var(--scale-factor));
+            border-radius: calc(25px * var(--scale-factor));
+            border: calc(3px * var(--scale-factor)) solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .joke-text {
+            font-size: calc(2rem * var(--scale-factor));
+            font-weight: 500;
+            line-height: 1.6;
+            color: #fff;
+            margin-bottom: calc(30px * var(--scale-factor));
+        }
+        
+        .joke-updated {
+            font-size: calc(1rem * var(--scale-factor));
+            opacity: 0.8;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        /* Screen indicators */
+        .indicators {
+            position: absolute;
+            bottom: calc(20px * var(--scale-factor));
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: calc(10px * var(--scale-factor));
+        }
+        
+        .indicator {
+            width: calc(10px * var(--scale-factor));
+            height: calc(10px * var(--scale-factor));
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: background 0.3s;
+        }
+        
+        .indicator.active {
+            background: white;
+        }
+        
+        /* Loading state */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: calc(2rem * var(--scale-factor));
+        }
+        
+        /* Error state */
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(244, 67, 54, 0.9);
+            padding: calc(20px * var(--scale-factor)) calc(40px * var(--scale-factor));
+            border-radius: calc(10px * var(--scale-factor));
+            text-align: center;
+            display: none;
+        }
+        
+        .error-message h3 {
+            margin-bottom: calc(10px * var(--scale-factor));
+        }
+        
+        /* Weather icons mapping */
+        .weather-icon-01d::before { content: "☀️"; }
+        .weather-icon-01n::before { content: "🌙"; }
+        .weather-icon-02d::before { content: "⛅"; }
+        .weather-icon-02n::before { content: "☁️"; }
+        .weather-icon-03d::before,
+        .weather-icon-03n::before,
+        .weather-icon-04d::before,
+        .weather-icon-04n::before { content: "☁️"; }
+        .weather-icon-09d::before,
+        .weather-icon-09n::before { content: "🌧️"; }
+        .weather-icon-10d::before,
+        .weather-icon-10n::before { content: "🌦️"; }
+        .weather-icon-11d::before,
+        .weather-icon-11n::before { content: "⛈️"; }
+        .weather-icon-13d::before,
+        .weather-icon-13n::before { content: "❄️"; }
+        .weather-icon-50d::before,
+        .weather-icon-50n::before { content: "🌫️"; }
+        
+        /* Specific adaptations for common LCD sizes */
+        /* 320x240 screens */
+        @media (max-width: 320px) and (max-height: 240px) {
+            :root {
+                --scale-factor: 0.45;
+            }
+            .hourly-items, .daily-items {
+                grid-template-columns: 1fr;
+            }
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+            .devices-grid {
+                grid-template-columns: 1fr;
+            }
+            /* Reduce padding for more content space */
+            .screen {
+                padding: calc(10px * var(--scale-factor));
+            }
+        }
+        
+        /* 480x320 screens */
+        @media (max-width: 480px) and (max-height: 320px) {
+            :root {
+                --scale-factor: 0.6;
+            }
+            .hourly-items, .daily-items {
+                grid-template-columns: 1fr;
+            }
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+            .devices-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            /* Reduce padding for more content space */
+            .screen {
+                padding: calc(15px * var(--scale-factor));
+            }
+        }
+        
+        /* 800x480 screens (common RPi touchscreen) */
+        @media (max-width: 800px) and (max-height: 480px) {
+            :root {
+                --scale-factor: 0.75;
+            }
+            .hourly-items, .daily-items {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .weather-details {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            /* Optimize spacing */
+            .forecast-container {
+                padding: 0 calc(10px * var(--scale-factor));
+            }
+            .hourly-forecast {
+                margin-bottom: calc(30px * var(--scale-factor));
+            }
+            .daily-forecast {
+                margin-top: calc(20px * var(--scale-factor));
+            }
+        }
+        
+        /* 1024x600 screens */
+        @media (max-width: 1024px) and (max-height: 600px) {
+            :root {
+                --scale-factor: 0.85;
+            }
+        }
+        
+        /* ==================== HOLIDAY THEMING ==================== */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        /* Snow particles */
+        .snow-particle {
+            color: #ffffff;
+            font-size: calc(1rem * var(--scale-factor));
+            animation: snowfall linear infinite;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+        
+        @keyframes snowfall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(var(--drift, 20px)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Leaf particles */
+        .leaf-particle {
+            color: #ff8c00;
+            font-size: calc(1.5rem * var(--scale-factor));
+            animation: leaffall linear infinite;
+        }
+        
+        @keyframes leaffall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(var(--drift, 50px)) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes snowfall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(var(--drift, 20px)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Confetti particles */
+        .confetti-particle {
+            width: calc(8px * var(--scale-factor));
+            height: calc(8px * var(--scale-factor));
+            background: #FFD700;
+            animation: confettifall linear infinite;
+            border-radius: 50%;
+        }
+        
+        @keyframes confettifall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(calc(100px * var(--scale-factor))) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Heart particles */
+        .heart-particle {
+            color: #FF1493;
+            font-size: calc(1.2rem * var(--scale-factor));
+            animation: heartfloat linear infinite;
+        }
+        
+        @keyframes heartfloat {
+            0% {
+                transform: translateY(-100px) translateX(0) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(calc(50vh)) translateX(calc(30px * var(--scale-factor))) scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(calc(60px * var(--scale-factor))) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        /* Star particles */
+        .star-particle {
+            color: #ffffff;
+            font-size: calc(1rem * var(--scale-factor));
+            animation: starfall linear infinite;
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        @keyframes starfall {
+            0% {
+                transform: translateY(-100px) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotate(360deg) scale(0.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Shamrock particles */
+        .shamrock-particle {
+            color: #228B22;
+            font-size: calc(1.2rem * var(--scale-factor));
+            animation: shamrockfall linear infinite;
+        }
+        
+        @keyframes shamrockfall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(calc(40px * var(--scale-factor))) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Egg particles */
+        .egg-particle {
+            color: #FFB6C1;
+            font-size: calc(1.3rem * var(--scale-factor));
+            animation: eggfall linear infinite;
+        }
+        
+        @keyframes eggfall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(calc(35px * var(--scale-factor))) rotate(180deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Bat particles */
+        .bat-particle {
+            color: #000000;
+            font-size: calc(1.1rem * var(--scale-factor));
+            animation: batfly linear infinite;
+        }
+        
+        @keyframes batfly {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateY(calc(50vh)) translateX(calc(80px * var(--scale-factor))) rotate(180deg);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) translateX(calc(160px * var(--scale-factor))) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Holiday background overlay */
+        .holiday-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            transition: background 1s ease;
+        }
+        
+        /* Ensure screens are above particles */
+        .screen {
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Special character animations */
+        .special-character {
+            position: fixed;
+            pointer-events: none;
+            z-index: 3;
+            font-size: calc(60px * var(--scale-factor));
+            line-height: 1;
+            opacity: 0;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+        
+        .santa-flying {
+            /* Animation will be set dynamically */
+        }
+        
+        .cupid-flying {
+            /* Animation will be set dynamically */
+        }
+        
+        .turkey-flying {
+            /* Animation will be set dynamically */
+        }
+        
+        .leprechaun-flying {
+            /* Animation will be set dynamically */
+        }
+        
+        @keyframes flyLeftToRight {
+            0% {
+                transform: translateX(-100px) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(calc(100vw + 100px)) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flyRightToLeft {
+            0% {
+                transform: translateX(calc(100vw + 100px)) scale(0.8) scaleX(-1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-100px) scale(0.8) scaleX(-1);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flyTopToBottom {
+            0% {
+                transform: translateY(-100px) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flyBottomToTop {
+            0% {
+                transform: translateY(calc(100vh + 100px)) scale(0.8) scaleY(-1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0.8) scaleY(-1);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flyDiagonalTopLeft {
+            0% {
+                transform: translate(0, 0) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(100vw + 200px), calc(100vh + 200px)) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flyDiagonalTopRight {
+            0% {
+                transform: translate(0, 0) scale(0.8) scaleX(-1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(-100vw - 200px), calc(100vh + 200px)) scale(0.8) scaleX(-1);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flyDiagonalBottomLeft {
+            0% {
+                transform: translate(0, 0) scale(0.8) scaleY(-1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(100vw + 200px), calc(-100vh - 200px)) scale(0.8) scaleY(-1);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flyDiagonalBottomRight {
+            0% {
+                transform: translate(0, 0) scale(0.8) scaleX(-1) scaleY(-1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(-100vw - 200px), calc(-100vh - 200px)) scale(0.8) scaleX(-1) scaleY(-1);
+                opacity: 0;
+            }
+        }
+        
+        /* Enhanced particle visibility */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+        
+        .snow-particle {
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
+        }
+        
+        .leaf-particle {
+            filter: drop-shadow(0 0 2px rgba(255, 140, 0, 0.6));
+        }
+    </style>
+    <script>
+        // Set CSS variables based on screen size passed from Flask
+        document.documentElement.style.setProperty('--screen-width', '{{ screen_width }}');
+        document.documentElement.style.setProperty('--screen-height', '{{ screen_height }}');
+        
+        // Calculate optimal scale factor
+        const screenWidth = {{ screen_width }};
+        const screenHeight = {{ screen_height }};
+        const baseWidth = 1920;  // Design base width
+        const baseHeight = 1080; // Design base height
+        
+        // Get scale adjustment from URL parameter if provided
+        const urlParams = new URLSearchParams(window.location.search);
+        const scaleAdjust = urlParams.get('scale');
+        
+        // Calculate scale factor based on the smaller dimension to ensure everything fits
+        const scaleX = screenWidth / baseWidth;
+        const scaleY = screenHeight / baseHeight;
+        let scaleFactor = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
+        
+        // Increase the scale factor by 50% but ensure it doesn't exceed screen bounds
+        // This makes everything bigger while still fitting
+        scaleFactor = scaleFactor * 1.5;
+        
+        // For common screen sizes, use optimized scale factors
+        if (screenWidth <= 320 && screenHeight <= 240) {
+            scaleFactor = 0.45; // Was 0.3
+        } else if (screenWidth <= 480 && screenHeight <= 320) {
+            scaleFactor = 0.6; // Was 0.4
+        } else if (screenWidth <= 800 && screenHeight <= 480) {
+            scaleFactor = 0.75; // Was 0.5
+        } else if (screenWidth <= 1024 && screenHeight <= 600) {
+            scaleFactor = 0.85; // Was 0.7
+        }
+        
+        // Apply manual scale adjustment if provided (e.g., ?scale=0.8)
+        if (scaleAdjust) {
+            const manualScale = parseFloat(scaleAdjust);
+            if (!isNaN(manualScale) && manualScale > 0 && manualScale <= 2) {
+                scaleFactor = manualScale;
+                console.log(`Using manual scale factor: ${manualScale}`);
+            }
+        }
+        
+        // Apply the calculated scale factor
+        document.documentElement.style.setProperty('--scale-factor', scaleFactor);
+    </script>
+</head>
+<body>
+    <div class="loading">Loading dashboard...</div>
+    
+    <div class="error-message" id="error-message">
+        <h3>Connection Error</h3>
+        <p>Retrying in <span id="retry-countdown">5</span> seconds...</p>
+    </div>
+    
+    <!-- Holiday Theme Overlay -->
+    <div class="holiday-overlay" id="holiday-overlay"></div>
+    <div class="particles-container" id="particles-container"></div>
+    
+    <!-- Date/Time Screen -->
+    <div class="screen datetime-screen" id="screen-0">
+        <div class="datetime-container">
+            <div class="big-time" id="big-clock"></div>
+            <div class="big-date" id="big-date"></div>
+        </div>
+    </div>
+    
+    <!-- Who's Home Screen -->
+    <div class="screen home-screen" id="screen-1">
+        <h1>Who's Home</h1>
+        <div class="devices-grid" id="devices-grid"></div>
+    </div>
+    
+    <!-- Weather Screen -->
+    <div class="screen weather-screen" id="screen-2">
+        <div class="weather-container">
+            <div class="weather-location" id="weather-location"></div>
+            <div class="weather-icon" id="weather-icon"></div>
+            <div class="temperature" id="temperature"></div>
+            <div class="weather-description" id="weather-description"></div>
+            <div class="weather-details">
+                <div class="weather-detail">
+                    <div>Feels Like</div>
+                    <div id="feels-like"></div>
+                </div>
+                <div class="weather-detail">
+                    <div>Humidity</div>
+                    <div id="humidity"></div>
+                </div>
+                <div class="weather-detail">
+                    <div>Wind</div>
+                    <div id="wind"></div>
+                </div>
+            </div>
+            <div class="weather-updated" id="weather-updated"></div>
+        </div>
+    </div>
+    
+    <!-- Forecast Screen -->
+    <div class="screen forecast-screen" id="screen-3">
+        <div class="forecast-container">
+            <h2 class="forecast-header">Weather Forecast</h2>
+            
+            <div class="hourly-forecast">
+                <h3 class="hourly-title">Next 3 Hours</h3>
+                <div class="hourly-items" id="hourly-items"></div>
+            </div>
+            
+            <div class="daily-forecast">
+                <h3 class="daily-title">Next 3 Days</h3>
+                <div class="daily-items" id="daily-items"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Weather Radar Screen -->
+    <div class="screen radar-screen" id="screen-4">
+        <div class="radar-container">
+            <h2 class="radar-title">Weather Radar</h2>
+            <img class="radar-image" id="radar-image" src="" alt="Weather Radar">
+        </div>
+    </div>
+    
+    <!-- News Screen -->
+    <div class="screen news-screen" id="screen-5">
+        <div class="news-container">
+            <h2 class="news-header">Local News</h2>
+            <div class="news-article" id="news-article">
+                <div class="news-source" id="news-source"></div>
+                <div class="news-title" id="news-title"></div>
+                <div class="news-description" id="news-description"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Joke Screen -->
+    <div class="screen joke-screen" id="screen-6">
+        <div class="joke-container">
+            <h2 class="joke-header">Daily Joke</h2>
+            <div class="joke-card" id="joke-card">
+                <div class="joke-text" id="joke-text"></div>
+                <div class="joke-updated" id="joke-updated"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Calendar Screen -->
+    <div class="screen news-screen" id="screen-7">
+        <div class="news-container">
+            <h2 class="news-header" id="calendar-header">Calendar</h2>
+            <div class="news-article" id="calendar-event">
+                <div class="news-source" id="calendar-source"></div>
+                <div class="news-title" id="calendar-title"></div>
+                <div class="news-description" id="calendar-details"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Commute Screen -->
+    <div class="screen weather-screen" id="screen-8">
+        <div class="weather-container">
+            <h2 class="weather-location" id="commute-title">Commute</h2>
+            <div class="temperature" id="commute-time"></div>
+            <div class="weather-description" id="commute-route"></div>
+            <div class="weather-details" id="commute-details"></div>
+        </div>
+    </div>
+    
+    <!-- Commute Map Screen -->
+    <div class="screen radar-screen" id="screen-9">
+        <div class="radar-container">
+            <h2 class="radar-title">Commute Route</h2>
+            <div id="commute-map-rpi" style="width: 100%; height: calc(100% - 80px); border-radius: 10px;"></div>
+        </div>
+    </div>
+    
+    <!-- Air Quality Screen -->
+    <div class="screen weather-screen" id="screen-10">
+        <div class="weather-container">
+            <h2 class="weather-location">Air Quality</h2>
+            <div class="temperature" id="aqi-number"></div>
+            <div class="weather-description" id="aqi-level"></div>
+            <div class="weather-details" id="aqi-details"></div>
+        </div>
+    </div>
+    
+    <!-- Quote Screen -->
+    <div class="screen joke-screen" id="screen-11">
+        <div class="joke-container">
+            <h2 class="joke-header">Daily Quote</h2>
+            <div class="joke-card">
+                <div class="joke-text" id="quote-text"></div>
+                <div class="joke-updated" id="quote-author"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Astronomy Screen -->
+    <div class="screen weather-screen" id="screen-12">
+        <div class="weather-container">
+            <h2 class="weather-location">Moon & Sun</h2>
+            <div class="weather-icon" id="moon-icon"></div>
+            <div class="temperature" id="moon-phase"></div>
+            <div class="weather-details">
+                <div class="weather-detail">
+                    <div>Sunrise</div>
+                    <div id="sunrise-time"></div>
+                </div>
+                <div class="weather-detail">
+                    <div>Sunset</div>
+                    <div id="sunset-time"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Internet Speed Screen -->
+    <div class="screen weather-screen" id="screen-13">
+        <div class="weather-container">
+            <h2 class="weather-location">Internet Speed</h2>
+            <div class="weather-details">
+                <div class="weather-detail">
+                    <div>Download</div>
+                    <div id="speed-download"></div>
+                </div>
+                <div class="weather-detail">
+                    <div>Upload</div>
+                    <div id="speed-upload"></div>
+                </div>
+                <div class="weather-detail">
+                    <div>Ping</div>
+                    <div id="speed-ping"></div>
+                </div>
+            </div>
+            <div class="weather-updated" id="speed-updated"></div>
+        </div>
+    </div>
+    
+    <!-- Sports Screen -->
+    <div class="screen news-screen" id="screen-14">
+        <div class="news-container">
+            <h2 class="news-header">Sports Scores</h2>
+            <div class="news-article" id="sports-event">
+                <div class="news-source" id="sports-team"></div>
+                <div class="news-title" id="sports-title"></div>
+                <div class="news-description" id="sports-details"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Photo Gallery Screen -->
+    <div class="screen radar-screen" id="screen-15">
+        <div class="radar-container">
+            <h2 class="radar-title">Photo Gallery</h2>
+            <img class="radar-image" id="gallery-photo" src="" alt="Gallery Photo">
+        </div>
+    </div>
+    
+    <div class="indicators">
+        <div class="indicator" id="indicator-0"></div>
+        <div class="indicator" id="indicator-1"></div>
+        <div class="indicator" id="indicator-2"></div>
+        <div class="indicator" id="indicator-3"></div>
+        <div class="indicator" id="indicator-4"></div>
+        <div class="indicator" id="indicator-5"></div>
+        <div class="indicator" id="indicator-6"></div>
+        <div class="indicator" id="indicator-7"></div>
+        <div class="indicator" id="indicator-8"></div>
+        <div class="indicator" id="indicator-9"></div>
+        <div class="indicator" id="indicator-10"></div>
+        <div class="indicator" id="indicator-11"></div>
+        <div class="indicator" id="indicator-12"></div>
+        <div class="indicator" id="indicator-13"></div>
+        <div class="indicator" id="indicator-14"></div>
+        <div class="indicator" id="indicator-15"></div>
+    </div>
+    
+    <script>
+        let currentScreen = 0;
+        const totalScreens = 16;
+        const screenDuration = 10000; // 10 seconds per screen
+        let data = {};
+        let retryCount = 0;
+        const maxRetries = 5;
+        let retryTimeout = null;
+        let screenRotationInterval = null;
+        let dataFetchInterval = null;
+        let clockInterval = null;
+        let commuteMapRpi = null;
+        let holidayTheme = null;
+        let particles = [];
+        let particleInterval = null;
+        let specialCharacterInterval = null;
+        
+        // Log detected screen size
+        console.log(`Screen detected: ${screenWidth}x${screenHeight}, Scale factor: ${scaleFactor}`);
+        
+        // Update big clock
+        function updateBigClock() {
+            const now = new Date();
+            document.getElementById('big-clock').textContent = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            document.getElementById('big-date').textContent = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+        
+        // Show error message with countdown
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+            
+            let countdown = 5;
+            const countdownSpan = document.getElementById('retry-countdown');
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownSpan.textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    errorDiv.style.display = 'none';
+                }
+            }, 1000);
+        }
+        
+        // Fetch dashboard data with retry logic
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/dashboard-data', {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                data = await response.json();
+                
+                // Reset retry count on successful fetch
+                retryCount = 0;
+                
+                // Update screens with fetched data
+                updateScreens();
+                
+                // Start screen rotation if not already started
+                if (!screenRotationInterval) {
+                    startScreenRotation();
+                }
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                
+                // Show error message
+                showError(`Failed to load data. Retry ${retryCount + 1}/${maxRetries}`);
+                
+                // Increment retry count
+                retryCount++;
+                
+                // If we haven't exceeded max retries, try again
+                if (retryCount < maxRetries) {
+                    // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+                    const retryDelay = Math.min(2000 * Math.pow(2, retryCount - 1), 32000);
+                    
+                    console.log(`Retrying in ${retryDelay/1000} seconds...`);
+                    
+                    retryTimeout = setTimeout(() => {
+                        fetchData();
+                    }, retryDelay);
+                } else {
+                    // If max retries exceeded, try again in 60 seconds
+                    console.error('Max retries exceeded. Will try again in 60 seconds.');
+                    retryTimeout = setTimeout(() => {
+                        retryCount = 0;
+                        fetchData();
+                    }, 60000);
+                }
+            }
+        }
+        
+        // Update all screens with fetched data
+        function updateScreens() {
+            // Update devices
+            const devicesGrid = document.getElementById('devices-grid');
+            devicesGrid.innerHTML = '';
+            if (data.devices) {
+                data.devices.forEach(device => {
+                    const card = document.createElement('div');
+                    card.className = 'device-card';
+                    card.innerHTML = `
+                        <div class="device-name">${device.name}</div>
+                        <div class="device-status status-${device.status}">${device.status.toUpperCase()}</div>
+                    `;
+                    devicesGrid.appendChild(card);
+                });
+            }
+            
+            // Update weather
+            if (data.weather) {
+                const weatherIcon = document.getElementById('weather-icon');
+                weatherIcon.className = `weather-icon weather-icon-${data.weather.icon}`;
+                document.getElementById('weather-location').textContent = `${data.weather.location}, ${data.weather.country}`;
+                document.getElementById('temperature').textContent = `${data.weather.temp}°F`;
+                document.getElementById('weather-description').textContent = data.weather.description;
+                document.getElementById('feels-like').textContent = `${data.weather.feels_like}°F`;
+                document.getElementById('humidity').textContent = `${data.weather.humidity}%`;
+                document.getElementById('wind').textContent = `${data.weather.wind_speed} mph`;
+                document.getElementById('weather-updated').textContent = `Updated: ${data.weather.updated}`;
+            }
+            
+            // Update forecast
+            if (data.forecast) {
+                // Update hourly forecast
+                const hourlyItems = document.getElementById('hourly-items');
+                hourlyItems.innerHTML = '';
+                if (data.forecast.hourly) {
+                    data.forecast.hourly.forEach(hour => {
+                        const item = document.createElement('div');
+                        item.className = 'hourly-item';
+                        item.innerHTML = `
+                            <div class="hourly-time">${hour.time}</div>
+                            <div class="hourly-icon weather-icon weather-icon-${hour.icon}"></div>
+                            <div class="hourly-temp">${hour.temp}°F</div>
+                            <div class="hourly-desc">${hour.description}</div>
+                        `;
+                        hourlyItems.appendChild(item);
+                    });
+                }
+                
+                // Update daily forecast
+                const dailyItems = document.getElementById('daily-items');
+                dailyItems.innerHTML = '';
+                if (data.forecast.daily) {
+                    data.forecast.daily.forEach(day => {
+                        const item = document.createElement('div');
+                        item.className = 'daily-item';
+                        item.innerHTML = `
+                            <div class="daily-day">${day.day}</div>
+                            <div class="daily-icon weather-icon weather-icon-${day.icon}"></div>
+                            <div class="daily-temps">
+                                <span class="daily-high">${day.high}°</span> / ${day.low}°
+                            </div>
+                            <div class="daily-desc">${day.description}</div>
+                        `;
+                        dailyItems.appendChild(item);
+                    });
+                }
+            }
+            
+            // Update radar
+            if (data.weather_radar_url) {
+                const radarImage = document.getElementById('radar-image');
+                // Add timestamp to prevent caching
+                radarImage.src = data.weather_radar_url + '?t=' + new Date().getTime();
+            }
+            
+            // Update news (single random article)
+            if (data.random_news) {
+                // Update the news header to show the type of news
+                document.querySelector('.news-header').textContent = data.random_news.news_type || 'News';
+                
+                document.getElementById('news-source').textContent = data.random_news.source;
+                document.getElementById('news-title').textContent = data.random_news.title;
+                document.getElementById('news-description').textContent = data.random_news.description;
+            } else {
+                document.querySelector('.news-header').textContent = 'News Service';
+                document.getElementById('news-source').textContent = 'System';
+                document.getElementById('news-title').textContent = 'No news available';
+                document.getElementById('news-description').textContent = 'Check back later for news updates.';
+            }
+            
+            // Update joke
+            if (data.joke) {
+                document.getElementById('joke-text').textContent = data.joke.text || 'No joke available';
+                document.getElementById('joke-updated').textContent = `Updated: ${data.joke.updated || ''}`;
+            } else {
+                document.getElementById('joke-text').textContent = 'Unable to load joke at this time.';
+                document.getElementById('joke-updated').textContent = '';
+            }
+            
+            // Update calendar
+            if (data.random_calendar_event) {
+                document.getElementById('calendar-source').textContent = data.random_calendar_event.source;
+                document.getElementById('calendar-title').textContent = data.random_calendar_event.title;
+                document.getElementById('calendar-details').textContent = 
+                    `${data.random_calendar_event.date} at ${data.random_calendar_event.time}${data.random_calendar_event.location ? ' • ' + data.random_calendar_event.location : ''}`;
+            } else {
+                document.getElementById('calendar-source').textContent = 'Calendar';
+                document.getElementById('calendar-title').textContent = 'No upcoming events';
+                document.getElementById('calendar-details').textContent = 'Add events or calendar feeds to see them here.';
+            }
+            
+            // Update commute
+            if (data.commute) {
+                document.getElementById('commute-time').textContent = data.commute.duration_formatted;
+                document.getElementById('commute-route').textContent = `${data.commute.distance_miles} miles`;
+                const details = document.getElementById('commute-details');
+                
+                // Build traffic notices
+                let trafficNotices = '';
+                if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
+                    trafficNotices = '<div style="margin-top: calc(20px * var(--scale-factor)); padding: calc(15px * var(--scale-factor)); background: rgba(255, 193, 7, 0.2); border-left: calc(4px * var(--scale-factor)) solid #ffc107; border-radius: calc(5px * var(--scale-factor)); font-size: calc(1rem * var(--scale-factor));">';
+                    data.commute.traffic_events.forEach(event => {
+                        const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
+                        const levelText = event.traffic_level.charAt(0).toUpperCase() + event.traffic_level.slice(1);
+                        const eventIcon = event.type === 'crash' ? '🚨' : '⚠️';
+                        trafficNotices += `<div style="margin-bottom: calc(8px * var(--scale-factor));">
+                            <strong style="color: ${levelColor};">${eventIcon} ${levelText}</strong> ${event.type === 'crash' ? '<span style="color: #f44336;">CRASH</span>' : ''} - ${event.description} (${event.time})
+                        </div>`;
+                    });
+                    trafficNotices += '</div>';
+                } else {
+                    // Show light traffic when no issues
+                    trafficNotices = '<div style="margin-top: calc(20px * var(--scale-factor)); padding: calc(15px * var(--scale-factor)); background: rgba(76, 175, 80, 0.2); border-left: calc(4px * var(--scale-factor)) solid #4caf50; border-radius: calc(5px * var(--scale-factor)); font-size: calc(1rem * var(--scale-factor)); text-align: center;">';
+                    trafficNotices += '<div style="color: #155724;"><strong style="color: #4caf50;">✓ Light Traffic</strong> - No traffic issues</div>';
+                    trafficNotices += '</div>';
+                }
+                
+                details.innerHTML = `
+                    <div class="weather-detail">
+                        <div>From</div>
+                        <div>${data.commute.origin}</div>
+                    </div>
+                    <div class="weather-detail">
+                        <div>To</div>
+                        <div>${data.commute.destination}</div>
+                    </div>
+                    ${trafficNotices}
+                `;
+            } else {
+                document.getElementById('commute-time').textContent = 'Not Configured';
+                document.getElementById('commute-route').textContent = 'Set up commute route in main dashboard';
+            }
+            
+            // Commute map will be rendered when screen-9 is displayed (handled in switchScreen)
+            
+            // Update air quality
+            if (data.air_quality) {
+                document.getElementById('aqi-number').textContent = data.air_quality.aqi;
+                document.getElementById('aqi-number').style.color = data.air_quality.color;
+                document.getElementById('aqi-level').textContent = data.air_quality.level;
+                const details = document.getElementById('aqi-details');
+                details.innerHTML = `
+                    <div class="weather-detail">
+                        <div>PM2.5</div>
+                        <div>${data.air_quality.pm25} µg/m³</div>
+                    </div>
+                    <div class="weather-detail">
+                        <div>PM10</div>
+                        <div>${data.air_quality.pm10} µg/m³</div>
+                    </div>
+                    <div class="weather-detail">
+                        <div>NO₂</div>
+                        <div>${data.air_quality.no2} µg/m³</div>
+                    </div>
+                `;
+            }
+            
+            // Update quote
+            if (data.quote) {
+                document.getElementById('quote-text').textContent = `"${data.quote.text}"`;
+                document.getElementById('quote-author').textContent = `— ${data.quote.author}`;
+            } else {
+                document.getElementById('quote-text').textContent = 'Unable to load quote at this time.';
+                document.getElementById('quote-author').textContent = '';
+            }
+            
+            // Update astronomy
+            if (data.astronomy) {
+                document.getElementById('moon-icon').textContent = data.astronomy.moon_icon;
+                document.getElementById('moon-phase').textContent = data.astronomy.moon_phase_name;
+                document.getElementById('sunrise-time').textContent = data.astronomy.sunrise;
+                document.getElementById('sunset-time').textContent = data.astronomy.sunset;
+            }
+            
+            // Update internet speed
+            if (data.internet_speed) {
+                document.getElementById('speed-download').textContent = `${data.internet_speed.download_mbps} Mbps`;
+                document.getElementById('speed-upload').textContent = `${data.internet_speed.upload_mbps} Mbps`;
+                document.getElementById('speed-ping').textContent = `${data.internet_speed.ping_ms} ms`;
+                document.getElementById('speed-updated').textContent = `Last test: ${data.internet_speed.last_test}`;
+            } else {
+                document.getElementById('speed-download').textContent = 'N/A';
+                document.getElementById('speed-upload').textContent = 'N/A';
+                document.getElementById('speed-ping').textContent = 'N/A';
+                document.getElementById('speed-updated').textContent = 'No speed test data';
+            }
+            
+            // Update sports
+            if (data.sports_scores && data.sports_scores.length > 0) {
+                const score = data.sports_scores[0];
+                document.getElementById('sports-team').textContent = score.team;
+                document.getElementById('sports-title').textContent = score.event;
+                document.getElementById('sports-details').textContent = 
+                    `${score.status}${score.score ? ' • ' + score.score : ''}${score.date ? ' • ' + score.date : ''}`;
+            } else {
+                document.getElementById('sports-team').textContent = 'Sports';
+                document.getElementById('sports-title').textContent = 'No scores available';
+                document.getElementById('sports-details').textContent = 'Configure favorite teams in main dashboard';
+            }
+            
+            // Update photo gallery
+            if (data.random_photo) {
+                const galleryPhoto = document.getElementById('gallery-photo');
+                galleryPhoto.src = data.random_photo.url + '?t=' + new Date().getTime();
+            }
+            
+            // Hide loading
+            document.querySelector('.loading').style.display = 'none';
+        }
+        
+        // Render commute map for RPi dashboard
+        function renderCommuteMapRpi() {
+            if (!data.commute || !data.commute.route_coordinates || data.commute.route_coordinates.length === 0) {
+                return;
+            }
+            
+            // Clear any existing map
+            if (commuteMapRpi) {
+                commuteMapRpi.remove();
+                commuteMapRpi = null;
+            }
+            
+            const mapDiv = document.getElementById('commute-map-rpi');
+            if (!mapDiv) {
+                return;
+            }
+            
+            // Wait a bit to ensure map container is ready (fixes MutationObserver error)
+            setTimeout(() => {
+                try {
+                    // Calculate bounds from route coordinates
+                    const latLngs = data.commute.route_coordinates.map(coord => [coord[1], coord[0]]);
+                    const bounds = L.latLngBounds(latLngs);
+                    
+                    // Create map - don't set view initially, let fitBounds handle it
+                    commuteMapRpi = L.map('commute-map-rpi', {
+                        zoomControl: true,
+                        preferCanvas: false
+                    });
+                    
+                    // Add OpenStreetMap tiles
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 19
+                    }).addTo(commuteMapRpi);
+                    
+                    // Add origin marker
+                    L.marker([data.commute.origin_lat, data.commute.origin_lon])
+                        .addTo(commuteMapRpi)
+                        .bindPopup(`Origin: ${data.commute.origin}`);
+                    
+                    // Add destination marker
+                    L.marker([data.commute.dest_lat, data.commute.dest_lon])
+                        .addTo(commuteMapRpi)
+                        .bindPopup(`Destination: ${data.commute.destination}`);
+                    
+                    // Draw route with color-coded segments - ONLY use colored segments
+                    if (data.commute.route_segments && data.commute.route_segments.length > 0) {
+                        // Draw each segment with appropriate color based on traffic level
+                        data.commute.route_segments.forEach(segment => {
+                            if (segment.coordinates && segment.coordinates.length > 0) {
+                                // Determine color based on traffic level
+                                let color = '#4caf50'; // Green for light traffic (default)
+                                if (segment.traffic_level === 'medium') {
+                                    color = '#ffc107'; // Yellow for medium traffic
+                                } else if (segment.traffic_level === 'heavy') {
+                                    color = '#f44336'; // Red for heavy traffic
+                                }
+                                
+                                // Convert coordinates from [lon, lat] to [lat, lon] for Leaflet
+                                const segmentLatLngs = segment.coordinates.map(coord => [coord[1], coord[0]]);
+                                
+                                // Draw the segment with the traffic color
+                                L.polyline(segmentLatLngs, {
+                                    color: color,
+                                    weight: 6,
+                                    opacity: 0.9
+                                }).addTo(commuteMapRpi);
+                            }
+                        });
+                    } else {
+                        // If no segments, divide route into equal parts and show as light traffic (green)
+                        // This should rarely happen, but ensures we always show something
+                        const numSegments = Math.max(1, Math.floor(latLngs.length / 10));
+                        const segmentSize = Math.floor(latLngs.length / numSegments);
+                        for (let i = 0; i < latLngs.length; i += segmentSize) {
+                            const segment = latLngs.slice(i, i + segmentSize);
+                            if (segment.length > 1) {
+                                L.polyline(segment, {
+                                    color: '#4caf50', // Green for light traffic
+                                    weight: 6,
+                                    opacity: 0.9
+                                }).addTo(commuteMapRpi);
+                            }
+                        }
+                    }
+                    
+                    // Fit map bounds to show entire route with padding - this will set the zoom
+                    commuteMapRpi.fitBounds(bounds, {
+                        padding: [30, 30],
+                        maxZoom: 15
+                    });
+                } catch (error) {
+                    console.error('Error rendering commute map:', error);
+                }
+            }, 200);
+        }
+        
+        // Switch screens
+        function switchScreen() {
+            // Hide current screen
+            document.getElementById(`screen-${currentScreen}`).classList.remove('active');
+            document.getElementById(`indicator-${currentScreen}`).classList.remove('active');
+            
+            // Show next screen
+            currentScreen = (currentScreen + 1) % totalScreens;
+            document.getElementById(`screen-${currentScreen}`).classList.add('active');
+            document.getElementById(`indicator-${currentScreen}`).classList.add('active');
+            
+            // Refresh radar image when showing radar screen
+            if (currentScreen === 4 && data.weather_radar_url) {
+                const radarImage = document.getElementById('radar-image');
+                radarImage.src = data.weather_radar_url + '?t=' + new Date().getTime();
+            }
+            
+            // Render commute map when showing commute map screen
+            if (currentScreen === 9 && data.commute) {
+                renderCommuteMapRpi();
+            } else if (commuteMapRpi) {
+                // Clean up map when leaving commute map screen
+                commuteMapRpi.remove();
+                commuteMapRpi = null;
+            }
+            
+            // Refresh photo when showing photo gallery screen
+            if (currentScreen === 15 && data.random_photo) {
+                const galleryPhoto = document.getElementById('gallery-photo');
+                galleryPhoto.src = data.random_photo.url + '?t=' + new Date().getTime();
+            }
+        }
+        
+        // Start screen rotation
+        function startScreenRotation() {
+            // Show first screen
+            document.getElementById('screen-0').classList.add('active');
+            document.getElementById('indicator-0').classList.add('active');
+            
+            // Start rotation interval
+            screenRotationInterval = setInterval(switchScreen, screenDuration);
+        }
+        
+        // ==================== HOLIDAY THEMING FUNCTIONS ====================
+        function clearParticles() {
+            const container = document.getElementById('particles-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            particles = [];
+            if (particleInterval) {
+                clearInterval(particleInterval);
+                particleInterval = null;
+            }
+        }
+        
+        function clearSpecialCharacters() {
+            const existing = document.querySelectorAll('.special-character');
+            existing.forEach(el => el.remove());
+            if (specialCharacterInterval) {
+                clearInterval(specialCharacterInterval);
+                specialCharacterInterval = null;
+            }
+        }
+        
+        function createSpecialCharacter(characterType) {
+            const character = document.createElement('div');
+            character.className = `special-character ${characterType}-flying`;
+            
+            // Set emoji based on character type
+            const emojis = {
+                'santa': '🎅',
+                'cupid': '💘',
+                'turkey': '🦃',
+                'leprechaun': '🧙'
+            };
+            character.textContent = emojis[characterType] || '🎉';
+            
+            // Define animation directions
+            const directions = [
+                'flyLeftToRight',
+                'flyRightToLeft',
+                'flyTopToBottom',
+                'flyBottomToTop',
+                'flyDiagonalTopLeft',
+                'flyDiagonalTopRight',
+                'flyDiagonalBottomLeft',
+                'flyDiagonalBottomRight'
+            ];
+            
+            // Randomly select a direction
+            const direction = directions[Math.floor(Math.random() * directions.length)];
+            
+            // Set starting position - completely random across the page
+            let startLeft, startTop;
+            
+            // For horizontal movements, randomize vertical position
+            if (direction === 'flyLeftToRight') {
+                startTop = 10 + Math.random() * 80;
+                startLeft = -100;
+                character.style.top = startTop + '%';
+                character.style.left = startLeft + 'px';
+            }
+            else if (direction === 'flyRightToLeft') {
+                startTop = 10 + Math.random() * 80;
+                startLeft = 100;
+                character.style.top = startTop + '%';
+                character.style.left = 'calc(100% + 100px)';
+            }
+            // For vertical movements, randomize horizontal position
+            else if (direction === 'flyTopToBottom') {
+                startLeft = Math.random() * 100;
+                startTop = -100;
+                character.style.left = startLeft + '%';
+                character.style.top = startTop + 'px';
+            }
+            else if (direction === 'flyBottomToTop') {
+                startLeft = Math.random() * 100;
+                startTop = 100;
+                character.style.left = startLeft + '%';
+                character.style.top = 'calc(100% + 100px)';
+            }
+            // For diagonal movements, start from completely random position
+            else {
+                // Random starting position anywhere on the page
+                startLeft = Math.random() * 100;
+                startTop = Math.random() * 100;
+                character.style.left = startLeft + '%';
+                character.style.top = startTop + '%';
+                
+                // Calculate diagonal distance to opposite corner
+                // Store as CSS variables for animation
+                const endX = direction.includes('Right') ? -200 : 200;
+                const endY = direction.includes('Bottom') ? -200 : 200;
+                character.style.setProperty('--end-x', endX + 'vw');
+                character.style.setProperty('--end-y', endY + 'vh');
+            }
+            
+            // Set animation
+            character.style.animationName = direction;
+            character.style.animationTimingFunction = 'linear';
+            character.style.animationFillMode = 'forwards';
+            
+            // Random delay before appearing (0-2 seconds)
+            character.style.animationDelay = Math.random() * 2 + 's';
+            
+            // Random animation duration (5-9 seconds)
+            const duration = 5 + Math.random() * 4;
+            character.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(character);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                if (character.parentNode) {
+                    character.remove();
+                }
+            }, (duration + 2) * 1000);
+        }
+        
+        function startSpecialCharacterAnimation(characterType) {
+            clearSpecialCharacters();
+            
+            if (!characterType) return;
+            
+            // Create first character after short delay (0.5-2 seconds)
+            setTimeout(() => {
+                createSpecialCharacter(characterType);
+            }, 500 + Math.random() * 1500);
+            
+            // Continue creating characters more frequently (every 5-12 seconds)
+            specialCharacterInterval = setInterval(() => {
+                if (Math.random() > 0.1) { // 90% chance to create a character
+                    createSpecialCharacter(characterType);
+                }
+            }, 5000 + Math.random() * 7000);
+        }
+        
+        function createSnowParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle snow-particle';
+            particle.textContent = '❄';
+            // More random positioning and timing
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 4 + 1.5) + 's'; // 1.5-5.5s
+            particle.style.animationDelay = Math.random() * 3 + 's';
+            particle.style.fontSize = (Math.random() * 0.8 + 0.6) + 'rem'; // 0.6-1.4rem
+            // Random horizontal drift
+            const drift = (Math.random() - 0.5) * 50;
+            particle.style.setProperty('--drift', drift + 'px');
+            return particle;
+        }
+        
+        function createLeafParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle leaf-particle';
+            // Random leaf emoji
+            const leaves = ['🍂', '🍃', '🍁'];
+            particle.textContent = leaves[Math.floor(Math.random() * leaves.length)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 5 + 2) + 's'; // 2-7s
+            particle.style.animationDelay = Math.random() * 3 + 's';
+            particle.style.fontSize = (Math.random() * 0.6 + 1) + 'rem'; // 1-1.6rem
+            // Random horizontal drift
+            const drift = (Math.random() - 0.5) * 80;
+            particle.style.setProperty('--drift', drift + 'px');
+            return particle;
+        }
+        
+        function createConfettiParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle confetti-particle';
+            const colors = ['#FFD700', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#00FFFF', '#FFFFFF'];
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            return particle;
+        }
+        
+        function createHeartParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle heart-particle';
+            particle.textContent = '❤️';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            return particle;
+        }
+        
+        function createStarParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle star-particle';
+            particle.textContent = '⭐';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            const colors = ['#FF0000', '#FFFFFF', '#0000FF'];
+            particle.style.color = colors[Math.floor(Math.random() * colors.length)];
+            return particle;
+        }
+        
+        function createShamrockParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle shamrock-particle';
+            particle.textContent = '☘️';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            return particle;
+        }
+        
+        function createEggParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle egg-particle';
+            particle.textContent = '🥚';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            return particle;
+        }
+        
+        function createBatParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle bat-particle';
+            particle.textContent = '🦇';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 5 + 4) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            return particle;
+        }
+        
+        function startParticleEffect(particleType) {
+            clearParticles();
+            const container = document.getElementById('particles-container');
+            if (!container) return;
+            
+            // Calculate particle count based on screen size - increased for better visibility
+            // For snow and leaves, use more particles
+            let baseCount = Math.floor((screenWidth * screenHeight) / 30000);
+            if (particleType === 'snow' || particleType === 'leaves') {
+                baseCount = Math.floor((screenWidth * screenHeight) / 20000); // More particles for snow/leaves
+            }
+            const particleCount = Math.min(baseCount, 80); // Increased max from 50 to 80
+            
+            let createParticle;
+            switch(particleType) {
+                case 'snow':
+                    createParticle = createSnowParticle;
+                    break;
+                case 'leaves':
+                    createParticle = createLeafParticle;
+                    break;
+                case 'confetti':
+                    createParticle = createConfettiParticle;
+                    break;
+                case 'hearts':
+                    createParticle = createHeartParticle;
+                    break;
+                case 'stars':
+                    createParticle = createStarParticle;
+                    break;
+                case 'shamrocks':
+                    createParticle = createShamrockParticle;
+                    break;
+                case 'eggs':
+                    createParticle = createEggParticle;
+                    break;
+                case 'bats':
+                    createParticle = createBatParticle;
+                    break;
+                default:
+                    return;
+            }
+            
+            // Create initial particles
+            for (let i = 0; i < particleCount; i++) {
+                const particle = createParticle();
+                container.appendChild(particle);
+                particles.push(particle);
+            }
+            
+            // Continuously add new particles - more frequently for snow/leaves
+            const refreshInterval = (particleType === 'snow' || particleType === 'leaves') ? 500 : 1000;
+            particleInterval = setInterval(() => {
+                // Remove old particles that are off screen
+                particles = particles.filter(p => {
+                    if (!p.parentNode || (p.offsetTop && p.offsetTop > screenHeight + 100)) {
+                        if (p.parentNode) p.remove();
+                        return false;
+                    }
+                    return true;
+                });
+                
+                // Add new particles to maintain count - add more randomly for snow/leaves
+                const targetCount = particleCount;
+                const currentCount = particles.length;
+                if (currentCount < targetCount) {
+                    // Add 1-3 particles at a time for snow/leaves, 1 for others
+                    const addCount = (particleType === 'snow' || particleType === 'leaves') 
+                        ? Math.min(1 + Math.floor(Math.random() * 3), targetCount - currentCount)
+                        : 1;
+                    for (let i = 0; i < addCount; i++) {
+                        const particle = createParticle();
+                        container.appendChild(particle);
+                        particles.push(particle);
+                    }
+                }
+            }, refreshInterval);
+        }
+        
+        async function loadHolidayTheme() {
+            try {
+                // Check for test holiday in URL parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const testHoliday = urlParams.get('test-holiday');
+                
+                let url = '/api/holiday-theme';
+                if (testHoliday) {
+                    url += `?test-holiday=${testHoliday}`;
+                }
+                
+                const response = await fetch(url);
+                const theme = await response.json();
+                
+                holidayTheme = theme;
+                
+                if (theme.active) {
+                    // Apply background gradient
+                    const overlay = document.getElementById('holiday-overlay');
+                    if (overlay) {
+                        overlay.style.background = theme.background_gradient;
+                        overlay.style.opacity = '0.3';
+                    }
+                    
+                    // Apply to all screens
+                    const screens = document.querySelectorAll('.screen');
+                    screens.forEach(screen => {
+                        screen.style.background = theme.background_gradient;
+                    });
+                    
+                    // Start particle effect
+                    if (theme.particle_type) {
+                        startParticleEffect(theme.particle_type);
+                    }
+                    
+                    // Start special character animations based on holiday
+                    const holidayName = theme.holiday.toLowerCase();
+                    let specialCharacter = null;
+                    if (holidayName.includes('christmas')) {
+                        specialCharacter = 'santa';
+                    } else if (holidayName.includes('valentine')) {
+                        specialCharacter = 'cupid';
+                    } else if (holidayName.includes('thanksgiving')) {
+                        specialCharacter = 'turkey';
+                    } else if (holidayName.includes('patrick')) {
+                        specialCharacter = 'leprechaun';
+                    }
+                    
+                    if (specialCharacter) {
+                        startSpecialCharacterAnimation(specialCharacter);
+                    }
+                    
+                    console.log(`Holiday theme active: ${theme.holiday}`);
+                } else {
+                    // Clear holiday theme
+                    clearParticles();
+                    clearSpecialCharacters();
+                    const overlay = document.getElementById('holiday-overlay');
+                    if (overlay) {
+                        overlay.style.background = 'transparent';
+                        overlay.style.opacity = '0';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading holiday theme:', error);
+            }
+        }
+        
+        // Initialize
+        function init() {
+            // Start clock updates
+            updateBigClock();
+            clockInterval = setInterval(updateBigClock, 1000);
+            
+            // Load holiday theme
+            loadHolidayTheme();
+            
+            // Fetch data immediately
+            fetchData();
+            
+            // Set up periodic data refresh (every 5 minutes)
+            dataFetchInterval = setInterval(() => {
+                fetchData();
+            }, 300000); // 5 minutes
+            
+            // Refresh holiday theme every hour (in case date changes)
+            setInterval(() => {
+                loadHolidayTheme();
+            }, 3600000); // 1 hour
+        }
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (retryTimeout) clearTimeout(retryTimeout);
+            if (screenRotationInterval) clearInterval(screenRotationInterval);
+            if (dataFetchInterval) clearInterval(dataFetchInterval);
+            if (clockInterval) clearInterval(clockInterval);
+            clearParticles();
+            clearSpecialCharacters();
+        });
+        
+        // Start when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
