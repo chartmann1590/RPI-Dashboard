@@ -1,84 +1,29 @@
 # Project Overview
 
 ## Introduction
-
-This project is a smart home monitoring system designed to provide real-time data and control over various smart home devices. The system aims to create a centralized platform for monitoring device status, triggering alerts based on predefined rules, and potentially controlling devices remotely. It utilizes a Python application (`app.py`) with a SQLite database to store device information, historical data, and alert configurations. The core functionality centers around automatically discovering devices on a local network, continuously monitoring their status, and alerting the user to any anomalies or critical events.
-
-## Key Features
-
-*   **Device Discovery:** Automatically scans the local network using ARP (Address Resolution Protocol) to discover connected smart home devices.
-*   **Device Management:** Enables the user to add, view, and manage device information, including device type, name, and other relevant details. A basic admin interface is included.
-*   **Real-time Monitoring:** Continuously monitors the status of discovered devices.
-*   **Alerting:** Triggers alerts based on predefined rules (e.g., temperature exceeding a threshold, device offline).
-*   **Historical Data Logging:** Stores historical data for each device, including status changes, temperature readings (if applicable), and other relevant metrics. This enables trend analysis and debugging.
-*   **Speed Test:** Performs periodic network speed tests to monitor network performance.
-*   **Holiday Theme Support:** Implements interactive holiday themes (Christmas, Valentine's Day, Thanksgiving, St. Patrick’s Day) with special character animations and visual effects. This includes a "test-holiday" parameter.
-*   **User Interface:** Provides a basic web interface for viewing device status, managing device settings, and viewing historical data.
-
-## Architecture
-
-The project employs a layered architecture:
-
-1.  **Presentation Layer (Flask/Jinja):** The web interface is built using Flask for routing and handling requests, and Jinja2 for rendering HTML templates. This layer interacts with the user.
-2.  **Application Layer (app.py):** This is the core logic of the system. It handles device discovery, data fetching, alert triggering, and database interactions. This is where the majority of the code resides.
-3.  **Data Layer (SQLite Database):** The data is stored in an SQLite database. The database schema includes tables for:
-    *   `devices`: Stores information about each device.
-    *   `alerts`: Stores alert rules and configurations.
-    *   `history`: Stores historical data for each device.
-4.  **Background Processes (Threads):** Several threads are used to perform background tasks, such as device scanning and periodic speed tests, ensuring that the web interface remains responsive.
-
-The application utilizes threading to execute tasks asynchronously, preventing the main web application thread from being blocked. Device scanning is performed in a separate thread. Data fetching and alert triggering also occur asynchronously.
-
-## Technology Stack
-
-*   **Python:** The primary programming language.
-*   **Flask:** A micro web framework for building the web interface and handling HTTP requests.
-*   **Jinja2:** A templating engine for rendering HTML templates.
-*   **SQLite:** A lightweight, file-based database engine.
-*   **ARP (Address Resolution Protocol):** Used for device discovery on the local network. Implemented through a library call.
-*   **Threading:** For asynchronous execution of background tasks.
-*   **NumPy:** (Potentially - not explicitly listed but likely used internally for numerical data) - A library for numerical computing, probably used for temperature calculations or data analysis.
-*   **Nmap:** (Potentially - library call, but not explicitly listed) – A network scanning tool, likely used by a library call to perform more detailed network discovery.
-
-
-# Project Overview
-
-## Introduction
-
-This project is a smart home monitoring system designed to provide real-time data and control over various smart home devices. The system aims to create a centralized platform for monitoring device status, triggering alerts based on predefined rules, and potentially controlling devices remotely. It utilizes a Python application (`app.py`) with a SQLite database to store device information, historical data, and alert configurations. The core functionality centers around automatically discovering devices on a local network, continuously monitoring their status, and alerting the user to any anomalies or critical events.
+This project is a web application designed to simulate a device monitoring and tracking system. It provides a dashboard for visualizing device status, including IP addresses, MAC addresses, and last seen timestamps.  It also includes a package tracking system with automated archiving of delivered packages after 24 hours.  The system provides a basic admin interface for adding new devices.
 
 ## Key Features
-
-*   **Device Discovery:** Automatically scans the local network using ARP (Address Resolution Protocol) to discover connected smart home devices.
-*   **Device Management:** Enables the user to add, view, and manage device information, including device type, name, and other relevant details. A basic admin interface is included.
-*   **Real-time Monitoring:** Continuously monitors the status of discovered devices.
-*   **Alerting:** Triggers alerts based on predefined rules (e.g., temperature exceeding a threshold, device offline).
-*   **Historical Data Logging:** Stores historical data for each device, including status changes, temperature readings (if applicable), and other relevant metrics. This enables trend analysis and debugging.
-*   **Speed Test:** Performs periodic network speed tests to monitor network performance.
-*   **Holiday Theme Support:** Implements interactive holiday themes (Christmas, Valentine's Day, Thanksgiving, St. Patrick’s Day) with special character animations and visual effects. This includes a "test-holiday" parameter.
-*   **User Interface:** Provides a basic web interface for viewing device status, managing device settings, and viewing historical data.
+*   **Device Monitoring Dashboard:** Displays a list of connected devices, showing their status, IP addresses, MAC addresses, last seen timestamps, and notify settings.
+*   **Package Tracking System:** Allows tracking of packages, including carrier, description, status, last location, and estimated/delivered dates.  Automatically archives delivered packages after 24 hours.
+*   **Admin Interface:** Provides an interface to add new devices to the system.
+*   **Simulated Scanning:** The application periodically scans for devices and updates their status.
+*   **Periodic Speed Tests:**  Simulates speed tests for devices.
+*   **Joke Retrieval:** Randomly retrieves and displays a joke.
 
 ## Architecture
+The project follows a three-tier architecture:
 
-The project employs a layered architecture:
+1.  **Presentation Tier (Frontend):**  A Flask-based web application with HTML, CSS, and JavaScript for the user interface. It handles user interaction and renders the dashboard and forms.
+2.  **Application Tier (Backend):** A Flask application that handles the business logic, data validation, and communication with the database.
+3.  **Data Tier (Database):** An SQLite database (devices.db) to store device information and package tracking data.
 
-1.  **Presentation Layer (Flask/Jinja):** The web interface is built using Flask for routing and handling requests, and Jinja2 for rendering HTML templates. This layer interacts with the user.
-2.  **Application Layer (app.py):** This is the core logic of the system. It handles device discovery, data fetching, alert triggering, and database interactions. This is where the majority of the code resides.
-3.  **Data Layer (SQLite Database):** The data is stored in an SQLite database. The database schema includes tables for:
-    *   `devices`: Stores information about each device.
-    *   `alerts`: Stores alert rules and configurations.
-    *   `history`: Stores historical data for each device.
-4.  **Background Processes (Threads):** Several threads are used to perform background tasks, such as device scanning and periodic speed tests, ensuring that the web interface remains responsive.
-
-The application utilizes threading to execute tasks asynchronously, preventing the main web application thread from being blocked. Device scanning is performed in a separate thread. Data fetching and alert triggering also occur asynchronously.
+The application uses Flask for routing, handling requests, and rendering templates.  The application uses a thread to continuously scan for devices and perform speed tests.  A separate thread is responsible for archiving packages.
 
 ## Technology Stack
-
-*   **Python:** The primary programming language.
-*   **Flask:** A micro web framework for building the web interface and handling HTTP requests.
-*   **Jinja2:** A templating engine for rendering HTML templates.
-*   **SQLite:** A lightweight, file-based database engine.
-*   **ARP (Address Resolution Protocol):** Used for device discovery on the local network. Implemented through a library call.
-*   **Threading:** For asynchronous execution of background tasks.
-*   **NumPy:** (Potentially - not explicitly listed but likely used internally for numerical data) - A library for numerical computing, probably used for temperature calculations or data analysis.
-*   **Nmap:** (Potentially - library call, but not explicitly listed) – A network scanning tool, likely used by a library call to perform more detailed network discovery.
+*   **Python 3.x:** The primary programming language.
+*   **Flask:** A micro web framework for building the backend application.
+*   **SQLite:** A lightweight, file-based database to store data.
+*   **HTML, CSS, JavaScript:** For the frontend user interface.
+*   **pytz:** A library for handling timezones.
+*   **random:** Python standard library for generating random values.
