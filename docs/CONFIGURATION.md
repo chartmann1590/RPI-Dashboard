@@ -2,20 +2,25 @@
 
 ## Environment Variables
 
-*   `SECRET_KEY`:  A strong secret key used for session management and other security-related operations. Required. Default: 'your_secret_key' (CHANGE THIS!).
-*   `DATABASE`:  The name of the SQLite database file used by the application. Required. Default: 'devices.db'
-*   `HOLIDAYS_DATA_PATH`:  Path to the holidays data file (if used). Optional. Default: None
-*   `NY_TZ`: Timezone for New York.  Required. Default: 'America/New_York'
+*   **WEATHER_API_KEY**: (String) - API key for the OpenWeatherMap API. Required. Default: None.
+*   **NEWS_API_KEY**: (String) - API key for the NewsAPI.org API. Required. Default: None.
+*   **HOME_ASSISTANT_API_ENDPOINT**: (String) - The URL of the Home Assistant API. Required. Default: `
+*   **DATABASE_URL**: (String) - The connection string for the SQLite database. Required. Default: `sqlite:///packages.db`
+*   **PACKAGE_TRACKING_API_ENDPOINT**: (String) - The URL of the package tracking API. Required. Default: `
+*   **ALERT_SENT_TIME_DELAY**: (Integer) - Delay in seconds before sending an alert after a package is delivered.  Optional. Default: 60
+*   **DATA_FETCH_INTERVAL**: (Integer) - Interval in seconds for fetching package updates. Optional. Default: 300 (5 minutes)
+*   **HOLIDAY_THEME_PARTICLE_TYPE**: (String) - The type of particle effect for the holiday theme. Optional. Default: "star"
+*   **HOLIDAY_THEME_BACKGROUND_COLOR**: (String) - The background color for the holiday theme. Optional. Default: "darkblue"
+*   **PACKAGE_ARCHIVING_DELAY**: (Integer) - Delay in hours before archiving delivered packages. Optional. Default: 24
 
 ## Configuration Files
 
-*   None.  All configuration is done through environment variables.
+None. All settings are managed via environment variables.
 
 ## Settings
 
-*   `debug`: Boolean flag to enable or disable debug mode. Default: True.
-*   `host`: The host to listen on. Default: '0.0.0.0'
-*   `port`: The port to listen on. Default: 5000
-*   `scan_interval`:  The interval (in seconds) at which the `scan()` function is executed. Default: 3600 (1 hour)
-*   `package_update_interval`: The interval (in seconds) at which the `periodic_package_updates()` function is executed. Default: 30 * 60 (30 minutes)
-*   `package_archive_interval`: The interval (in seconds) at which the `periodic_package_archiving()` function is executed. Default: 60 * 60 (1 hour)
+*   **Alerts:** The system sends notifications based on package status changes (e.g., delivered, delayed). The delay before sending alerts is configurable.
+*   **Data Fetching:** The periodic data fetch interval determines how often the package tracking API is called to update package statuses.
+*   **Holiday Theme:** The system displays a festive holiday theme with particle effects and background gradients. The specific particle type and background color can be customized.
+*   **Package Archiving:** Delivered packages are automatically archived after a specified delay (default: 24 hours) to prevent the database from growing indefinitely.
+*   **Data refresh frequency:** Allows for different refresh frequencies for various features.

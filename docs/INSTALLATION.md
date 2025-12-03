@@ -2,54 +2,62 @@
 
 ## Prerequisites
 
-*   **Python 3.9 or higher:** This application is written in Python and requires a compatible Python version.
-*   **pip:**  The Python package installer is required to install the dependencies.
+*   **Python 3.9 or higher:** This project requires Python 3.9 or a later version.
+*   **pip:** Python's package installer. Ensure pip is up to date.
 
 ## Dependencies
 
-The following Python packages are required for this application:
+The following Python packages are required:
 
-*   `Flask`:  A micro web framework for Python.
-*   `sqlite3`:  Python's built-in SQLite database module.
-*   `pytz`:  Python library for handling time zones.
-*   `random`:  Python's built-in random number generator.
-*   `threading`: Python's threading module.
+*   Flask==3.0.3
+*   Flask-SQLAlchemy
+*   requests==2.32.3
+*   SQLAlchemy
+*   threading
+*   logging
+*   jinja2
+*   itsdangerous
+*   wtforms
+*   beautifulsoup4
+*   python-dotenv
 
 ## Installation Steps
 
-1.  **Clone the Repository:** Clone the repository from the source (insert repository URL here).  For example: `git clone [repository URL]`
+1.  **Clone the Repository:**
+    ```bash
+    git clone <repository_url>
+    cd <repository_directory>
+    ```
 
-2.  **Create a Virtual Environment (Recommended):** Create a virtual environment to isolate the project's dependencies:
-
+2.  **Create a Virtual Environment (Recommended):**
     ```bash
     python3 -m venv venv
     source venv/bin/activate  # On Linux/macOS
     # venv\Scripts\activate  # On Windows
     ```
 
-3.  **Install Dependencies:**  Install the required packages using pip:
-
+3.  **Install Dependencies:**
     ```bash
-    pip install Flask pytz random
+    pip install -r requirements.txt
     ```
 
-4.  **Run the Application:**  Navigate to the project directory in your terminal and run the Flask application:
+4.  **Set up Environment Variables (Important):**
+    *   Create a `.env` file in the root directory of your project.
+    *   Add the following environment variables to the `.env` file:
+        *   `DATABASE_URL`:  The SQLite database URL (e.g., `sqlite:///./database.db`).
+        *   `API_KEY`: (If applicable, for external API integrations – leave blank if none).
 
+5.  **Run the Application:**
     ```bash
     python app.py
     ```
 
-    This should start the Flask server, typically on `
-
 ## Initial Setup
 
-*   The application will automatically create the `devices.db` SQLite database file in the project directory.
-*   The application also initializes a virtual environment.
+*   The first time you run the application, it will create the SQLite database file (`database.db`) and the required tables.
 
 ## Verifying Installation
 
-1.  **Open a Web Browser:**  Open a web browser and navigate to the URL (usually `
-
-2.  **Check the Interface:** The web interface should load.  Inspect the HTML and JavaScript to ensure the application is working correctly.  Specifically, look for the device list.
-
-3.  **Verify Database Connection:** (More advanced) You could use a SQLite browser to connect to the `devices.db` file and examine its contents to confirm that data is being stored.
+1.  **Open your web browser:** Navigate to `
+2.  **Check the UI:** You should see the main dashboard with device information, alerts, and the large clock.
+3.  **Verify API integration:**  (If applicable) Check that the joke/quote display is updating periodically.  Also, check that the package tracking data is being fetched.

@@ -1,19 +1,18 @@
 # Project Name
 
 ## Description
-This project creates a dynamic and visually engaging dashboard, inspired by Home Assistant. It fetches data and displays it with a festive holiday theme, including a large clock, particle effects, and holiday-themed animations.
+This project implements a multi-faceted application, combining a package tracking system with a joke and quote display. It leverages SQLite for persistent storage, incorporates background threads for periodic tasks, and utilizes a basic Flask web interface.
 
 ## Features
-*   Dynamic Data Fetching: Automatically retrieves data from an external API.
-*   Large Clock: Displays the current time in a prominent format.
-*   Particle Effects: Creates visually appealing particle effects (snow, leaves, confetti).
-*   Holiday Theme: Implements a holiday theme with special characters and animations.
-*   Traffic and Home Automation Integration: (Placeholder - requires API integration)
-*   Screen Rotation
+- Package Tracking: Tracks package status from external APIs (requires API key configuration).
+- Quote and Joke Display: Randomly displays quotes and jokes.
+- Periodic Updates: Automatically updates package information and displays quotes/jokes at specified intervals.
+- SQLite Database: Uses SQLite for persistent storage of package and quote/joke data.
+- Background Threads:  Utilizes background threads to handle periodic updates and API calls without blocking the web interface.
 
 ## Quick Start
 1.  Installation command: `pip install -r requirements.txt`
-2.  Configuration needed:  The `url` variable in `templates/rpi_dashboard.html` needs to be set to the correct API endpoint.
+2.  Configuration needed:  You will need to obtain API keys for package tracking and configure the database connection parameters.
 3.  How to run: `python app.py`
 
 ## Documentation

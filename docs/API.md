@@ -2,41 +2,40 @@
 
 ## Endpoints
 
-### / (GET)
-- **Description:** Returns a list of all devices currently monitored.
-- **Parameters:** None
-- **Response format:** JSON
-- **Example usage:** `GET /`
+### /api/data
 
-### /admin (GET)
-- **Description:** Returns a list of all devices, accessible only to administrators.
-- **Parameters:** None
-- **Response format:** JSON
-- **Example usage:** `GET /admin`
+*   **HTTP Method:** GET
+*   **Path:** /api/data
+*   **Description:** Returns current time and a random joke/quote.
+*   **Parameters:** None
+*   **Response Format:** JSON
+*   **Example Usage:** `GET /api/data`
 
-### /admin/add_device (GET, POST)
-- **Description:** Allows adding a new device to the monitoring system.
-- **Parameters:**
-    - `name` (POST): The name of the device.
-    - `ip_address` (POST): The IP address of the device.
-    - `mac_address` (POST): The MAC address of the device.
-    - `notify` (POST): The notification type for this device.
-- **Response format:** JSON (on success), error message (on failure)
-- **Example usage:**
-    - `GET /admin/add_device` (to display the form)
-    - `POST /admin/add_device` (to submit the form)
+### /api/holiday-theme
 
-###  /api/data (GET)
-- **Description:** Returns a list of all devices.
-- **Parameters:** None
-- **Response format:** JSON
-- **Example usage:** `GET /api/data`
+*   **HTTP Method:** GET
+*   **Path:** /api/holiday-theme
+*   **Description:** Returns a holiday theme based on the current time and location.
+*   **Parameters:** None
+*   **Response Format:** JSON
+*   **Example Usage:** `GET /api/holiday-theme`
+
+### /api/holiday-test
+
+*   **HTTP Method:** POST
+*   **Path:** /api/holiday-test
+*   **Description:**  Allows for testing the holiday theme from the admin interface.
+*   **Parameters:** None
+*   **Response Format:** JSON
+*   **Example Usage:** `POST /api/holiday-test`
 
 ## Authentication
 
-None. All endpoints are publicly accessible.
+No authentication requirements found.
 
 ## Error Handling
 
-- **400 Bad Request:**  Returned if the request is malformed (e.g., missing required parameters).  The response body will contain an error message explaining the issue.
-- **500 Internal Server Error:** Returned if an unexpected error occurs on the server.  The response body will contain a generic error message.
+Common error responses:
+
+*   `400 Bad Request`: Invalid input data.
+*   `500 Internal Server Error`: An unexpected error occurred on the server.

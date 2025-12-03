@@ -11,23 +11,20 @@ If you discover a security vulnerability, please follow these steps:
 
 ## Supported Versions
 
-Currently supported versions with security updates:
+The following versions of this project currently receive security updates:
 
-*   Version 3.0.3 (Ongoing Support)
-*   Version 2.32.3 (Limited Support - Patch Updates Only)
-*   Version 6.0.11
-*   Version 5.0.11
-*   Version 1.0.0
+*   Version 1.0.0 - 2024-02-29
+*   Version 1.1.0 - 2024-03-01
 
 ## Security Best Practices
 
-*   **API Key Management:**  Never commit API keys directly to the codebase. Use environment variables to store sensitive information.
-*   **Input Validation:**  Thoroughly validate all user inputs to prevent injection attacks (e.g., SQL injection, XSS).
-*   **Rate Limiting:** Implement rate limiting to prevent brute-force attacks.
-*   **HTTPS:**  Always use HTTPS to encrypt communication between the client and server.
-*   **Regular Updates:** Keep all dependencies up-to-date to patch security vulnerabilities.
-*   **Authentication/Authorization**: Ensure proper authentication and authorization mechanisms are in place to control access to resources.
+*   **API Key Management:**  Never hardcode API keys directly into the code. Store them securely using environment variables or a dedicated secrets management solution.
+*   **Input Validation:** Always validate user input to prevent injection attacks (e.g., SQL injection, cross-site scripting).
+*   **Rate Limiting:** Implement rate limiting to protect against denial-of-service attacks.
+*   **Secure Database Connections:** Use secure database connections and follow best practices for database security.
+*   **HTTPS:** Ensure that the application is served over HTTPS to encrypt communication between the client and the server.
+*   **Regular Updates:** Keep all software components (e.g., Python, Flask, SQLite) up to date with the latest security patches.
 
 ## Disclosure Policy
 
-Security issues will be handled through a private channel (e.g., a secure messaging service).  The maintainers will acknowledge receipt of the report and provide updates on the progress of remediation.  A public disclosure of vulnerabilities will only occur after the issue has been addressed and a sufficient period has passed for the community to understand and mitigate the risk.  The exact timeline for public disclosure will be communicated transparently.
+Security vulnerabilities will be handled through a private channel.  If you report a vulnerability, you will be contacted directly by the project maintainers.  We will acknowledge receipt of your report and provide updates on the progress of the investigation and remediation.  We appreciate your help in keeping this project secure.  Public disclosure of vulnerabilities will only occur after the issue has been fully addressed and a security patch has been released.

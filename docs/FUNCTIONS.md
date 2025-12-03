@@ -1,554 +1,121 @@
 # Function Reference
 
+## requirements.txt
+### purpose()
+- Description: Lists the Python packages and their versions required for the project.
+- Parameters: None
+- Returns: None
+
+## templates/index.html
+### confirmDelete(deviceId, deviceName)
+- Description: Handles the deletion of a device.
+- Parameters:
+    - deviceId (str): The ID of the device to delete.
+    - deviceName (str): The name of the device to delete.
+- Returns: None
+### toggle_notify(id, action='home')
+- Description: Toggles notification preferences for a device.
+- Parameters:
+    - id (str): The ID of the device to update.
+    - action (str, optional): The action to perform (e.g., 'home', 'away', 'none'). Defaults to 'home'.
+- Returns: None
+### device_history(name)
+- Description: Retrieves and displays the device's history.
+- Parameters:
+    - name (str): The name of the device.
+- Returns: None
+### reverse()
+- Description: Reverses the order of the `history` list.
+- Parameters: None
+- Returns: None
+### render()
+- Description: Renders the HTML with data from the Flask application.
+- Parameters: None
+- Returns: None
+
+## templates/device_history.html
+### confirmDelete(deviceId, deviceName)
+- Description: Handles the deletion of a device.
+- Parameters:
+    - deviceId (str): The ID of the device to delete.
+    - deviceName (str): The name of the device to delete.
+- Returns: None
+### toggle_notify(id, action='home')
+- Description: Toggles notification preferences for a device.
+- Parameters:
+    - id (str): The ID of the device to update.
+    - action (str, optional): The action to perform (e.g., 'home', 'away', 'none'). Defaults to 'home'.
+- Returns: None
+### device_history(name)
+- Description: Retrieves and displays the device's history.
+- Parameters:
+    - name (str): The name of the device.
+- Returns: None
+### reverse()
+- Description: Reverses the order of the `history` list.
+- Parameters: None
+- Returns: None
+### render()
+- Description: Renders the HTML with data from the Flask application.
+- Parameters: None
+- Returns: None
+
+## templates/rpi_dashboard.html
+### dataFetchInterval
+- Description: (Not a function, but represents a scheduled data fetch)
+- Parameters: None
+- Returns: None
+### periodic_scan()
+- Description: Periodically fetches package updates from an external API.
+- Parameters: None
+- Returns: None
+### periodic_speed_test()
+- Description: Executes a speed test periodically.
+- Parameters: None
+- Returns: None
+### periodic_package_updates()
+- Description: Updates package statuses based on speed test results.
+- Parameters: None
+- Returns: None
+### periodic_package_archiving()
+- Description: Automatically archives delivered packages after 24 hours.
+- Parameters: None
+- Returns: None
+
 ## app.py
-### add_device(parameters)
-- Description: Adds a new device to the database.
-- Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-    - notify (str, optional):  The notification status of the device. Defaults to None.
-- Returns: Redirects to the admin page.
-- Example:
-
-# Example usage
-# result = add_device(name="MyDevice", ip_address="192.168.1.100", mac_address="00:11:22:33:44:55", notify="online")
-
-### admin(parameters)
-- Description: Displays a list of all devices in the database.
-- Parameters: None.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-
-# Example usage
-# result = admin()
-
-### add_device(parameters)
-- Description: Adds a new device to the database.
-- Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-    - notify (str, optional):  The notification status of the device. Defaults to None.
-- Returns: Redirects to the admin page.
-- Example:
-
-# Example usage
-# result = add_device(name="MyDevice", ip_address="192.168.1.100", mac_address="00:11:22:33:44:55", notify="online")
-
-### admin(parameters)
-- Description: Displays a list of all devices in the database.
-- Parameters: None.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-
-# Example usage
-# result = admin()
-
-### add_device(parameters)
-- Description: Adds a new device to the database.
-- Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-    - notify (str, optional):  The notification status of the device. Defaults to None.
-- Returns: Redirects to the admin page.
-- Example:
-
-# Example usage
-# result = add_device(name="MyDevice", ip_address="192.168.1.100", mac_address="00:11:22:33:44:55", notify="online")
-
-### admin(parameters)
-- Description: Displays a list of all devices in the database.
-- Parameters: None.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-
-# Example usage
-# result = admin()
-
-### add_device(parameters)
-- Description: Adds a new device to the database.
-- Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-    - notify (str, optional):  The notification status of the device. Defaults to None.
-- Returns: Redirects to the admin page.
-- Example:
-
-# Example usage
-# result = add_device(name="MyDevice", ip_address="192.168.1.100", mac_address="00:11:22:33:44:55", notify="online")
-
-### admin(parameters)
-- Description: Displays a list of all devices in the database.
-- Parameters: None.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-
-# Example usage
-# result = admin()
-
-### add_device(parameters)
-- Description: Adds a new device to the database.
-- Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-    - notify (str, optional):  The notification status of the device. Defaults to None.
-- Returns: Redirects to the admin page.
-- Example:
-
-# Example usage
-# result = add_device(name="MyDevice", ip_address="192.168.1.100", mac_address="00:11:22:33:44:55", notify="online")
-
-### admin(parameters)
-- Description: Displays a list of all devices in the database.
-- Parameters: None.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-
-# Example usage
-# result = admin()
-
-### add_device(parameters)
-- Description: Adds a new device to the database.
-- Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-    - notify (str, optional):  The notification status of the device. Defaults to None.
-- Returns: Redirects to the admin page.
-- Example:
-
-# Example usage
-# result = add_device(name="MyDevice", ip_address="192.168.1.100", mac_address="00:11:22:33:44:55", notify="online")
-
-### admin(parameters)
-- Description: Displays a list of all devices in the database.
-- Parameters: None.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-
-# Example usage
-# result = admin()
-
-### add_device(parameters)
-- Description: Adds a new device to the database.
-- Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-    - notify (str, optional):  The notification status of the device. Defaults to None.
-- Returns: Redirects to the admin page.
-- Example:
-
-# Example usage
-# result = add_device(name="MyDevice", ip_address="192.168.1.100", mac_address="00:11:22:33:44:55", notify="online")
-
-### admin(parameters)
-- Description: Displays a list of all devices in the database.
-- Parameters: None.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-
-# Example usage
-# result = admin()
-
-## devices.db
 ### create_db()
-- Description: Creates the `devices` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### scan()
-- Description: Scans for devices and retrieves their information.
-- Parameters: None.
-- Returns: A list of dictionaries, where each dictionary represents a device with its name, IP address, MAC address, status, last_seen, and notify.
-- Example:
-
-# Example Usage
-# devices = scan()
-
-### run_speed_test()
-- Description: Simulates a speed test and updates the last_seen time of devices.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# run_speed_test()
-
+- Description: Creates the SQLite database and necessary tables.
+- Parameters: None
+- Returns: None
+### add_alert_shown_column()
+- Description: Adds the `alert_shown` column to the `devices` table.
+- Parameters: None
+- Returns: None
+### ensure_joke_history_table()
+- Description: Initializes the `quote_history` table.
+- Parameters: None
+- Returns: None
+### ensure_quote_history_table()
+- Description: Initializes the `quote_history` table.
+- Parameters: None
+- Returns: None
+### dataFetchInterval
+- Description: (Not a function, but represents a scheduled data fetch)
+- Parameters: None
+- Returns: None
 ### periodic_scan()
-- Description:  Runs the `scan()` function periodically every hour.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_scan()
-
-### scan()
-- Description: Scans for devices and retrieves their information.
-- Parameters: None.
-- Returns: A list of dictionaries, where each dictionary represents a device with its name, IP address, MAC address, status, last_seen, and notify.
-- Example:
-
-# Example Usage
-# devices = scan()
-
-### run_speed_test()
-- Description: Simulates a speed test and updates the last_seen time of devices.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# run_speed_test()
-
-### periodic_scan()
-- Description:  Runs the `scan()` function periodically every hour.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_scan()
-
-### scan()
-- Description: Scans for devices and retrieves their information.
-- Parameters: None.
-- Returns: A list of dictionaries, where each dictionary represents a device with its name, IP address, MAC address, status, last_seen, and notify.
-- Example:
-
-# Example Usage
-# devices = scan()
-
-### run_speed_test()
-- Description: Simulates a speed test and updates the last_seen time of devices.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# run_speed_test()
-
-### periodic_scan()
-- Description:  Runs the `scan()` function periodically every hour.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_scan()
-
-### scan()
-- Description: Scans for devices and retrieves their information.
-- Parameters: None.
-- Returns: A list of dictionaries, where each dictionary represents a device with its name, IP address, MAC address, status, last_seen, and notify.
-- Example:
-
-# Example Usage
-# devices = scan()
-
-### run_speed_test()
-- Description: Simulates a speed test and updates the last_seen time of devices.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# run_speed_test()
-
-### periodic_scan()
-- Description:  Runs the `scan()` function periodically every hour.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_scan()
-
-### scan()
-- Description: Scans for devices and retrieves their information.
-- Parameters: None.
-- Returns: A list of dictionaries, where each dictionary represents a device with its name, IP address, MAC address, status, last_seen, and notify.
-- Example:
-
-# Example Usage
-# devices = scan()
-
-### run_speed_test()
-- Description: Simulates a speed test and updates the last_seen time of devices.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# run_speed_test()
-
-### periodic_scan()
-- Description:  Runs the `scan()` function periodically every hour.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_scan()
-
-### scan()
-- Description: Scans for devices and retrieves their information.
-- Parameters: None.
-- Returns: A list of dictionaries, where each dictionary represents a device with its name, IP address, MAC address, status, last_seen, and notify.
-- Example:
-
-# Example Usage
-# devices = scan()
-
-### run_speed_test()
-- Description: Simulates a speed test and updates the last_seen time of devices.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# run_speed_test()
-
-### periodic_scan()
-- Description:  Runs the `scan()` function periodically every hour.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_scan()
-
-## packages.db
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
-
-### package_update_archiving()
-- Description: Moves delivered packages to the archive table after 24 hours.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# periodic_package_updates()
-
-### create_db()
-- Description: Creates the `packages` and `packages_archive` tables in the database.
-- Parameters: None.
-- Returns: None.
-- Example:
-
-# Example Usage
-# create_db()
+- Description: Periodically fetches package updates from an external API.
+- Parameters: None
+- Returns: None
+### periodic_speed_test()
+- Description: Executes a speed test periodically.
+- Parameters: None
+- Returns: None
+### periodic_package_updates()
+- Description: Updates package statuses based on speed test results.
+- Parameters: None
+- Returns: None
+### periodic_package_archiving()
+- Description: Automatically archives delivered packages after 24 hours.
+- Parameters: None
+- Returns: None
