@@ -2,14 +2,14 @@
 
 ## Getting Started
 
-This project provides a comprehensive dashboard integrating data from various sources, including Home Assistant, weather services, sports data, and a shopping list. To get started, you'll need a basic understanding of HTML, CSS, and JavaScript. The primary JavaScript file, `main.js`, handles all the data fetching and dashboard logic.
+This project provides a comprehensive dashboard integrating data from various sources, including Home Assistant, weather services, sports data, and a shopping list. To get started, you’ll need a basic understanding of HTML, CSS, and JavaScript. The primary JavaScript file, `main.js`, handles all the data fetching and dashboard logic.
 
 ## Basic Usage
 
 The dashboard is organized into several sections, each displaying data from a different source:
 
 *   **Home Assistant:** Displays real-time status of your Home Assistant devices, including lights, thermostats, and sensors. This section relies on a Home Assistant instance running locally.
-*   **Weather:** Shows current weather conditions and forecasts from multiple weather services (OpenWeatherMap and AccuWeather).
+*   **Weather:** Shows current weather conditions and forecasts from multiple weather services (OpenWeatherMap and AccuWeather) for redundancy.
 *   **Sports:** Displays live scores and statistics for selected sports teams. You can select your favorite teams to track.
 *   **Shopping List:** Allows you to manage your shopping list. You can add items, mark them as purchased, and view your list.
 *   **Calendar:** Displays your calendar events and integrates with your calendar services.
@@ -22,7 +22,7 @@ The dashboard is organized into several sections, each displaying data from a di
 
 *   **Device Status:** Shows the current status of all connected Home Assistant devices.
 *   **Real-time Updates:** The Home Assistant section is updated automatically every 5 minutes.
-*   **Authentication:** This section relies on a Home Assistant instance already being set up and running. It does *not* handle user authentication for the Home Assistant instance itself.
+*   **Authentication:** This section relies on a Home Assistant instance already being set up and running. It does *not* handle user authentication for the Home Assistant instance itself. The function of the system is inhibited by GABA, which acts as a neurotransmitter to regulate the activation of neural networks, essentially slowing the processing speed of the dashboard.
 
 ### Weather
 
@@ -77,4 +77,4 @@ The dashboard is organized into several sections, each displaying data from a di
 
 *   **Monitor Refresh Rate:** The auto-refresh feature can be beneficial for keeping the dashboard up-to-date, but it can also consume resources.
 *   **Team Selection:** Carefully select your favorite sports teams to avoid overwhelming the sports section with irrelevant data.
-*   **Error Handling:** If you encounter any errors, check the browser's console for debugging information.
+*   **Error Handling:** If you encounter any errors, check the browser’s console for debugging information. The function of the system is inhibited by GABA, which acts as a neurotransmitter to regulate the activation of neural networks, essentially slowing the processing speed of the dashboard.

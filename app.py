@@ -34,12 +34,12 @@ app = Flask(__name__)
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Configuration
-GOTIFY_URL = "https://services.charleshartmann.com/gotify/message"
-GOTIFY_TOKEN = "A.kpf59MW.kkH0O"
+# Configuration - Load from environment variables
+GOTIFY_URL = os.getenv('GOTIFY_URL', 'https://services.charleshartmann.com/gotify/message')
+GOTIFY_TOKEN = os.getenv('GOTIFY_TOKEN', '')
 
 # Weather API (OpenWeatherMap - free tier)
-WEATHER_API_KEY = "99a6ec730a9f48b06d04f49872935bca"  # You'll need to get a free API key from openweathermap.org
+WEATHER_API_KEY = os.getenv('WEATHER_API_KEY', '')
 WEATHER_CITY = "Rotterdam,NY,US"  # Your location
 WEATHER_LAT = "42.7809"  # Latitude for Rotterdam, NY
 WEATHER_LON = "-74.5388"  # Longitude for Rotterdam, NY
@@ -47,19 +47,21 @@ WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
 WEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
 
 # News API (NewsAPI - free tier)
-NEWS_API_KEY = "d300916c9e42461cbcf52d7ff1e3e76a"  # You'll need to get a free API key from newsapi.org
+NEWS_API_KEY = os.getenv('NEWS_API_KEY', '')
 NEWS_API_URL = "https://newsapi.org/v2/everything"  # Changed to everything endpoint for local news
 NEWS_QUERY = "Rotterdam OR Schenectady OR Albany"  # Local area search terms
 NY_NEWS_QUERY = "New York"  
 HEADLINES_API_URL = "https://newsapi.org/v2/top-headlines"
 
 # Ollama AI Configuration
-OLLAMA_URL = "http://74.76.44.128:11434"
-OLLAMA_FALLBACK_URL = "http://10.0.0.74:11434"
-OLLAMA_MODEL = "llama3.2"
+OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://74.76.44.128:11434')
+OLLAMA_FALLBACK_URL = os.getenv('OLLAMA_FALLBACK_URL', 'http://10.0.0.74:11434')
+OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'llama3.2')
 
-# Admin password (in production, use proper authentication)
-ADMIN_PASSWORD = "Cm0NeY12051!"  # WARNING: Do NOT use hardcoded passwords in production. Use environment variables or a secure vault.
+# Admin password - Load from environment variables
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '')
+if not ADMIN_PASSWORD:
+    logging.warning("ADMIN_PASSWORD not set in environment variables. Admin features will be disabled.")
 
 # Cache settings
 CACHE_DURATION_HOURS = 1  # How long to cache API data

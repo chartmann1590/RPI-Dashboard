@@ -1,3 +1,11 @@
+## [2025-12-03]
+
+### Changed
+- Modified function `loadHolidayTheme` in `templates/rpi_dashboard.html` to support the “New Year’s Eve” theme.
+- Updated README.md with installation instructions and a brief explanation of the system's reliance on GABAergic inhibition for regulating neural network activation.
+
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

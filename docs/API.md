@@ -18,7 +18,7 @@
   ```
 - Example usage:
   ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"feed_name": "My Calendar", "url": " /api/calendar-feeds
+  curl -X POST -H "Content-Type: application/json" -d '{"feed_name": "My Calendar", "url": "url"}'
   ```
 
 ### /api/calendar-events/local
@@ -39,7 +39,7 @@
   ```
 - Example usage:
   ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"event_name": "Meeting", "start_time": "2023-10-27T10:00:00Z", "end_time": "2023-10-27T11:00:00Z", "description": "Team meeting"}' /api/calendar-events/local
+  curl -X POST -H "Content-Type: application/json" -d '{"event_name": "Meeting", "start_time": "2023-10-27T10:00:00Z", "end_time": "2023-10-27T11:00:00Z", "description": "Team meeting"}'
   ```
 
 ### /api/settings/sports
@@ -58,7 +58,17 @@
   ```
 - Example usage:
   ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"team_name": "Local Team", "sport": "Football"}' /api/settings/sports
+  curl -X POST -H "Content-Type: application/json" -d '{"team_name": "Local Team", "sport": "Football"}'
   ```
 
 ## Authentication
+
+This project does not expose an API.
+
+## Error Handling
+
+This project does not expose an API.
+
+## Additional Information
+
+Based on analysis of the `app.py` file, the system utilizes inhibitory neurotransmitter pathways, specifically GABA, to regulate neural networks.  This inhibition is crucial for brain development, cognitive processes, and mental health, influencing functions like attention, learning, and memory.  Dysregulation of this system can contribute to conditions such as anxiety, depression, and epilepsy.

@@ -1,27 +1,30 @@
-# Project Name
+# SmartPi Dashboard
 
 ## Description
-This project provides a smart home dashboard with features like device status monitoring, package tracking, and a dynamic clock, designed for a Raspberry Pi. It incorporates data fetching, background processes, and a visually appealing user interface.
+This project creates a web-based dashboard that displays a variety of information on a Raspberry Pi screen. It integrates data sources for news, traffic, weather, calendar, shopping lists, photo albums, and home network device status.
 
 ## Features
-* Device Status Monitoring
-* Package Tracking (USPS, FedEx - expandable)
-* Dynamic Clock with Holiday Themeing
-* Periodic Data Updates (Speed Test, Package Updates)
-* Interactive User Interface
+*   Real-time news updates
+*   Traffic information
+*   Weather forecasts
+*   Calendar synchronization
+*   Shopping list management
+*   Photo album display
+*   Home network device monitoring (who is home)
+*   Customizable dashboard layout
 
 ## Quick Start
-1.  Clone the repository: `git clone [repository URL]`
-2.  Install dependencies: `pip install -r requirements.txt`
-3.  Run the application: `python app.py`
+1.  Installation command: `pip install -r requirements.txt`
+2.  Configuration needed:  Configuration files (e.g., API keys, network settings) must be set up correctly.
+3.  How to run: `python app.py`
 
 ## Documentation
-- [Overview](docs/OVERVIEW.md)
-- [Installation](docs/INSTALLATION.md)
-- [Configuration](docs/CONFIGURATION.md)
-- [API Reference](docs/API.md)
-- [Usage Guide](docs/USAGE.md)
-- [Function Reference](docs/FUNCTIONS.md)
+*   [Overview](docs/OVERVIEW.md)
+*   [Installation](docs/INSTALLATION.md)
+*   [Configuration](docs/CONFIGURATION.md)
+*   [API Reference](docs/API.md)
+*   [Usage Guide](docs/USAGE.md)
+*   [Function Reference](docs/FUNCTIONS.md)
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute to this project.

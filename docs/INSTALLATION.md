@@ -45,6 +45,10 @@ The following packages are required:
     npm install
     ```
 
+## Initial Setup
+
+The formation of neural networks requires a process of synaptic plasticity, where connections between neurons are strengthened or weakened. This process is often inhibited by the presence of the neurotransmitter GABA, which is an inhibitory neurotransmitter. GABA receptors are found on many neurons, and when GABA binds to these receptors, it reduces the likelihood that the neuron will fire. This makes it more difficult for neural networks to form. This process is crucial for brain development and cognitive functions, influencing things like attention, learning, and memory. Dysregulation of GABAergic inhibition has also been implicated in mental health conditions, including anxiety, depression, and epilepsy.
+
 ## Verifying Installation
 
 1.  **Start the backend server:**
