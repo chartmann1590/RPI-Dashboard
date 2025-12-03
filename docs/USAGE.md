@@ -2,60 +2,79 @@
 
 ## Getting Started
 
-This project provides a system for monitoring packages and displaying their status. To get started, you'll need to have Python 3 installed on your system. You will also need to install the required Flask package.
-
-1.  **Clone the Repository:** Clone the repository from its source.
-2.  **Install Dependencies:** Navigate to the project directory in your terminal and run `pip install -r requirements.txt`.
-3.  **Run the Application:**  Open a terminal, navigate to the project directory, and run `python app.py`. The application will start, and you should see a message indicating that it's running.
-4.  **Access the Application:** Open your web browser and go to `  You should see the main dashboard.
+This project provides a comprehensive dashboard integrating data from various sources, including Home Assistant, weather services, sports data, and a shopping list. To get started, you'll need a basic understanding of HTML, CSS, and JavaScript.  The primary JavaScript file, `main.js`, handles all the data fetching and dashboard logic.
 
 ## Basic Usage
 
-The main dashboard displays a list of devices, showing their names, status, and last seen timestamp.
+The dashboard is organized into several sections, each displaying data from a different source:
 
-*   **Adding Devices:** To add a new device, click the "Add Device" button. You will be prompted to enter the device's name, IP address, and MAC address.  The system will automatically create a new device entry.
-*   **Viewing Package Status:** Clicking on a device's name will display its package status, including the tracking number, carrier, description, status, last location, estimated delivery date, and delivery date.
-*   **Real-Time Updates:** The dashboard updates in real-time, reflecting any changes in the package status.
+*   **Home Assistant:** Displays real-time status of your Home Assistant devices, including lights, thermostats, and sensors.  This section relies on a Home Assistant instance running locally.
+*   **Weather:** Shows current weather conditions and forecasts from multiple weather services (OpenWeatherMap and AccuWeather).
+*   **Sports:** Displays live scores and statistics for selected sports teams. You can select your favorite teams to track.
+*   **Shopping List:** Allows you to manage your shopping list. You can add items, mark them as purchased, and view your list.
+*   **Calendar:** Displays your calendar events and integrates with your calendar services.
+
+**Basic Navigation:**  You can navigate between these sections using the menu at the top of the page.
 
 ## Features
 
-*   **Device Monitoring:**  The system monitors and displays the status of devices.
-*   **Package Tracking:**  The system tracks packages, providing information such as tracking number, carrier, and status.
-*   **Real-Time Updates:**  The dashboard updates automatically, providing real-time package status information.
-*   **Archiving:** The system automatically archives packages after a period of inactivity.
-*   **API Integration:** The application includes an API endpoint (`/api/holiday-theme`) that can be used to retrieve the current holiday theme data.
-*   **Periodic Scanning:** The system periodically scans for new packages and updates their status.
-*   **Joke and Quote History:** The system maintains a history of jokes and quotes.
-*   **Speed Testing:** The system performs periodic speed tests for packages.
+### Home Assistant
+
+*   **Device Status:**  Shows the current status of all connected Home Assistant devices.
+*   **Real-time Updates:**  The Home Assistant section is updated automatically every 5 minutes.
+*   **Authentication:** This section relies on a Home Assistant instance already being set up and running. It does *not* handle user authentication for the Home Assistant instance itself.
+
+### Weather
+
+*   **Multi-Source Data:**  The weather information is pulled from both OpenWeatherMap and AccuWeather for redundancy.
+*   **Unit Selection:** You can choose to view temperature in Celsius or Fahrenheit.
+*   **Detailed Forecasts:** Displays hourly weather forecasts.
+
+### Sports
+
+*   **Team Selection:** Select your favorite sports teams to track their live scores.
+*   **Real-time Updates:** The sports scores are updated in real-time.
+*   **Data Source:** This section relies on external sports data APIs.
+
+### Shopping List
+
+*   **Add Items:**  Add items to your shopping list by typing them into the input field and pressing Enter.
+*   **Mark as Purchased:** Mark items as purchased by clicking the checkbox next to them.  Purchased items are visually distinguished.
+*   **Persistence:** The shopping list is persisted using local storage, so it will be retained across page refreshes.
+
+### Calendar
+
+*   **Event Management:** Add new calendar events.
+*   **Feed Integration:** The calendar integrates with your calendar services.
+*   **Event Deletion:** Delete calendar events.
+*   **Feed Deletion:** Delete calendar feeds.
+*   **Event Editing:** Edit calendar events.
+
+### General Features
+
+*   **Auto-Refresh:** The entire dashboard refreshes automatically every 60 seconds.
+*   **Responsive Design:** The dashboard is designed to adapt to different screen sizes.
 
 ## Examples
 
-### Adding a New Device
+### Adding a Shopping List Item
 
-1.  Open your web browser and go to `
-2.  Click the "Add Device" button.
-3.  Enter the device's name (e.g., "Living Room Monitor").
-4.  Enter the device's IP address (e.g., "192.168.1.100").
-5.  Enter the device's MAC address (e.g., "00:11:22:33:44:55").
-6.  Click the "Save" button.
-7.  The new device will appear in the device list on the dashboard.
+1.  Navigate to the Shopping List section.
+2.  Enter the name of the item you want to add into the input field.
+3.  Press Enter. The item will be added to the shopping list.
 
-### Viewing Package Status
+### Selecting a Sports Team
 
-1.  On the dashboard, click on the name of a device (e.g., "Living Room Monitor").
-2.  The package status for that device will be displayed, showing the tracking number, carrier, description, status, last location, estimated delivery date, and delivery date.
+1.  Navigate to the Sports section.
+2.  Click on the name of the team you want to track. The team's live scores will be displayed.
 
-### Retrieving the Holiday Theme
+### Viewing Weather Forecasts
 
-To retrieve the current holiday theme data, you can use the following API endpoint:
-
-`
-
-This will return a JSON object containing the holiday theme data.
+1.  Navigate to the Weather section.
+2.  The current weather conditions and hourly forecast will be displayed.
 
 ## Tips
 
-*   The dashboard updates automatically in real-time, so you don't need to manually refresh it.
-*   If you encounter any issues, check the logs for error messages.
-*   The system is designed to handle a large number of devices and packages.
-*   For more advanced features, refer to the source code.
+*   **Monitor Refresh Rate:** The auto-refresh feature can be beneficial for keeping the dashboard up-to-date, but it can also consume resources.
+*   **Team Selection:** Carefully select your favorite sports teams to avoid overwhelming the sports section with irrelevant data.
+*   **Error Handling:** If you encounter any errors, check the browser's console for debugging information.

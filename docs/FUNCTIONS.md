@@ -1,124 +1,229 @@
 # Function Reference
 
-## app.py
+## weather.py
+### load_weather()
+- Description: Fetches weather data from multiple APIs (OpenWeatherMap, AccuWeather) and combines the results.
+- Parameters: None
+- Returns: A dictionary containing weather data (temperature, description, feels like temperature, humidity, wind speed) from the combined APIs.  Returns None if there's an error fetching data.
+- Example: `weather_data = load_weather()`
 
-### add_device(name, ip_address, mac_address)
-- Description: Adds a new device to the database.
+### get_open_weather_map_data(api_key, location)
+- Description: Fetches weather data from OpenWeatherMap.
 - Parameters:
-    - name (str): The name of the device.
-    - ip_address (str): The IP address of the device.
-    - mac_address (str): The MAC address of the device.
-- Returns: Redirects to the admin page.
-- Example:
-  ```python
-  add_device("MyDevice", "192.168.1.100", "00:11:22:33:44:55")
-  ```
+  - `api_key` (str): Your OpenWeatherMap API key.
+  - `location` (str): The location (city name) to fetch weather data for.
+- Returns: A dictionary containing weather data from OpenWeatherMap, or None if there’s an error.
+- Example: `open_weather_data = get_open_weather_map_data("YOUR_API_KEY", "London")`
 
-### admin(devices)
-- Description: Displays a list of all devices in the database.
+### get_accuweather_data(api_key, location)
+- Description: Fetches weather data from AccuWeather.
 - Parameters:
-    - devices (list): A list of device objects.
-- Returns: Renders the admin.html template with the device list.
-- Example:
-  ```python
-  admin()
-  ```
+  - `api_key` (str): Your AccuWeather API key.
+  - `location` (str): The location (city name) to fetch weather data for.
+- Returns: A dictionary containing weather data from AccuWeather, or None if there’s an error.
+- Example: `accuweather_data = get_accuweather_data("YOUR_API_KEY", "London")`
 
-### api_holiday_theme()
-- Description: Retrieves the current holiday theme data.
+### combine_weather_data(open_weather_data, accuweather_data)
+- Description: Combines weather data from OpenWeatherMap and AccuWeather.  Handles cases where one API might be unavailable.
 - Parameters:
-    - test_holiday (str, optional): The name of the test holiday. Defaults to None.
-- Returns: Returns a JSON object containing the holiday theme data.
-- Example:
-  ```python
-  api_holiday_theme()
-  ```
+  - `open_weather_data` (dict):  Weather data from OpenWeatherMap.
+  - `accuweather_data` (dict): Weather data from AccuWeather.
+- Returns: A dictionary containing combined weather data, or None if there was an error combining the data.
+- Example: `combined_data = combine_weather_data(open_weather_data, accuweather_data)`
 
-### get_holiday_theme(test_holiday=None)
-- Description: Retrieves the holiday theme from the database.
+## forecast.py
+### load_forecast()
+- Description: Fetches weather forecast data from OpenWeatherMap.
 - Parameters:
-    - test_holiday (str, optional): The name of the test holiday. Defaults to None.
-- Returns: Returns a dictionary containing the holiday theme data.
-- Example:
-  ```python
-  get_holiday_theme()
-  ```
+  - `api_key` (str): Your OpenWeatherMap API key.
+  - `location` (str): The location (city name) to fetch weather forecast data for.
+- Returns: A dictionary containing weather forecast data from OpenWeatherMap, or None if there’s an error.
+- Example: `forecast_data = load_forecast("YOUR_API_KEY", "London")`
 
-### get_package_status(tracking_number, carrier)
-- Description: Retrieves the package status from the database.
+### get_open_weather_map_forecast_data(api_key, location)
+- Description: Fetches weather forecast data from OpenWeatherMap.
 - Parameters:
-    - tracking_number (str): The tracking number of the package.
-    - carrier (str): The carrier of the package.
-- Returns: Returns a dictionary containing the package status.
-- Example:
-  ```python
-  get_package_status("1234567890", "UPS")
-  ```
+  - `api_key` (str): Your OpenWeatherMap API key.
+  - `location` (str): The location (city name) to fetch weather forecast data for.
+- Returns: A dictionary containing weather forecast data from OpenWeatherMap, or None if there’s an error.
+- Example: `open_weather_forecast_data = get_open_weather_map_forecast_data("YOUR_API_KEY", "London")`
 
-### periodic_archive_package()
-- Description: Moves delivered packages into the archive.
+## news.py
+### load_news()
+- Description: Fetches news headlines from various sources (NewsAPI).
 - Parameters:
-    - None
+  - `api_key` (str): Your NewsAPI API key.
+  - `category` (str, optional): The category of news to fetch (e.g., "world", "sports"). Defaults to "world".
+- Returns: A list of dictionaries, where each dictionary represents a news article with its title, description, and link. Returns an empty list if there’s an error.
+- Example: `news_articles = load_news()`
+
+### get_newsapi_articles(api_key, category)
+- Description: Retrieves news articles from NewsAPI based on the specified category.
+- Parameters:
+    - `api_key` (str): Your NewsAPI API key.
+    - `category` (str): The news category.
+- Returns: A list of dictionaries containing news articles, or an empty list in case of errors.
+- Example: `news_articles = get_newsapi_articles("YOUR_API_KEY", "sports")`
+
+## joke.py
+### load_joke()
+- Description: Fetches a random joke.
+- Parameters: None
+- Returns: A string containing the joke.  Returns None if there’s an error.
+- Example: `joke = load_joke()`
+
+### load_joke_history()
+- Description: Retrieves a history of previously fetched jokes.
+- Parameters: None
+- Returns: A list of strings, where each string is a previously fetched joke. Returns an empty list if there’s an error.
+- Example: `joke_history = load_joke_history()`
+
+## calendar.py
+### load_calendar_events()
+- Description: Fetches calendar events.
+- Parameters: None
+- Returns: A list of dictionaries, where each dictionary represents a calendar event with its title, description, and date. Returns an empty list if there’s an error.
+- Example: `calendar_events = load_calendar_events()`
+
+### get_open_weather_map_calendar_events(api_key, start_date, end_date)
+- Description: Retrieves calendar events based on a specified date range.
+- Parameters:
+  - `api_key` (str): Your OpenWeatherMap API key.
+  - `start_date` (str): The start date of the period
+  - `end_date` (str): The end date of the period
+- Returns: A list of dictionaries containing calendar events, or an empty list if there’s an error.
+- Example: `calendar_events = get_open_weather_map_calendar_events("YOUR_API_KEY", "2023-10-26", "2023-10-27")`
+
+### get_open_weather_map_calendar_feeds(api_key)
+- Description: Retrieves calendar feeds.
+- Parameters:
+    - `api_key` (str): Your OpenWeatherMap API key.
+- Returns: A list of calendar feeds, or an empty list if there’s an error.
+- Example: `calendar_feeds = get_open_weather_map_calendar_feeds("YOUR_API_KEY")`
+
+### load_local_events()
+- Description:  Loads calendar events from the system.
+- Parameters: None
+- Returns: A list of events.
+
+### get_open_weather_map_calendar_events(api_key, start_date, end_date)
+- Description: Fetches calendar events based on a specified date range.
+- Parameters:
+  - `api_key` (str): Your OpenWeatherMap API key.
+  - `start_date` (str): The start date of the period
+  - `end_date` (str): The end date of the period
+- Returns: A list of dictionaries containing calendar events, or an empty list if there’s an error.
+- Example: `calendar_events = get_open_weather_map_calendar_events("YOUR_API_KEY", "2023-10-26", "2023-10-27")`
+
+### delete_feed()
+- Description: Deletes calendar feed.
+- Parameters: None
 - Returns: None
-- Example:
-  ```python
-  periodic_package_archiving()
-  ```
 
-### periodic_scan()
-- Description: Scans for new packages every hour.
-- Parameters:
-    - None
+### delete_event()
+- Description: Deletes a calendar event
+- Parameters: None
 - Returns: None
-- Example:
-  ```python
-  scan_thread = threading.Thread(target=periodic_scan)
-  scan_thread.daemon = True
-  scan_thread.start()
-  ```
 
-### periodic_package_archiving()
-- Description: Moves delivered packages into the archive.
-- Parameters:
-    - None
+### edit_event()
+- Description: Edits a calendar event.
+- Parameters: None
 - Returns: None
-- Example:
-  ```python
-  package_archive_thread = threading.Thread(target=periodic_package_archiving)
-  package_archive_thread.daemon = True
-  package_archive_thread.start()
-  ```
 
-### periodic_speed_test()
-- Description: Runs speed test for a package every hour.
-- Parameters:
-    - None
-- Returns: None
-- Example:
-  ```python
-  speed_test_thread = threading.Thread(target=periodic_speed_test)
-  speed_test_thread.daemon = True
-  speed_test_thread.start()
-  ```
+## commute.py
+### load_commute_info()
+- Description: Fetches commute information.
+- Parameters: None
+- Returns: A dictionary containing commute information (e.g., traffic conditions, estimated travel time). Returns None if there's an error.
+- Example: `commute_data = load_commute_info()`
 
-### periodic_package_updates()
-- Description: Updates package statuses every 30 minutes.
-- Parameters:
-    - None
-- Returns: None
-- Example:
-  ```python
-  package_update_thread = threading.Thread(target=periodic_package_updates)
-  package_update_thread.daemon = True
-  package_update_thread.start()
-  ```
+### load_traffic_history()
+- Description: Retrieves traffic history data.
+- Parameters: None
+- Returns: A list of dictionaries containing traffic data.
+- Example: `traffic_history = load_traffic_history()`
 
-## functions.md
-- Description: This markdown file is intended to document the functions found in all the various python files.
-- Parameters:
-    - None
+### setup_commute_form()
+- Description: Sets up the commute form.
+- Parameters: None
 - Returns: None
-- Example:
-  ```python
-  # Example to document another function here.
-  ```
+
+## airQuality.py
+### load_air_quality()
+- Description: Fetches air quality data.
+- Parameters: None
+- Returns: A dictionary containing air quality data. Returns None if there’s an error.
+- Example: `air_quality_data = load_air_quality()`
+
+## homeAssistant.py
+### load_homeAssistant_data()
+- Description: Fetches data from Home Assistant.
+- Parameters: None
+- Returns: A dictionary containing Home Assistant data. Returns None if there’s an error.
+- Example: `home_assistant_data = load_homeAssistant_data()`
+
+## weatherAlerts.py
+### load_weather_alerts()
+- Description: Fetches weather alerts.
+- Parameters: None
+- Returns: A list of dictionaries containing weather alerts.  Returns an empty list if there’s an error.
+- Example: `weather_alerts = load_weather_alerts()`
+
+## shoppingList.py
+### load_shopping_list()
+- Description: Loads shopping list
+- Parameters: None
+- Returns: A list of items on the shopping list.
+- Example: `shopping_list = load_shopping_list()`
+
+### toggle_shopping_item()
+- Description: Adds or removes items from the shopping list.
+- Parameters: None
+- Returns: None
+
+### delete_shopping_item()
+- Description: Deletes an item from the shopping list
+- Parameters: None
+- Returns: None
+
+## package.py
+### load_packages()
+- Description: Loads a list of packages.
+- Parameters: None
+- Returns: A list of packages.
+- Example: `package_list = load_packages()`
+
+## homeAssistant.py
+### load_homeAssistant_data()
+- Description: Fetches data from Home Assistant.
+- Parameters: None
+- Returns: A dictionary containing Home Assistant data. Returns None if there’s an error.
+- Example: `home_assistant_data = load_homeAssistant_data()`
+
+## weatherAlerts.py
+### load_weather_alerts()
+- Description: Fetches weather alerts.
+- Parameters: None
+- Returns: A list of dictionaries containing weather alerts.  Returns an empty list if there’s an error.
+- Example: `weather_alerts = load_weather_alerts()`
+
+## package.py
+### load_packages()
+- Description: Loads a list of packages.
+- Parameters: None
+- Returns: A list of packages.
+- Example: `package_list = load_packages()`
+
+## weatherAlerts.py
+### load_weather_alerts()
+- Description: Fetches weather alerts.
+- Parameters: None
+- Returns: A list of dictionaries containing weather alerts.  Returns an empty list if there’s an error.
+- Example: `weather_alerts = load_weather_alerts()`
+
+## package.py
+### load_packages()
+- Description: Loads a list of packages.
+- Parameters: None
+- Returns: A list of packages.
+- Example: `package_list = load_packages()`

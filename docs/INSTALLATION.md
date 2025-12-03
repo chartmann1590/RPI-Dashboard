@@ -3,57 +3,58 @@
 ## Prerequisites
 
 *   Python 3.8 or higher
-*   pip (Python package installer)
+*   Node.js 16 or higher (for frontend dependencies)
 
 ## Dependencies
 
-The following Python packages are required:
+The following packages are required:
 
-*   Flask
-*   sqlite3
-*   pytz
-*   requests  (For potential future speed testing integration)
-*   beautifulsoup4 (potentially, if web scraping is added)
+*   `requests` (for making HTTP requests)
+*   `asyncio` (for asynchronous operations)
+*   `beautifulsoup4` (for parsing HTML)
+*   `dotenv` (for loading environment variables from a `.env` file)
+*   `axios` (for making HTTP requests - alternative to `requests` - used in frontend)
+*   `node-fetch` (for making HTTP requests - used in frontend)
+*   `npm` or `yarn` (for managing frontend dependencies)
 
 ## Installation Steps
 
 1.  **Clone the repository:**
-
     ```bash
-    git clone [Repository URL]
-    cd [Repository Directory]
+    git clone [repository URL]
+    cd [repository directory]
     ```
 
-2.  **Create a virtual environment (recommended):**
+2.  **Set up the backend environment:**
+    *   Create a `.env` file in the root directory.
+    *   Add your API keys and other environment variables to the `.env` file.
+        *   Example:
+            ```
+            HOME_ASSISTANT_API_KEY=your_home_assistant_api_key
+            OPENWEATHERMAP_API_KEY=your_openweather_map_api_key
+            ACCUWEATHER_API_KEY=your_accuweather_api_key
+            ```
 
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate  # On Linux/macOS
-    # venv\Scripts\activate  # On Windows
-    ```
-
-3.  **Install the dependencies:**
-
+3.  **Install backend dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Run the application:**
-
+4.  **Install frontend dependencies:**
     ```bash
-    python app.py
+    npm install
     ```
-
-    This will start the Flask development server, typically on `
-
-## Initial Setup
-
-*   The database file (`packages.db`) will be created in the same directory as the `app.py` file.
-*   The first time you run the application, it will automatically create the necessary tables in the database.
 
 ## Verifying Installation
 
-1.  **Open your web browser and navigate to `
-2.  **You should see the `index.html` page**, displaying a list of devices with their status, last seen time, and other information.
-3.  **Click on the "Admin" link** to access the admin interface.
-4.  **Add a new device** through the admin interface to verify the device addition functionality.
+1.  **Start the backend server:**
+    ```bash
+    python main.py
+    ```
+
+2.  **Open the frontend in your browser:**
+    *   Navigate to ` (or the port specified in your `.env` file).
+
+3.  **Check the console:** Verify that the backend server is running without errors.  Check the browser console for any frontend-related errors.
+
+4.  **Test the data sources:** Confirm that the dashboard is successfully fetching data from Home Assistant, OpenWeatherMap, and AccuWeather.  For example, check if the current weather temperature is displayed correctly.

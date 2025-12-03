@@ -2,48 +2,63 @@
 
 ## Endpoints
 
-### / (GET)
-- **Description:** Returns a list of all devices with their status and last seen timestamp.
-- **Parameters:** None
-- **Response Format:** JSON array of device objects. Each device object includes `id`, `name`, `ip_address`, `mac_address`, `status`, `last_seen`, and `notify`.
-- **Example Usage:** `GET /`
-
-### /admin (GET)
-- **Description:** Returns a list of all devices for admin purposes.
-- **Parameters:** None
-- **Response Format:** JSON array of device objects similar to `/` endpoint.
-- **Example Usage:** `GET /admin`
-
-### /admin/add_device (POST)
-- **Description:** Adds a new device to the database.
-- **Parameters:**
-    - `name` (string): The name of the device.
-    - `ip_address` (string): The IP address of the device.
-    - `mac_address` (string): The MAC address of the device.
-- **Response Format:** JSON indicating success or error. Success returns the newly created device’s ID and the created device details. Error returns an error message.
-- **Example Usage:**
+### /api/calendar-feeds
+- HTTP method: POST
+- Path: /api/calendar-feeds
+- Description: Adds a new calendar feed.
+- Parameters:
+  - `feed_name` (string): The name of the calendar feed.
+  - `url` (string): The URL of the calendar feed.
+- Response format: JSON
   ```json
   {
-    "name": "New Device",
-    "ip_address": "192.168.1.100",
-    "mac_address": "00:11:22:33:44:55"
+    "success": true,
+    "message": "Calendar feed added successfully."
   }
   ```
-  `POST /admin/add_device`
+- Example usage:
+  ```bash
+  curl -X POST -H "Content-Type: application/json" -d '{"feed_name": "My Calendar", "url": " /api/calendar-feeds
+  ```
 
-### /api/holiday-theme (GET)
-- **Description:** Returns the current holiday theme data.
-- **Parameters:**
-    - `test-holiday` (string, optional):  Test holiday to retrieve.
-- **Response Format:** JSON object with the holiday theme data. Includes `active`, `holiday`, `particle_type`, `background_gradient`, and `colors`. If `test-holiday` is provided, it will attempt to retrieve the theme associated with that holiday.
-- **Example Usage:**
-    `GET /api/holiday-theme?test-holiday=christmas`
+### /api/calendar-events/local
+- HTTP method: POST
+- Path: /api/calendar-events/local
+- Description: Adds a new local calendar event.
+- Parameters:
+  - `event_name` (string): The name of the calendar event.
+  - `start_time` (string): The start time of the calendar event (ISO 8601 format).
+  - `end_time` (string): The end time of the calendar event (ISO 8601 format).
+  - `description` (string):  A description of the calendar event.
+- Response format: JSON
+  ```json
+  {
+    "success": true,
+    "message": "Calendar event added successfully."
+  }
+  ```
+- Example usage:
+  ```bash
+  curl -X POST -H "Content-Type: application/json" -d '{"event_name": "Meeting", "start_time": "2023-10-27T10:00:00Z", "end_time": "2023-10-27T11:00:00Z", "description": "Team meeting"}' /api/calendar-events/local
+  ```
+
+### /api/settings/sports
+- HTTP method: POST
+- Path: /api/settings/sports
+- Description: Saves sports settings.
+- Parameters:
+  - `team_name` (string): The name of the sports team.
+  - `sport` (string): The sport (e.g., "Football", "Baseball").
+- Response format: JSON
+  ```json
+  {
+    "success": true,
+    "message": "Sports settings saved successfully."
+  }
+  ```
+- Example usage:
+  ```bash
+  curl -X POST -H "Content-Type: application/json" -d '{"team_name": "Local Team", "sport": "Football"}' /api/settings/sports
+  ```
 
 ## Authentication
-
-- No authentication requirements found. All endpoints are publicly accessible.
-
-## Error Handling
-
-- **400 Bad Request:**  Returned if the request body is invalid (e.g., missing required fields, invalid data types).
-- **500 Internal Server Error:** Returned if there is an unexpected error during processing.
