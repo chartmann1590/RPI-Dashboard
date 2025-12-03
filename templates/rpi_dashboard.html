@@ -1842,6 +1842,9 @@
     </div>
     
     <script>
+        // Timezone configuration from backend
+        const TIMEZONE = '{{ timezone }}';
+        
         let currentScreen = 0;
         let totalScreens = 20; // Will be adjusted based on available screens
         const screenDuration = 10000; // 10 seconds per screen
@@ -1876,13 +1879,15 @@
             document.getElementById('big-clock').textContent = now.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit',
-                hour12: true 
+                hour12: true,
+                timeZone: TIMEZONE
             });
             document.getElementById('big-date').textContent = now.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 month: 'long', 
                 day: 'numeric',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: TIMEZONE
             });
         }
         

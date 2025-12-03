@@ -1,7 +1,6 @@
 # Configuration Guide
 
 ## Environment Variables
-
 *   **OPENWEATHERMAP_API_KEY**: Description: OpenWeatherMap API key. Required: yes. Default value: None
 *   **ACCUWEATHER_API_KEY**: Description: AccuWeather API key. Required: yes. Default value: None
 *   **HOME_ASSISTANT_URL**: Description: URL of the Home Assistant instance. Required: yes. Default value: None

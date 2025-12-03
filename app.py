@@ -40,17 +40,17 @@ GOTIFY_TOKEN = os.getenv('GOTIFY_TOKEN', '')
 
 # Weather API (OpenWeatherMap - free tier)
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY', '')
-WEATHER_CITY = "Rotterdam,NY,US"  # Your location
-WEATHER_LAT = "42.7809"  # Latitude for Rotterdam, NY
-WEATHER_LON = "-74.5388"  # Longitude for Rotterdam, NY
+WEATHER_CITY = os.getenv('WEATHER_CITY', 'Rotterdam,NY,US')
+WEATHER_LAT = os.getenv('WEATHER_LAT', '42.7809')
+WEATHER_LON = os.getenv('WEATHER_LON', '-74.5388')
 WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
 WEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
 
 # News API (NewsAPI - free tier)
 NEWS_API_KEY = os.getenv('NEWS_API_KEY', '')
 NEWS_API_URL = "https://newsapi.org/v2/everything"  # Changed to everything endpoint for local news
-NEWS_QUERY = "Rotterdam OR Schenectady OR Albany"  # Local area search terms
-NY_NEWS_QUERY = "New York"  
+NEWS_QUERY = os.getenv('NEWS_QUERY', 'Rotterdam OR Schenectady OR Albany')
+NY_NEWS_QUERY = os.getenv('NY_NEWS_QUERY', 'New York')  
 HEADLINES_API_URL = "https://newsapi.org/v2/top-headlines"
 
 # Ollama AI Configuration
@@ -72,6 +72,13 @@ HA_TOKEN = os.getenv('HA_TOKEN', '')
 
 if not HA_URL or not HA_TOKEN:
     logging.warning("Home Assistant URL or token not found in environment variables. HA features will be disabled.")
+
+# Timezone Configuration
+TIMEZONE = os.getenv('TIMEZONE', 'America/New_York')
+
+def get_timezone():
+    """Get the configured timezone object"""
+    return pytz.timezone(TIMEZONE)
 
 db_path = os.path.join('static', 'db', 'network_status.db')
 
@@ -568,7 +575,7 @@ def device_history(name):
         else:
             c.execute("SELECT status, timestamp FROM device_history WHERE device_id = ? ORDER BY timestamp ASC", (device_id,))
         history = c.fetchall()
-    ny_tz = pytz.timezone('America/New_York')
+    ny_tz = get_timezone()
     formatted_history = []
     for entry in history:
         status, last_seen_str = entry
@@ -583,8 +590,8 @@ def rpi_dashboard():
     # Get screen resolution
     width, height = get_screen_resolution()
     
-    # Pass screen dimensions to template
-    return render_template('rpi_dashboard.html', screen_width=width, screen_height=height)
+    # Pass screen dimensions and timezone to template
+    return render_template('rpi_dashboard.html', screen_width=width, screen_height=height, timezone=TIMEZONE)
 
 @app.route('/api/dashboard-data')
 def dashboard_data():
@@ -691,8 +698,9 @@ def dashboard_data():
             'random_photo': random_photo,
             'packages': packages,
             'shopping_list': shopping_list,
-            'time': datetime.now().strftime('%I:%M %p'),
-            'date': datetime.now().strftime('%A, %B %d'),
+            'time': datetime.now(get_timezone()).strftime('%I:%M %p'),
+            'date': datetime.now(get_timezone()).strftime('%A, %B %d'),
+            'timezone': TIMEZONE,
             'weather_radar_url': f"https://radar.weather.gov/ridge/standard/KENX_loop.gif"  # Albany, NY radar
         })
 
@@ -729,7 +737,7 @@ def joke_history():
             
             # Format the jokes
             formatted_jokes = []
-            ny_tz = pytz.timezone('America/New_York')
+            ny_tz = get_timezone()
             for joke_text, timestamp_str in jokes:
                 timestamp_dt = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
                 timestamp_dt = timestamp_dt.replace(tzinfo=pytz.utc).astimezone(ny_tz)
@@ -961,7 +969,7 @@ def api_traffic_history():
         events = c.fetchall()
         conn.close()
         
-        ny_tz = pytz.timezone('America/New_York')
+        ny_tz = get_timezone()
         formatted_events = []
         for event in events:
             event_type, traffic_level, location, description, lat, lon, timestamp_str = event
@@ -1085,7 +1093,7 @@ def quote_history():
             
             # Format the quotes
             formatted_quotes = []
-            ny_tz = pytz.timezone('America/New_York')
+            ny_tz = get_timezone()
             for quote_text, author, timestamp_str in quotes:
                 timestamp_dt = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
                 timestamp_dt = timestamp_dt.replace(tzinfo=pytz.utc).astimezone(ny_tz)
@@ -1443,7 +1451,7 @@ def api_refresh_package(package_id):
         # Check if delivered
         delivered_date = None
         if status_data['status'].lower() == 'delivered':
-            delivered_date = datetime.now()
+            delivered_date = datetime.now(get_timezone())
         
         # Update package
         c.execute("""
@@ -1877,7 +1885,7 @@ def get_weather(use_cache=True, retry_count=3):
                 'wind_speed': round(data['wind']['speed']),
                 'location': data['name'],
                 'country': data['sys']['country'],
-                'updated': datetime.now().strftime('%I:%M %p')
+                'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
             }
             
             # Cache the successful response
@@ -1972,7 +1980,7 @@ def get_weather_forecast(use_cache=True, retry_count=3):
             forecast_data = {
                 'hourly': hourly_forecast,
                 'daily': daily_forecast,
-                'updated': datetime.now().strftime('%I:%M %p')
+                'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
             }
             
             # Cache the successful response
@@ -2160,7 +2168,7 @@ def get_calendar_events(use_cache=True):
             return cached_data
     
     all_events = []
-    ny_tz = pytz.timezone('America/New_York')
+    ny_tz = get_timezone()
     now = datetime.now(ny_tz)
     seven_days_later = now + timedelta(days=7)
     
@@ -2537,7 +2545,7 @@ def get_commute_info(use_cache=True):
                                             'traffic_level': segment.get('traffic_level'),
                                             'location': f"Route segment {i+1}",
                                             'description': description,
-                                            'time': datetime.now().strftime('%I:%M %p'),
+                                            'time': datetime.now(get_timezone()).strftime('%I:%M %p'),
                                             'lat': seg_lat,
                                             'lon': seg_lon
                                         })
@@ -2558,7 +2566,7 @@ def get_commute_info(use_cache=True):
                         'route_coordinates': route_coordinates,  # For map display
                         'route_segments': route_segments,  # Segment-level traffic data
                         'traffic_events': current_events,  # Current traffic events
-                        'updated': datetime.now().strftime('%I:%M %p')
+                        'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
                     }
                     
                     set_cached_data(cache_key, commute_data)
@@ -2631,7 +2639,7 @@ def get_air_quality(use_cache=True):
             'pm10': round(components.get('pm10', 0), 1),
             'no2': round(components.get('no2', 0), 1),
             'o3': round(components.get('o3', 0), 1),
-            'updated': datetime.now().strftime('%I:%M %p')
+            'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
         }
         
         set_cached_data(cache_key, air_quality_data)
@@ -2671,7 +2679,7 @@ def get_daily_quote(use_cache=True):
                 updated_str = cached_data.get('updated', '')
                 if updated_str:
                     cached_time = datetime.strptime(updated_str, '%Y-%m-%d')
-                    if cached_time.date() == datetime.now().date():
+                    if cached_time.date() == datetime.now(get_timezone()).date():
                         return cached_data
             except (ValueError, TypeError) as e:
                 logging.warning(f"Error parsing cached quote date: {e}")
@@ -2716,7 +2724,7 @@ def get_daily_quote(use_cache=True):
                     quote_data = {
                         'text': quote_text,
                         'author': author,
-                        'updated': datetime.now().strftime('%Y-%m-%d')
+                        'updated': datetime.now(get_timezone()).strftime('%Y-%m-%d')
                     }
                     
                     # Save to history
@@ -2752,7 +2760,7 @@ def get_daily_quote(use_cache=True):
     quote_data = {
         'text': fallback_quote['text'],
         'author': fallback_quote['author'],
-        'updated': datetime.now().strftime('%Y-%m-%d')
+        'updated': datetime.now(get_timezone()).strftime('%Y-%m-%d')
     }
     
     # Save fallback quote to history
@@ -2777,9 +2785,9 @@ def get_astronomy_data(use_cache=True):
         from astral.moon import phase
         
         city = LocationInfo("Rotterdam", "NY", "US", float(WEATHER_LAT), float(WEATHER_LON))
-        s = sun(city.observer, date=datetime.now().date())
+        s = sun(city.observer, date=datetime.now(get_timezone()).date())
         
-        moon_phase_value = phase(datetime.now().date())
+        moon_phase_value = phase(datetime.now(get_timezone()).date())
         moon_phases = {
             0: {'name': 'New Moon', 'icon': '🌑'},
             0.25: {'name': 'First Quarter', 'icon': '🌓'},
@@ -2801,7 +2809,7 @@ def get_astronomy_data(use_cache=True):
         else:
             percentage = 75 + ((moon_phase_value - 0.75) / 0.25) * 25
         
-        ny_tz = pytz.timezone('America/New_York')
+        ny_tz = get_timezone()
         sunrise = s['sunrise'].astimezone(ny_tz)
         sunset = s['sunset'].astimezone(ny_tz)
         
@@ -2812,7 +2820,7 @@ def get_astronomy_data(use_cache=True):
             'moon_percentage': round(percentage),
             'sunrise': sunrise.strftime('%I:%M %p'),
             'sunset': sunset.strftime('%I:%M %p'),
-            'updated': datetime.now().strftime('%I:%M %p')
+            'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
         }
         
         set_cached_data(cache_key, astronomy_data)
@@ -2863,7 +2871,7 @@ def run_speed_test():
             'download_mbps': round(download_mbps, 2),
             'upload_mbps': round(upload_mbps, 2),
             'ping_ms': round(ping_ms, 2),
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': datetime.now(get_timezone()).strftime('%Y-%m-%d %H:%M:%S')
         }
         
         logging.info(f"Speed test completed: {download_mbps:.2f} Mbps down, {upload_mbps:.2f} Mbps up")
@@ -3246,7 +3254,7 @@ def get_joke(use_cache=True, retry_count=3):
                 if joke_text:
                     joke_data = {
                         'text': joke_text,
-                        'updated': datetime.now().strftime('%I:%M %p')
+                        'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
                     }
                     
                     # Save to history
@@ -3282,7 +3290,7 @@ def get_joke(use_cache=True, retry_count=3):
     logging.error("Failed to fetch joke from all Ollama servers")
     return {
         'text': 'Unable to fetch a joke at this time. Please try again later.',
-        'updated': datetime.now().strftime('%I:%M %p')
+        'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
     }
 
 # ==================== PACKAGE TRACKING FUNCTIONS ====================
@@ -3606,8 +3614,8 @@ def calculate_easter(year):
 
 def get_current_holiday(test_holiday=None):
     """Get current holiday theme data"""
-    # Use Eastern Time for holiday detection
-    ny_tz = pytz.timezone('America/New_York')
+    # Use configured timezone for holiday detection
+    ny_tz = get_timezone()
     today = datetime.now(ny_tz).date()
     
     # Check for test holiday override
@@ -3900,7 +3908,7 @@ def index():
 
         devices = list(unique_devices.values())
 
-    ny_tz = pytz.timezone('America/New_York')
+    ny_tz = get_timezone()
     formatted_devices = []
     for device in devices:
         last_seen_str = device[2]
@@ -3912,7 +3920,7 @@ def index():
             formatted_last_seen = last_seen_dt.strftime('%Y-%m-%d %I:%M:%S %p')
         formatted_devices.append((device[0], device[1], formatted_last_seen))
 
-    return render_template('index.html', devices=formatted_devices)
+    return render_template('index.html', devices=formatted_devices, timezone=TIMEZONE)
 
 @app.route('/admin')
 @require_admin
@@ -3967,7 +3975,7 @@ def periodic_package_updates():
                     
                     delivered_date = None
                     if status_data['status'].lower() == 'delivered':
-                        delivered_date = datetime.now()
+                        delivered_date = datetime.now(get_timezone())
                     
                     conn = sqlite3.connect(db_path)
                     c = conn.cursor()

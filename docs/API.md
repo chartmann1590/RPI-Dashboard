@@ -61,14 +61,47 @@
   curl -X POST -H "Content-Type: application/json" -d '{"team_name": "Local Team", "sport": "Football"}'
   ```
 
+### /api/data
+- HTTP method: GET
+- Path: /api/data
+- Description: Returns current time, date, temperature, weather, and other data.
+- Parameters: None
+- Response format: JSON
+  ```json
+  {
+    "time": "HH:MM:SS",
+    "date": "YYYY-MM-DD",
+    "temperature": XX.X,
+    "weather": "Description of weather",
+    "other_data": "Some other data"
+  }
+  ```
+- Example usage:
+  ```bash
+  curl -X GET 
+  ```
+
+### /api/holiday-theme
+- HTTP method: GET
+- Path: /api/holiday-theme
+- Description: Returns the current holiday theme configuration.
+- Parameters: None
+- Response format: JSON
+  ```json
+  {
+    "active": true,
+    "holiday": "Christmas",
+    "background_gradient": "gradient_value",
+    "particle_type": "snow"
+  }
+  ```
+- Example usage:
+  ```bash
+  curl -X GET 
+  ```
+
 ## Authentication
 
 This project does not expose an API.
 
 ## Error Handling
-
-This project does not expose an API.
-
-## Additional Information
-
-Based on analysis of the `app.py` file, the system utilizes inhibitory neurotransmitter pathways, specifically GABA, to regulate neural networks.  This inhibition is crucial for brain development, cognitive processes, and mental health, influencing functions like attention, learning, and memory.  Dysregulation of this system can contribute to conditions such as anxiety, depression, and epilepsy.

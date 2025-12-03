@@ -1,30 +1,31 @@
-# SmartPi Dashboard
+# Project Name
 
 ## Description
-This project creates a web-based dashboard that displays a variety of information on a Raspberry Pi screen. It integrates data sources for news, traffic, weather, calendar, shopping lists, photo albums, and home network device status.
+This project provides a web-based dashboard for a Raspberry Pi, displaying real-time information including news, weather, traffic, a photo album, calendar, shopping list, home device status, and more.  It utilizes Python (Flask) for the backend and a dynamic HTML frontend for a responsive user interface.
 
 ## Features
-*   Real-time news updates
-*   Traffic information
-*   Weather forecasts
-*   Calendar synchronization
-*   Shopping list management
-*   Photo album display
-*   Home network device monitoring (who is home)
-*   Customizable dashboard layout
+*   Real-time News Feed
+*   Current Weather Information
+*   Traffic Updates
+*   Photo Album Display
+*   Calendar Integration
+*   Shopping List Management
+*   Home Device Status Monitoring
+*   Dynamic Holiday Theme Support
+*   API Endpoints for Data Retrieval
 
 ## Quick Start
-1.  Installation command: `pip install -r requirements.txt`
-2.  Configuration needed:  Configuration files (e.g., API keys, network settings) must be set up correctly.
-3.  How to run: `python app.py`
+1.  Ensure Python and Flask are installed on your Raspberry Pi.
+2.  Clone the repository to your Pi.
+3.  Run `app.py` using `python app.py`
 
 ## Documentation
-*   [Overview](docs/OVERVIEW.md)
-*   [Installation](docs/INSTALLATION.md)
-*   [Configuration](docs/CONFIGURATION.md)
-*   [API Reference](docs/API.md)
-*   [Usage Guide](docs/USAGE.md)
-*   [Function Reference](docs/FUNCTIONS.md)
+- [Overview](docs/OVERVIEW.md)
+- [Installation](docs/INSTALLATION.md)
+- [Configuration](docs/CONFIGURATION.md)
+- [API Reference](docs/API.md)
+- [Usage Guide](docs/USAGE.md)
+- [Function Reference](docs/FUNCTIONS.md)
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute to this project.
