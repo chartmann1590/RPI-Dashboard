@@ -2,62 +2,58 @@
 
 ## Prerequisites
 
-*   **Python 3.9 or higher:** This project requires Python 3.9 or a later version.
-*   **pip:** Python's package installer. Ensure pip is up to date.
+*   Python 3.8 or higher
+*   pip (Python package installer)
 
 ## Dependencies
 
 The following Python packages are required:
 
-*   Flask==3.0.3
-*   Flask-SQLAlchemy
-*   requests==2.32.3
-*   SQLAlchemy
-*   threading
-*   logging
-*   jinja2
-*   itsdangerous
-*   wtforms
-*   beautifulsoup4
-*   python-dotenv
+*   Flask
+*   sqlite3
+*   pytz
+*   requests  (For potential future speed testing integration)
+*   beautifulsoup4 (potentially, if web scraping is added)
 
 ## Installation Steps
 
-1.  **Clone the Repository:**
+1.  **Clone the repository:**
+
     ```bash
-    git clone <repository_url>
-    cd <repository_directory>
+    git clone [Repository URL]
+    cd [Repository Directory]
     ```
 
-2.  **Create a Virtual Environment (Recommended):**
+2.  **Create a virtual environment (recommended):**
+
     ```bash
     python3 -m venv venv
     source venv/bin/activate  # On Linux/macOS
     # venv\Scripts\activate  # On Windows
     ```
 
-3.  **Install Dependencies:**
+3.  **Install the dependencies:**
+
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Set up Environment Variables (Important):**
-    *   Create a `.env` file in the root directory of your project.
-    *   Add the following environment variables to the `.env` file:
-        *   `DATABASE_URL`:  The SQLite database URL (e.g., `sqlite:///./database.db`).
-        *   `API_KEY`: (If applicable, for external API integrations – leave blank if none).
+4.  **Run the application:**
 
-5.  **Run the Application:**
     ```bash
     python app.py
     ```
 
+    This will start the Flask development server, typically on `
+
 ## Initial Setup
 
-*   The first time you run the application, it will create the SQLite database file (`database.db`) and the required tables.
+*   The database file (`packages.db`) will be created in the same directory as the `app.py` file.
+*   The first time you run the application, it will automatically create the necessary tables in the database.
 
 ## Verifying Installation
 
-1.  **Open your web browser:** Navigate to `
-2.  **Check the UI:** You should see the main dashboard with device information, alerts, and the large clock.
-3.  **Verify API integration:**  (If applicable) Check that the joke/quote display is updating periodically.  Also, check that the package tracking data is being fetched.
+1.  **Open your web browser and navigate to `
+2.  **You should see the `index.html` page**, displaying a list of devices with their status, last seen time, and other information.
+3.  **Click on the "Admin" link** to access the admin interface.
+4.  **Add a new device** through the admin interface to verify the device addition functionality.

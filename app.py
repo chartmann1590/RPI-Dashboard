@@ -305,6 +305,16 @@ def create_db(retry_count=5, delay=0.1):
                 archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             ''')
+            # Create shopping_list table
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS shopping_list (
+                id INTEGER PRIMARY KEY,
+                item_name TEXT NOT NULL,
+                completed INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
             conn.commit()
             conn.close()
             logging.info("Database created and initialized.")
@@ -622,6 +632,23 @@ def dashboard_data():
                 'updated_at': pkg[8]
             })
         
+        # Fetch shopping list items
+        c.execute("""
+            SELECT id, item_name, completed, created_at, updated_at
+            FROM shopping_list
+            ORDER BY completed ASC, created_at ASC
+        """)
+        shopping_list_data = c.fetchall()
+        shopping_list = []
+        for item in shopping_list_data:
+            shopping_list.append({
+                'id': item[0],
+                'item_name': item[1],
+                'completed': bool(item[2]),
+                'created_at': item[3],
+                'updated_at': item[4]
+            })
+        
         # For RPi dashboard, select one random news article
         random_news = None
         if news and len(news) > 0:
@@ -661,6 +688,7 @@ def dashboard_data():
             'photos': photos,
             'random_photo': random_photo,
             'packages': packages,
+            'shopping_list': shopping_list,
             'time': datetime.now().strftime('%I:%M %p'),
             'date': datetime.now().strftime('%A, %B %d'),
             'weather_radar_url': f"https://radar.weather.gov/ridge/standard/KENX_loop.gif"  # Albany, NY radar
@@ -1497,6 +1525,122 @@ def api_packages_archive():
     except Exception as e:
         logging.error(f"Error fetching archived packages: {e}")
         return jsonify({'error': str(e)}), 500
+
+# ==================== SHOPPING LIST API ENDPOINTS ====================
+@app.route('/api/shopping-list', methods=['GET', 'POST'])
+def api_shopping_list():
+    """Get all shopping list items or add a new item"""
+    if request.method == 'GET':
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("""
+                SELECT id, item_name, completed, created_at, updated_at
+                FROM shopping_list
+                ORDER BY completed ASC, created_at ASC
+            """)
+            items_data = c.fetchall()
+            conn.close()
+            
+            items = []
+            for item in items_data:
+                items.append({
+                    'id': item[0],
+                    'item_name': item[1],
+                    'completed': bool(item[2]),
+                    'created_at': item[3],
+                    'updated_at': item[4]
+                })
+            
+            return jsonify(items)
+        except Exception as e:
+            logging.error(f"Error fetching shopping list: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    elif request.method == 'POST':
+        try:
+            data = request.json
+            item_name = data.get('item_name', '').strip()
+            
+            if not item_name:
+                return jsonify({'error': 'Item name is required'}), 400
+            
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("""
+                INSERT INTO shopping_list (item_name, completed)
+                VALUES (?, 0)
+            """, (item_name,))
+            item_id = c.lastrowid
+            conn.commit()
+            conn.close()
+            
+            logging.info(f"Added shopping list item: {item_name}")
+            return jsonify({'id': item_id, 'status': 'success'})
+        except Exception as e:
+            logging.error(f"Error adding shopping list item: {e}")
+            return jsonify({'error': str(e)}), 500
+
+@app.route('/api/shopping-list/<int:item_id>', methods=['PUT', 'DELETE'])
+def api_shopping_list_item(item_id):
+    """Update or delete a shopping list item"""
+    if request.method == 'PUT':
+        try:
+            data = request.json
+            item_name = data.get('item_name', '').strip()
+            completed = data.get('completed')
+            
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            
+            # Check if item exists
+            c.execute("SELECT id FROM shopping_list WHERE id = ?", (item_id,))
+            if not c.fetchone():
+                conn.close()
+                return jsonify({'error': 'Item not found'}), 404
+            
+            # Update item
+            if item_name and completed is not None:
+                c.execute("""
+                    UPDATE shopping_list 
+                    SET item_name = ?, completed = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                """, (item_name, 1 if completed else 0, item_id))
+            elif item_name:
+                c.execute("""
+                    UPDATE shopping_list 
+                    SET item_name = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                """, (item_name, item_id))
+            elif completed is not None:
+                c.execute("""
+                    UPDATE shopping_list 
+                    SET completed = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                """, (1 if completed else 0, item_id))
+            else:
+                conn.close()
+                return jsonify({'error': 'No update data provided'}), 400
+            
+            conn.commit()
+            conn.close()
+            
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            logging.error(f"Error updating shopping list item: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    elif request.method == 'DELETE':
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("DELETE FROM shopping_list WHERE id = ?", (item_id,))
+            conn.commit()
+            conn.close()
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            logging.error(f"Error deleting shopping list item: {e}")
+            return jsonify({'error': str(e)}), 500
 
 def ping_device(ip):
     logging.debug(f"Pinging IP: {ip}")

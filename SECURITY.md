@@ -4,27 +4,33 @@
 
 If you discover a security vulnerability, please follow these steps:
 
-1. Do not open a public issue
+1. **Do not** open a public issue
 2. Open a private security advisory or contact the maintainers directly
 3. Provide details about the vulnerability
 4. Allow time for the issue to be addressed before public disclosure
 
 ## Supported Versions
 
-The following versions of this project currently receive security updates:
+Currently supported versions with security updates:
 
-*   Version 1.0.0 - 2024-02-29
-*   Version 1.1.0 - 2024-03-01
+*   1.0.0 - 1.0.5 (Ongoing security maintenance)
+*   1.0.6 - 1.0.10 (Security maintenance ongoing)
+*   1.0.11 - 1.0.15 (Security maintenance ongoing)
 
 ## Security Best Practices
 
-*   **API Key Management:**  Never hardcode API keys directly into the code. Store them securely using environment variables or a dedicated secrets management solution.
-*   **Input Validation:** Always validate user input to prevent injection attacks (e.g., SQL injection, cross-site scripting).
-*   **Rate Limiting:** Implement rate limiting to protect against denial-of-service attacks.
-*   **Secure Database Connections:** Use secure database connections and follow best practices for database security.
-*   **HTTPS:** Ensure that the application is served over HTTPS to encrypt communication between the client and the server.
-*   **Regular Updates:** Keep all software components (e.g., Python, Flask, SQLite) up to date with the latest security patches.
+*   **API Key Protection:** Never hardcode API keys in your code. Use environment variables to store sensitive information.
+*   **Input Validation:** Implement robust input validation to prevent injection attacks and other vulnerabilities.
+*   **Database Security:** Secure your database connections and use parameterized queries to prevent SQL injection.
+*   **Rate Limiting:** Implement rate limiting on your API endpoints to prevent denial-of-service attacks.
+*   **Regular Updates:** Keep your dependencies up-to-date to patch known vulnerabilities.
+*   **Logging:** Implement comprehensive logging to track user activity and detect suspicious behavior.
 
 ## Disclosure Policy
 
-Security vulnerabilities will be handled through a private channel.  If you report a vulnerability, you will be contacted directly by the project maintainers.  We will acknowledge receipt of your report and provide updates on the progress of the investigation and remediation.  We appreciate your help in keeping this project secure.  Public disclosure of vulnerabilities will only occur after the issue has been fully addressed and a security patch has been released.
+Security issues will be handled according to the following policy:
+
+1.  **Initial Contact:** Upon discovery of a vulnerability, immediately contact the maintainers via a private security advisory or email. Do not publicly disclose the vulnerability.
+2.  **Triage:** The maintainers will acknowledge receipt of the report and initiate a triage process.
+3.  **Remediation:** Once the vulnerability is confirmed, the maintainers will prioritize remediation based on its severity.
+4.  **Disclosure:** After the fix is deployed and verified, the maintainers will publicly disclose the vulnerability through a security advisory.  The disclosure timeline will be communicated to the reporter.

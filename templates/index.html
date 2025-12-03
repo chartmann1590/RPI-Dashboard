@@ -1029,6 +1029,21 @@
                 </div>
             </div>
             
+            <!-- Shopping List Card -->
+            <div class="card forecast-card">
+                <h2>🛒 Shopping List</h2>
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Add Item</h3>
+                    <form id="add-shopping-item-form" style="display: grid; gap: 0.5rem;">
+                        <input type="text" id="shopping-item-name" placeholder="Item name" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem;">Add Item</button>
+                    </form>
+                </div>
+                <div id="shopping-list-widget" class="loading">
+                    Loading shopping list...
+                </div>
+            </div>
+            
             <!-- Home Assistant Card -->
             <div class="card forecast-card">
                 <h2>🏠 Home Assistant</h2>
@@ -2256,6 +2271,111 @@
             }
         });
         
+        // ==================== SHOPPING LIST FUNCTIONS ====================
+        async function loadShoppingList() {
+            try {
+                const response = await fetch('/api/shopping-list');
+                const items = await response.json();
+                
+                const widget = document.getElementById('shopping-list-widget');
+                if (items && items.length > 0) {
+                    widget.innerHTML = '<div class="news-list">' + 
+                        items.map(item => {
+                            const completedStyle = item.completed ? 
+                                'text-decoration: line-through; opacity: 0.6; color: #999;' : '';
+                            return `
+                                <div class="news-item" style="${completedStyle}">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+                                            <input type="checkbox" ${item.completed ? 'checked' : ''} 
+                                                   onchange="toggleShoppingItem(${item.id}, ${!item.completed})" 
+                                                   style="cursor: pointer;">
+                                            <span style="flex: 1;">${item.item_name}</span>
+                                        </div>
+                                        <button onclick="deleteShoppingItem(${item.id})" 
+                                                class="btn btn-secondary" 
+                                                style="padding: 0.25rem 0.75rem; font-size: 0.9rem; margin-left: 0.5rem;">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('') + '</div>';
+                } else {
+                    widget.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No items in shopping list</div>';
+                }
+            } catch (error) {
+                console.error('Error loading shopping list:', error);
+                document.getElementById('shopping-list-widget').innerHTML = '<div class="error">Failed to load shopping list</div>';
+            }
+        }
+        
+        async function addShoppingItem() {
+            const itemName = document.getElementById('shopping-item-name').value.trim();
+            if (!itemName) {
+                alert('Please enter an item name');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/shopping-list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_name: itemName })
+                });
+                if (response.ok) {
+                    document.getElementById('shopping-item-name').value = '';
+                    loadShoppingList();
+                } else {
+                    const error = await response.json();
+                    alert('Error adding item: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error adding shopping item:', error);
+                alert('Error adding item');
+            }
+        }
+        
+        async function toggleShoppingItem(itemId, completed) {
+            try {
+                const response = await fetch(`/api/shopping-list/${itemId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: completed })
+                });
+                if (response.ok) {
+                    loadShoppingList();
+                } else {
+                    const error = await response.json();
+                    alert('Error updating item: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error toggling shopping item:', error);
+                alert('Error updating item');
+            }
+        }
+        
+        async function deleteShoppingItem(itemId) {
+            if (!confirm('Delete this item?')) return;
+            try {
+                const response = await fetch(`/api/shopping-list/${itemId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadShoppingList();
+                } else {
+                    const error = await response.json();
+                    alert('Error deleting item: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error deleting shopping item:', error);
+                alert('Error deleting item');
+            }
+        }
+        
+        document.getElementById('add-shopping-item-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addShoppingItem();
+        });
+        
         // ==================== HOME ASSISTANT FUNCTIONS ====================
         // Domain icons mapping
         const domainIcons = {
@@ -2477,6 +2597,7 @@
         loadSportsTeams();
         loadSportsScores();
         loadPhotos();
+        loadShoppingList();
         loadHomeAssistant();
         
         // Refresh data every 5 minutes

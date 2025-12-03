@@ -1304,6 +1304,85 @@
             border-radius: calc(10px * var(--scale-factor));
             border-left: calc(5px * var(--scale-factor)) solid #4caf50;
             backdrop-filter: blur(10px);
+        
+        /* Shopping List Screen Styles */
+        .shopping-screen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            padding: calc(40px * var(--scale-factor));
+        }
+        
+        .shopping-container {
+            width: 100%;
+            max-width: calc(900px * var(--scale-factor));
+            text-align: center;
+        }
+        
+        .shopping-header {
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(30px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .shopping-list-container {
+            margin-top: calc(20px * var(--scale-factor));
+            max-height: calc(500px * var(--scale-factor));
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: calc(10px * var(--scale-factor));
+            border-radius: calc(10px * var(--scale-factor));
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            scroll-behavior: auto;
+        }
+        
+        .shopping-list-container::-webkit-scrollbar {
+            width: calc(8px * var(--scale-factor));
+        }
+        
+        .shopping-list-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: calc(4px * var(--scale-factor));
+        }
+        
+        .shopping-list-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: calc(4px * var(--scale-factor));
+        }
+        
+        .shopping-list-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .shopping-list-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: calc(20px * var(--scale-factor));
+            margin-bottom: calc(15px * var(--scale-factor));
+            border-radius: calc(10px * var(--scale-factor));
+            border-left: calc(5px * var(--scale-factor)) solid #ff9800;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: calc(15px * var(--scale-factor));
+            font-size: calc(1.3rem * var(--scale-factor));
+        }
+        
+        .shopping-list-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        
+        .shopping-list-item-checkbox {
+            width: calc(25px * var(--scale-factor));
+            height: calc(25px * var(--scale-factor));
+            cursor: pointer;
+        }
+        
+        .shopping-list-item-name {
+            flex: 1;
+            text-align: left;
             border: calc(1px * var(--scale-factor)) solid rgba(255, 255, 255, 0.2);
             text-align: left;
         }
@@ -1726,6 +1805,14 @@
         </div>
     </div>
     
+    <!-- Shopping List Screen -->
+    <div class="screen shopping-screen" id="screen-19">
+        <div class="shopping-container">
+            <h2 class="shopping-header">Shopping List</h2>
+            <div class="shopping-list-container" id="shopping-list-container"></div>
+        </div>
+    </div>
+    
     <div class="indicators">
         <div class="indicator" id="indicator-0"></div>
         <div class="indicator" id="indicator-1"></div>
@@ -1746,11 +1833,12 @@
         <div class="indicator" id="indicator-16"></div>
         <div class="indicator" id="indicator-17"></div>
         <div class="indicator" id="indicator-18"></div>
+        <div class="indicator" id="indicator-19"></div>
     </div>
     
     <script>
         let currentScreen = 0;
-        let totalScreens = 19; // Will be adjusted based on available screens
+        let totalScreens = 20; // Will be adjusted based on available screens
         const screenDuration = 10000; // 10 seconds per screen
         let data = {};
         let retryCount = 0;
@@ -1770,6 +1858,9 @@
         let haScrollInterval = null;
         let haScrollDirection = 1; // 1 for down, -1 for up
         let haScrollPaused = false;
+        let shoppingScrollInterval = null;
+        let shoppingScrollDirection = 1; // 1 for down, -1 for up
+        let shoppingScrollPaused = false;
         
         // Log detected screen size
         console.log(`Screen detected: ${screenWidth}x${screenHeight}, Scale factor: ${scaleFactor}`);
@@ -1947,6 +2038,86 @@
             if (haScrollInterval) {
                 clearInterval(haScrollInterval);
                 haScrollInterval = null;
+            }
+        }
+        
+        // Auto-scroll shopping list container
+        function startShoppingListAutoScroll() {
+            // Clear any existing scroll interval
+            if (shoppingScrollInterval) {
+                clearInterval(shoppingScrollInterval);
+                shoppingScrollInterval = null;
+            }
+            
+            const container = document.getElementById('shopping-list-container');
+            if (!container) return;
+            
+            // Wait a bit for content to render
+            setTimeout(() => {
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
+                
+                // Only auto-scroll if content exceeds container height
+                if (scrollHeight <= clientHeight) {
+                    return;
+                }
+                
+                // Reset scroll position to top
+                container.scrollTop = 0;
+                shoppingScrollDirection = 1;
+                shoppingScrollPaused = false;
+                
+                // Scroll speed: 30px per second (adjustable)
+                const scrollSpeed = 30; // pixels per second
+                const scrollStep = scrollSpeed / 60; // pixels per frame (60fps)
+                const pauseDuration = 2000; // 2 seconds pause at top/bottom
+                let pauseStartTime = null;
+                
+                shoppingScrollInterval = setInterval(() => {
+                    if (!container || container.scrollHeight <= container.clientHeight) {
+                        clearInterval(shoppingScrollInterval);
+                        shoppingScrollInterval = null;
+                        return;
+                    }
+                    
+                    // Check if we're paused
+                    if (shoppingScrollPaused) {
+                        if (pauseStartTime && Date.now() - pauseStartTime >= pauseDuration) {
+                            shoppingScrollPaused = false;
+                            pauseStartTime = null;
+                            shoppingScrollDirection *= -1; // Reverse direction
+                        }
+                        return;
+                    }
+                    
+                    const currentScroll = container.scrollTop;
+                    const maxScroll = scrollHeight - clientHeight;
+                    
+                    // Check if we've reached the bottom
+                    if (shoppingScrollDirection === 1 && currentScroll >= maxScroll - 1) {
+                        shoppingScrollPaused = true;
+                        pauseStartTime = Date.now();
+                        return;
+                    }
+                    
+                    // Check if we've reached the top
+                    if (shoppingScrollDirection === -1 && currentScroll <= 1) {
+                        shoppingScrollPaused = true;
+                        pauseStartTime = Date.now();
+                        return;
+                    }
+                    
+                    // Scroll in the current direction
+                    container.scrollTop += scrollStep * shoppingScrollDirection;
+                }, 1000 / 60); // ~60fps
+            }, 500);
+        }
+        
+        // Stop shopping list auto-scroll
+        function stopShoppingListAutoScroll() {
+            if (shoppingScrollInterval) {
+                clearInterval(shoppingScrollInterval);
+                shoppingScrollInterval = null;
             }
         }
         
@@ -2460,9 +2631,12 @@
             }
             
             // Adjust total screens based on available content
-            totalScreens = 18; // Base screens (0-17, weather alerts is now screen-4, HA is screen-18)
+            totalScreens = 19; // Base screens (0-18, weather alerts is now screen-4, HA is screen-18)
             if (data.packages && data.packages.length > 0) {
                 totalScreens++; // Add package tracking screen (screen-17)
+            }
+            if (data.shopping_list && data.shopping_list.length > 0) {
+                totalScreens++; // Add shopping list screen (screen-19)
             }
             // HA screen (screen-18) is always included if HA is configured
             
@@ -2708,19 +2882,25 @@
             if (currentIndicatorEl) currentIndicatorEl.classList.remove('active');
             
             // Skip screens that shouldn't be shown
-            let nextScreen = (currentScreen + 1) % 19; // Max possible screens (0-18)
+            let nextScreen = (currentScreen + 1) % 20; // Max possible screens (0-19)
             let attempts = 0;
             
             // Skip weather alerts screen (4) if no alerts
-            while (attempts < 19) {
+            while (attempts < 20) {
                 if (nextScreen === 4 && (!data.weather_alerts || data.weather_alerts.length === 0)) {
-                    nextScreen = (nextScreen + 1) % 19;
+                    nextScreen = (nextScreen + 1) % 20;
                     attempts++;
                     continue;
                 }
                 // Skip package screen (17) if no packages
                 if (nextScreen === 17 && (!data.packages || data.packages.length === 0)) {
-                    nextScreen = (nextScreen + 1) % 19;
+                    nextScreen = (nextScreen + 1) % 20;
+                    attempts++;
+                    continue;
+                }
+                // Skip shopping list screen (19) if no items
+                if (nextScreen === 19 && (!data.shopping_list || data.shopping_list.length === 0)) {
+                    nextScreen = (nextScreen + 1) % 20;
                     attempts++;
                     continue;
                 }
@@ -2783,6 +2963,30 @@
             } else {
                 // Stop auto-scrolling when leaving HA screen
                 stopHAAutoScroll();
+            }
+            
+            // Render shopping list when showing shopping list screen
+            if (currentScreen === 19 && data.shopping_list) {
+                const container = document.getElementById('shopping-list-container');
+                if (container && data.shopping_list.length > 0) {
+                    container.innerHTML = data.shopping_list.map(item => {
+                        const completedClass = item.completed ? 'completed' : '';
+                        const checkmark = item.completed ? '✓' : '';
+                        return `
+                            <div class="shopping-list-item ${completedClass}">
+                                <span class="shopping-list-item-checkbox">${checkmark}</span>
+                                <span class="shopping-list-item-name">${item.item_name}</span>
+                            </div>
+                        `;
+                    }).join('');
+                    // Start auto-scrolling after rendering
+                    startShoppingListAutoScroll();
+                } else if (container) {
+                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.7);">No items in shopping list</div>';
+                }
+            } else {
+                // Stop auto-scrolling when leaving shopping list screen
+                stopShoppingListAutoScroll();
             }
         }
         

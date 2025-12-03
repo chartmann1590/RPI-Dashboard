@@ -1,40 +1,38 @@
 # Project Overview
 
 ## Introduction
-This project is a comprehensive web application designed to track packages and provide related information, including weather data, air quality readings, quotes, and sports data. It combines package tracking functionality with a range of informational displays, offering a unified platform for monitoring various data sources. The project aims to create a dynamic and informative dashboard.
+This project is a web application designed to track and manage package deliveries. It provides a dashboard for viewing package statuses, running speed tests, and archiving completed deliveries. The primary goal is to offer a centralized location for monitoring package shipments and potentially identify areas for improvement in delivery times.
 
 ## Key Features
-*   **Package Tracking:**  Allows users to track packages using tracking numbers, retrieving status updates from external APIs.
-*   **Real-time Weather Data:** Displays current weather conditions from an external source.
-*   **Air Quality Monitoring:** Presents air quality readings.
-*   **Quote and Joke Display:** Randomly displays quotes and jokes.
-*   **Sports Data Integration:**  Provides sports data updates.
-*   **Periodic Data Updates:** Automatically updates package statuses, weather data, and other information at specified intervals.
-*   **Holiday Theme Display:**  Displays a holiday theme with particle effects and background gradients.
-*   **Admin Interface:**  Provides an interface for adding devices and viewing device information.
-*   **SQLite Database:** Utilizes SQLite for persistent storage of package and device data.
-*   **Background Threads:** Employs background threads to handle periodic tasks such as data updates and API calls.
+*   **Package Tracking:** Displays a list of tracked packages with their current status (e.g., 'pending', 'in transit', 'delivered'), last seen timestamp, IP address, and MAC address.
+*   **Speed Testing:** Allows users to initiate speed tests for individual packages, simulating network conditions.
+*   **Package Archiving:** Automatically archives completed deliveries after a defined period (24 hours), preventing the database from becoming cluttered with obsolete data.
+*   **Holiday Theme Support:** Displays the application with a holiday-themed background, configurable through a query parameter in the API.
+*   **Quote History:** Allows the user to view quote history.
+*   **API Integration:** Provides an API endpoint to retrieve the current holiday theme.
 
 ## Architecture
-The project adopts a multi-layered architecture:
+The project utilizes a three-tier architecture:
 
-1.  **Web Interface (Flask):** A Flask web application serves as the front-end, handling user interactions and rendering HTML pages. It interacts with the background threads to fetch and display data.
-2.  **Background Threads:**  Multiple background threads perform asynchronous tasks:
-    *   `periodic_scan()`: Fetches package updates from an external package tracking API.
-    *   `periodic_speed_test()`: Executes a speed test periodically.
-    *   `periodic_package_updates()`: Updates package statuses based on speed test results.
-    *   `periodic_package_archiving()`: Automatically archives delivered packages after 24 hours.
-3.  **Data Layer (SQLite):**  An SQLite database stores package information, device data, and other persistent data.
-4.  **External APIs:** The application relies on external APIs for package tracking, weather data, air quality data, sports data, and potentially other data sources.
+1.  **Presentation Tier (Flask Web App):** This layer is implemented using Flask, a Python web framework. It handles user interface rendering, user input processing, and API requests. The main components are:
+    *   `app.py`: The core Flask application, responsible for routing requests, handling database interactions, and rendering templates.
+    *   Templates (e.g., `index.html`, `add_device.html`): Define the user interface elements.
+2.  **Application Tier (Python Logic):** This layer consists of Python code within `app.py`, which handles business logic, such as:
+    *   Database interaction using `sqlite3` for package tracking.
+    *   Scheduling periodic tasks using threading.
+    *   API request handling and response generation.
+3.  **Data Tier (SQLite Database):**  The data is stored in an SQLite database (`packages.db`) which is a lightweight, file-based database ideal for this project. The database schema includes tables for:
+    *   `devices`: Stores information about tracked devices (name, IP address, MAC address, status, last_seen, notify).
+    *   `packages`:  Stores package tracking information (tracking_number, carrier, description, status, last_location, estimated_delivery, delivered_date, created_at).
+    *   `packages_archive`: Stores archived packages.
+    *   `joke_history`: Stores quote history.
 
-The web interface interacts with the background threads to fetch and display data. The background threads manage the asynchronous data updates and API calls.
+The application utilizes threading to perform background tasks, such as running speed tests and periodically scanning for new package updates and archiving completed deliveries, without blocking the main web application thread.
 
 ## Technology Stack
-*   **Python 3.x:** Programming Language
-*   **Flask:** Web Framework
-*   **Flask-SQLAlchemy:** ORM (Object-Relational Mapper) for interacting with the SQLite database
-*   **SQLite:** Database
-*   **threading:** For creating and managing background threads
-*   **logging:** For logging events and errors
-*   **requests:** For making HTTP requests to external APIs
-*   **potentially:** Weather API (e.g., OpenWeatherMap), Air Quality API (e.g., AirVisual), Sports Data API (e.g., ESPN)
+*   **Python:** The primary programming language.
+*   **Flask:**  A micro web framework for building the web application.
+*   **SQLite:**  A lightweight, file-based relational database.
+*   **pytz:**  Python library for handling time zones.
+*   **Threading:**  For concurrent task execution.
+*   **HTML, CSS, JavaScript:**  For the user interface.
