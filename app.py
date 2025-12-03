@@ -16,6 +16,10 @@ import json
 import re
 from urllib.parse import urlparse
 import math
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Try to import holidays library, fallback to manual detection if not available
 try:
@@ -59,6 +63,13 @@ ADMIN_PASSWORD = "Cm0NeY12051!"  # WARNING: Do NOT use hardcoded passwords in pr
 
 # Cache settings
 CACHE_DURATION_HOURS = 1  # How long to cache API data
+
+# Home Assistant Configuration
+HA_URL = os.getenv('HA_URL', '').rstrip('/')
+HA_TOKEN = os.getenv('HA_TOKEN', '')
+
+if not HA_URL or not HA_TOKEN:
+    logging.warning("Home Assistant URL or token not found in environment variables. HA features will be disabled.")
 
 db_path = os.path.join('static', 'db', 'network_status.db')
 
@@ -424,8 +435,13 @@ def save_quote_to_history(quote_text, author):
     except Exception as e:
         logging.error(f"Error saving quote to history: {e}")
 
-def get_cached_data(cache_key):
-    """Get cached data if it's still valid"""
+def get_cached_data(cache_key, max_age=None):
+    """Get cached data if it's still valid
+    
+    Args:
+        cache_key: The cache key to look up
+        max_age: Optional max age in seconds (overrides CACHE_DURATION_HOURS)
+    """
     try:
         conn = sqlite3.connect(db_path)
         c = conn.cursor()
@@ -446,11 +462,20 @@ def get_cached_data(cache_key):
             timestamp = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
             
             # Check if cache is still valid
-            if datetime.now() - timestamp < timedelta(hours=CACHE_DURATION_HOURS):
-                logging.info(f"Using cached data for {cache_key}")
-                return json.loads(data)
+            if max_age is not None:
+                # Use custom max_age in seconds
+                if datetime.now() - timestamp < timedelta(seconds=max_age):
+                    logging.info(f"Using cached data for {cache_key} (max_age={max_age}s)")
+                    return json.loads(data)
+                else:
+                    logging.info(f"Cache expired for {cache_key} (age > {max_age}s)")
             else:
-                logging.info(f"Cache expired for {cache_key}")
+                # Use default CACHE_DURATION_HOURS
+                if datetime.now() - timestamp < timedelta(hours=CACHE_DURATION_HOURS):
+                    logging.info(f"Using cached data for {cache_key}")
+                    return json.loads(data)
+                else:
+                    logging.info(f"Cache expired for {cache_key}")
         
         return None
         
@@ -1082,6 +1107,53 @@ def api_weather_alerts():
     alerts = get_weather_alerts()
     return jsonify(alerts)
 
+# ==================== HOME ASSISTANT API ENDPOINTS ====================
+@app.route('/api/home-assistant')
+def api_home_assistant():
+    """Get all Home Assistant data (for index page)"""
+    try:
+        entities = get_ha_states()
+        devices = filter_ha_devices(entities, for_dashboard=False)
+        battery_sensors = filter_ha_battery_sensors(entities, for_dashboard=False)
+        
+        return jsonify({
+            'devices': devices,
+            'battery_sensors': battery_sensors,
+            'total_entities': len(entities)
+        })
+    except Exception as e:
+        logging.error(f"Error in api_home_assistant: {e}")
+        return jsonify({
+            'devices': [],
+            'battery_sensors': [],
+            'total_entities': 0,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/home-assistant/dashboard')
+def api_home_assistant_dashboard():
+    """Get filtered Home Assistant data (for RPi dashboard)"""
+    try:
+        entities = get_ha_states()
+        devices = filter_ha_devices(entities, for_dashboard=True)
+        battery_sensors = filter_ha_battery_sensors(entities, for_dashboard=True)
+        
+        return jsonify({
+            'devices': devices,
+            'battery_sensors': battery_sensors,
+            'total_on_devices': len(devices),
+            'total_low_battery': len(battery_sensors)
+        })
+    except Exception as e:
+        logging.error(f"Error in api_home_assistant_dashboard: {e}")
+        return jsonify({
+            'devices': [],
+            'battery_sensors': [],
+            'total_on_devices': 0,
+            'total_low_battery': 0,
+            'error': str(e)
+        }), 500
+
 # ==================== INTERNET SPEED API ENDPOINTS ====================
 @app.route('/api/internet-speed')
 def api_internet_speed():
@@ -1100,53 +1172,90 @@ def api_run_speed_test():
 # ==================== SPORTS API ENDPOINTS ====================
 @app.route('/api/sports-scores')
 def api_sports_scores():
-    """Get sports scores"""
+    """Get sports scores with sport filtering"""
     scores = get_sports_scores()
     return jsonify(scores)
 
-@app.route('/api/settings/sports', methods=['POST'])
-def api_set_sports_teams():
-    """Set favorite sports teams"""
-    try:
-        if not request.is_json:
-            return jsonify({'error': 'Content-Type must be application/json'}), 400
-        
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No JSON data provided'}), 400
-        
-        teams = data.get('teams', [])
-        
-        if not isinstance(teams, list):
-            return jsonify({'error': 'Teams must be a list'}), 400
-        
-        # Filter out empty strings
-        teams = [team.strip() for team in teams if team and team.strip()]
-        
-        conn = sqlite3.connect(db_path)
-        c = conn.cursor()
-        
-        # Ensure settings table exists
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS settings (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL,
-                updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        c.execute("INSERT OR REPLACE INTO settings (key, value, updated) VALUES ('sports_teams', ?, CURRENT_TIMESTAMP)", (json.dumps(teams),))
-        conn.commit()
-        conn.close()
-        
-        # Clear cache
-        set_cached_data("sports_scores", None)
-        
-        logging.info(f"Sports teams saved: {teams}")
-        return jsonify({'status': 'success', 'teams': teams})
-    except Exception as e:
-        logging.error(f"Error saving sports teams: {e}")
-        return jsonify({'error': str(e)}), 500
+@app.route('/api/settings/sports', methods=['GET', 'POST'])
+def api_sports_teams():
+    """Get or set favorite sports teams"""
+    if request.method == 'GET':
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("SELECT value FROM settings WHERE key = 'sports_teams'")
+            result = c.fetchone()
+            conn.close()
+            
+            if result:
+                try:
+                    teams = json.loads(result[0])
+                except:
+                    teams = []
+            else:
+                teams = []
+            
+            return jsonify({'teams': teams})
+        except Exception as e:
+            logging.error(f"Error getting sports teams: {e}")
+            return jsonify({'teams': []})
+    
+    elif request.method == 'POST':
+        """Set favorite sports teams"""
+        try:
+            if not request.is_json:
+                return jsonify({'error': 'Content-Type must be application/json'}), 400
+            
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No JSON data provided'}), 400
+            
+            teams = data.get('teams', [])
+            
+            if not isinstance(teams, list):
+                return jsonify({'error': 'Teams must be a list'}), 400
+            
+            # Filter and normalize teams - handle both old format (strings) and new format (objects)
+            normalized_teams = []
+            for team in teams:
+                if isinstance(team, dict):
+                    # New format: {name: "...", sport: "..."}
+                    team_name = team.get('name', '').strip()
+                    team_sport = team.get('sport', '').strip()
+                    if team_name and team_sport:
+                        normalized_teams.append({'name': team_name, 'sport': team_sport})
+                elif isinstance(team, str):
+                    # Old format: just a string
+                    team = team.strip()
+                    if team:
+                        normalized_teams.append(team)
+            
+            teams = normalized_teams
+            
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            
+            # Ensure settings table exists
+            c.execute('''
+                CREATE TABLE IF NOT EXISTS settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL,
+                    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            c.execute("INSERT OR REPLACE INTO settings (key, value, updated) VALUES ('sports_teams', ?, CURRENT_TIMESTAMP)", (json.dumps(teams),))
+            conn.commit()
+            conn.close()
+            
+            # Clear cache
+            set_cached_data("sports_scores", None)
+            
+            logging.info(f"Sports teams saved: {teams}")
+            return jsonify({'status': 'success', 'teams': teams})
+        except Exception as e:
+            logging.error(f"Error saving sports teams: {e}")
+            return jsonify({'error': str(e)}), 500
 
 # ==================== PHOTO GALLERY API ENDPOINTS ====================
 @app.route('/api/photos')
@@ -2655,10 +2764,12 @@ def get_sports_scores(use_cache=True):
     """Fetch sports scores using TheSportsDB API"""
     cache_key = "sports_scores"
     
+    # Check cache first (5 minute cache to avoid rate limiting)
     if use_cache:
-        cached_data = get_cached_data(cache_key)
-        if cached_data:
-            return cached_data
+        cached = get_cached_data(cache_key, max_age=300)  # 5 minutes
+        if cached:
+            logging.info("Using cached sports scores")
+            return cached
     
     try:
         conn = sqlite3.connect(db_path)
@@ -2681,38 +2792,199 @@ def get_sports_scores(use_cache=True):
         all_scores = []
         
         # Use TheSportsDB API (free, no key required)
-        # Reduced timeout to 3 seconds and limit to 3 teams for faster response
-        for team_name in teams[:3]:  # Limit to 3 teams for faster loading
+        # Reduced timeout to 5 seconds and limit to 3 teams for faster response
+        for team_data in teams[:3]:  # Limit to 3 teams for faster loading
             try:
-                # Search for team with shorter timeout
+                # Handle both old format (string) and new format (object with name and sport)
+                if isinstance(team_data, dict):
+                    team_name = team_data.get('name', '').strip()
+                    required_sport = team_data.get('sport', '').strip()
+                    logging.info(f"Processing team: name='{team_name}', sport='{required_sport}'")
+                    
+                    # CRITICAL: If sport is empty, set to None so we know to skip filtering
+                    if not required_sport:
+                        required_sport = None
+                else:
+                    # Old format - just a string
+                    team_name = str(team_data).strip() if team_data else ''
+                    required_sport = None
+                    logging.info(f"Processing team (old format): name='{team_name}'")
+                
+                if not team_name:
+                    logging.warning(f"Empty team name, skipping")
+                    continue
+                
+                team_name_lower = team_name.lower()
+                
+                # Search for team with timeout
                 search_url = f"https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t={team_name}"
-                response = requests.get(search_url, timeout=3)
+                logging.info(f"API URL: {search_url}")
+                try:
+                    response = requests.get(search_url, timeout=5)
+                    logging.info(f"API status: {response.status_code}")
+                except Exception as api_err:
+                    logging.error(f"API ERROR: {api_err}")
+                    continue
+                    
                 if response.status_code == 200:
                     data = response.json()
                     if data.get('teams') and len(data['teams']) > 0:
-                        team = data['teams'][0]
+                        logging.info(f"API returned {len(data['teams'])} teams for '{team_name}'")
+                        
+                        # CRITICAL: If we have a required sport, ONLY use teams from that sport - NO EXCEPTIONS
+                        logging.info(f"required_sport value = '{required_sport}' (type: {type(required_sport).__name__}, bool: {bool(required_sport)})")
+                        
+                        if required_sport:
+                            original_count = len(data['teams'])
+                            filtered_teams = []
+                            required_sport_lower = required_sport.lower()
+                            
+                            for t in data['teams']:
+                                sport = t.get('strSport', '').strip()
+                                sport_lower = sport.lower().strip()
+                                
+                                # Log what we're comparing for debugging
+                                logging.info(f"Comparing: required_sport='{required_sport_lower}' vs API sport='{sport_lower}' for team '{t.get('strTeam')}'")
+                                
+                                # Must match the required sport type exactly (case-insensitive, whitespace trimmed)
+                                if sport_lower == required_sport_lower:
+                                    filtered_teams.append(t)
+                                    logging.info(f"✓ MATCH: Team '{t.get('strTeam')}' sport '{sport}' matches required '{required_sport}'")
+                                else:
+                                    logging.info(f"✗ NO MATCH: Team '{t.get('strTeam')}' sport '{sport}' does NOT match required '{required_sport}' - SKIPPING")
+                            
+                            # ONLY use filtered teams - if none found, skip this team entirely
+                            if filtered_teams:
+                                data['teams'] = filtered_teams
+                                logging.info(f"Filtered '{team_name}': {original_count} -> {len(filtered_teams)} teams (sport={required_sport})")
+                            else:
+                                # Log all available sports for debugging
+                                available_sports = [t.get('strSport', 'Unknown') for t in data['teams']]
+                                logging.error(f"No teams found matching sport='{required_sport}' for '{team_name}'. Available sports: {set(available_sports)}")
+                                continue
+                        else:
+                            # No sport specified - try to filter out foreign soccer teams at least
+                            logging.warning(f"No sport specified for '{team_name}' - filtering out foreign soccer teams")
+                            original_count = len(data['teams'])
+                            filtered_teams = []
+                            for t in data['teams']:
+                                sport = t.get('strSport', '').lower()
+                                country = t.get('strCountry', '').lower()
+                                league = t.get('strLeague', '').upper()
+                                
+                                # Exclude foreign soccer teams
+                                is_foreign_soccer = (
+                                    sport == 'soccer' and 
+                                    country not in ['united states', 'usa', ''] and
+                                    'mls' not in league
+                                )
+                                
+                                if not is_foreign_soccer:
+                                    filtered_teams.append(t)
+                            
+                            if filtered_teams:
+                                data['teams'] = filtered_teams
+                                logging.info(f"Filtered '{team_name}': {original_count} -> {len(filtered_teams)} teams (removed foreign soccer)")
+                            # If no filtered teams, use all teams (shouldn't happen but just in case)
+                        
+                        # Try to find the best matching team
+                        # Since we've already filtered by sport/league, all teams in data['teams'] are valid
+                        team = None
+                        team_name_words_list = team_name_lower.split()
+                        
+                        # First, try exact match (case-insensitive)
+                        for t in data['teams']:
+                            if t.get('strTeam', '').lower() == team_name_lower:
+                                team = t
+                                logging.info(f"Found exact match for '{team_name}': {t.get('strTeam')} ({t.get('strSport')}, {t.get('strLeague')})")
+                                break
+                        
+                        # If no exact match, try partial match (teams already filtered by sport)
+                        if not team:
+                            for t in data['teams']:
+                                team_str = t.get('strTeam', '').lower()
+                                # Check if team name is contained in the result or vice versa
+                                if team_name_lower in team_str or team_str in team_name_lower:
+                                    team = t
+                                    logging.info(f"Found partial match for '{team_name}': {t.get('strTeam')} ({t.get('strSport')}, {t.get('strLeague')})")
+                                    break
+                        
+                        # If still no match, use first team (already filtered by sport/league)
+                        if not team and data['teams']:
+                            team = data['teams'][0]
+                            logging.info(f"Using first filtered team for '{team_name}': {team.get('strTeam')} ({team.get('strSport')}, {team.get('strLeague')})")
+                        
+                        # If we still don't have a team, skip
+                        if not team:
+                            logging.warning(f"No team found for '{team_name}' - skipping")
+                            continue
+                        
+                        # Log which team was selected for debugging
+                        selected_team_name = team.get('strTeam', 'Unknown')
+                        selected_sport = team.get('strSport', 'Unknown')
+                        selected_league = team.get('strLeague', 'Unknown')
                         team_id = team.get('idTeam')
                         
+                        logging.info(f"SELECTED: {selected_team_name} | Sport: {selected_sport} | ID: {team_id}")
+                        
                         # Get next event with shorter timeout
+                        # First try the team's next event endpoint
+                        upcoming_found = False
                         try:
                             events_url = f"https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id={team_id}"
                             response = requests.get(events_url, timeout=3)
                             if response.status_code == 200:
                                 events_data = response.json()
                                 if events_data.get('events'):
-                                    event = events_data['events'][0]
-                                    all_scores.append({
-                                        'team': team_name,
-                                        'event': event.get('strEvent', ''),
-                                        'date': event.get('dateEvent', ''),
-                                        'time': event.get('strTime', ''),
-                                        'league': event.get('strLeague', ''),
-                                        'status': 'Upcoming'
-                                    })
+                                    # Find an event that matches our sport
+                                    for event in events_data['events']:
+                                        event_sport = event.get('strSport', '').lower()
+                                        event_name = event.get('strEvent', '').lower()
+                                        
+                                        # Check if sport matches AND team name appears in event
+                                        sport_ok = not required_sport or event_sport == required_sport.lower()
+                                        team_in_event = selected_team_name.lower() in event_name
+                                        
+                                        if sport_ok and team_in_event:
+                                            all_scores.append({
+                                                'team': team_name,
+                                                'event': event.get('strEvent', ''),
+                                                'date': event.get('dateEvent', ''),
+                                                'time': event.get('strTime', ''),
+                                                'league': event.get('strLeague', ''),
+                                                'status': 'Upcoming'
+                                            })
+                                            upcoming_found = True
+                                            break
                         except requests.exceptions.Timeout:
                             logging.warning(f"Timeout fetching next event for {team_name}")
                         except Exception as e:
                             logging.warning(f"Error fetching next event for {team_name}: {e}")
+                        
+                        # If no upcoming event found and we have a league, try league schedule
+                        if not upcoming_found and team.get('idLeague'):
+                            try:
+                                league_id = team.get('idLeague')
+                                league_url = f"https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id={league_id}"
+                                response = requests.get(league_url, timeout=3)
+                                if response.status_code == 200:
+                                    league_data = response.json()
+                                    if league_data.get('events'):
+                                        # Find events involving our team
+                                        for event in league_data['events'][:20]:  # Check first 20 events
+                                            event_name = event.get('strEvent', '').lower()
+                                            if selected_team_name.lower() in event_name:
+                                                all_scores.append({
+                                                    'team': team_name,
+                                                    'event': event.get('strEvent', ''),
+                                                    'date': event.get('dateEvent', ''),
+                                                    'time': event.get('strTime', ''),
+                                                    'league': event.get('strLeague', ''),
+                                                    'status': 'Upcoming'
+                                                })
+                                                break
+                            except Exception as e:
+                                logging.warning(f"Error fetching league events for {team_name}: {e}")
                         
                         # Get last result with shorter timeout
                         try:
@@ -2721,15 +2993,23 @@ def get_sports_scores(use_cache=True):
                             if response.status_code == 200:
                                 results_data = response.json()
                                 if results_data.get('results'):
-                                    result = results_data['results'][0]
-                                    all_scores.append({
-                                        'team': team_name,
-                                        'event': result.get('strEvent', ''),
-                                        'score': f"{result.get('intHomeScore', '?')} - {result.get('intAwayScore', '?')}",
-                                        'date': result.get('dateEvent', ''),
-                                        'league': result.get('strLeague', ''),
-                                        'status': 'Completed'
-                                    })
+                                    # Find a result that matches our sport
+                                    for result in results_data['results']:
+                                        event_sport = result.get('strSport', '').lower()
+                                        
+                                        # Only check sport matches if we have a required sport
+                                        if required_sport and event_sport != required_sport.lower():
+                                            continue  # Skip events from wrong sport
+                                        
+                                        all_scores.append({
+                                            'team': team_name,
+                                            'event': result.get('strEvent', ''),
+                                            'score': f"{result.get('intHomeScore', '?')} - {result.get('intAwayScore', '?')}",
+                                            'date': result.get('dateEvent', ''),
+                                            'league': result.get('strLeague', ''),
+                                            'status': 'Completed'
+                                        })
+                                        break
                         except requests.exceptions.Timeout:
                             logging.warning(f"Timeout fetching last result for {team_name}")
                         except Exception as e:
@@ -3038,6 +3318,126 @@ def get_weather_alerts(use_cache=True):
         if cached_data:
             return cached_data
         return []
+
+# ==================== HOME ASSISTANT FUNCTIONS ====================
+def get_ha_states(use_cache=True):
+    """Fetch all entity states from Home Assistant API"""
+    if not HA_URL or not HA_TOKEN:
+        logging.warning("Home Assistant not configured")
+        return []
+    
+    cache_key = "ha_states"
+    
+    if use_cache:
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            return cached_data
+    
+    try:
+        url = f"{HA_URL}/api/states"
+        headers = {
+            'Authorization': f'Bearer {HA_TOKEN}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Cache for 1 minute
+        set_cached_data(cache_key, data)
+        logging.info(f"Fetched {len(data)} Home Assistant entities")
+        return data
+        
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error fetching Home Assistant states: {e}")
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            return cached_data
+        return []
+    except Exception as e:
+        logging.error(f"Unexpected error fetching Home Assistant states: {e}")
+        return []
+
+def filter_ha_devices(entities, for_dashboard=False):
+    """Filter Home Assistant entities based on criteria"""
+    if not entities:
+        return []
+    
+    # Device domains that can be "on"
+    device_domains = ['light', 'switch', 'binary_sensor', 'fan', 'climate', 'media_player', 'cover', 'lock']
+    
+    devices = []
+    for entity in entities:
+        entity_id = entity.get('entity_id', '')
+        domain = entity_id.split('.')[0] if '.' in entity_id else ''
+        state = entity.get('state', '').lower()
+        
+        # Skip if not a device domain
+        if domain not in device_domains:
+            continue
+        
+        # For dashboard: only show devices that are "on"
+        if for_dashboard:
+            if state == 'on':
+                devices.append(entity)
+        else:
+            # For index page: show all devices
+            devices.append(entity)
+    
+    return devices
+
+def filter_ha_battery_sensors(entities, for_dashboard=False):
+    """Filter battery sensors from Home Assistant entities"""
+    if not entities:
+        return []
+    
+    battery_sensors = []
+    for entity in entities:
+        entity_id = entity.get('entity_id', '').lower()
+        attributes = entity.get('attributes', {})
+        state = entity.get('state', '')
+        
+        # Check if it's a battery sensor
+        is_battery = 'battery' in entity_id or 'battery_level' in entity_id
+        
+        if not is_battery:
+            continue
+        
+        # Try to get battery level from attributes or state
+        battery_level = None
+        if 'battery' in attributes:
+            try:
+                battery_level = float(attributes['battery'])
+            except (ValueError, TypeError):
+                pass
+        elif 'battery_level' in attributes:
+            try:
+                battery_level = float(attributes['battery_level'])
+            except (ValueError, TypeError):
+                pass
+        elif state.replace('.', '').replace('-', '').isdigit():
+            try:
+                battery_level = float(state)
+            except (ValueError, TypeError):
+                pass
+        
+        if battery_level is not None:
+            # For dashboard: only show sensors with battery < 25%
+            if for_dashboard:
+                if battery_level < 25:
+                    battery_sensors.append({
+                        **entity,
+                        'battery_level': battery_level
+                    })
+            else:
+                # For index page: show all battery sensors
+                battery_sensors.append({
+                    **entity,
+                    'battery_level': battery_level
+                })
+    
+    return battery_sensors
 
 # ==================== HOLIDAY THEMING FUNCTIONS ====================
 def calculate_easter(year):

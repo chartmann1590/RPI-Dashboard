@@ -6,3 +6,4 @@ icalendar==5.0.11
 astral==3.2
 speedtest-cli==2.1.3
 holidays
+python-dotenv==1.0.0

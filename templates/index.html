@@ -402,6 +402,330 @@
             grid-column: 1 / -1;
         }
         
+        /* ==================== HOME ASSISTANT STYLES ==================== */
+        .ha-section {
+            margin-bottom: 2rem;
+        }
+        
+        .ha-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .ha-section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .ha-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .ha-section-count {
+            margin-left: auto;
+            background: #e9ecef;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .ha-domain-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .ha-domain-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: capitalize;
+        }
+        
+        .ha-domain-icon {
+            font-size: 1rem;
+        }
+        
+        .ha-devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .ha-device-card {
+            background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        
+        .ha-device-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .ha-device-card.device-on {
+            background: linear-gradient(145deg, #e8f5e9 0%, #f1f8e9 100%);
+            border-color: #a5d6a7;
+        }
+        
+        .ha-device-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            background: #e9ecef;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .ha-device-card.device-on .ha-device-icon {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+        
+        .ha-device-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .ha-device-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .ha-device-entity {
+            font-size: 0.75rem;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .ha-device-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ha-status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+            transition: all 0.3s ease;
+        }
+        
+        .ha-status-indicator.status-on {
+            background: #4caf50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 8px rgba(76, 175, 80, 0.6); }
+            50% { box-shadow: 0 0 12px rgba(76, 175, 80, 0.8); }
+        }
+        
+        .ha-status-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .ha-status-text.status-on {
+            color: #4caf50;
+        }
+        
+        .ha-status-text.status-off {
+            color: #999;
+        }
+        
+        /* Battery styles */
+        .ha-battery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .ha-battery-card {
+            background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .ha-battery-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ha-battery-card.battery-low {
+            background: linear-gradient(145deg, #ffebee 0%, #fff3e0 100%);
+            border-color: #ffcdd2;
+        }
+        
+        .ha-battery-card.battery-medium {
+            background: linear-gradient(145deg, #fff8e1 0%, #fffde7 100%);
+            border-color: #ffe082;
+        }
+        
+        .ha-battery-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .ha-battery-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+        
+        .ha-battery-percent {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .ha-battery-percent.level-high { color: #4caf50; }
+        .ha-battery-percent.level-medium { color: #ff9800; }
+        .ha-battery-percent.level-low { color: #f44336; }
+        
+        .ha-battery-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ha-battery-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease, background 0.3s ease;
+        }
+        
+        .ha-battery-bar.level-high {
+            background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+        }
+        
+        .ha-battery-bar.level-medium {
+            background: linear-gradient(90deg, #ff9800 0%, #ffb74d 100%);
+        }
+        
+        .ha-battery-bar.level-low {
+            background: linear-gradient(90deg, #f44336 0%, #e57373 100%);
+            animation: pulse-bar 1.5s infinite;
+        }
+        
+        @keyframes pulse-bar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .ha-battery-entity {
+            font-size: 0.7rem;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .ha-empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px dashed #e9ecef;
+        }
+        
+        .ha-empty-state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.5;
+        }
+        
+        .ha-empty-state-text {
+            font-size: 0.95rem;
+        }
+        
+        .ha-stats-bar {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+        
+        .ha-stat-item {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .ha-stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+        
+        .ha-stat-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .ha-stat-divider {
+            width: 1px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
         @media (max-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
@@ -419,6 +743,36 @@
             .hourly-forecast,
             .daily-forecast {
                 grid-template-columns: 1fr;
+            }
+            
+            /* Home Assistant responsive styles */
+            .ha-stats-bar {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .ha-stat-item {
+                flex: 1 1 40%;
+                padding: 0.5rem;
+            }
+            
+            .ha-stat-divider {
+                display: none;
+            }
+            
+            .ha-devices-grid,
+            .ha-battery-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ha-device-card {
+                padding: 0.75rem;
+            }
+            
+            .ha-device-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -615,10 +969,21 @@
             <div class="card">
                 <h2>⚽ Sports Scores</h2>
                 <div id="sports-config" style="margin-bottom: 1rem;">
-                    <form id="sports-form" style="display: grid; gap: 0.5rem;">
-                        <input type="text" id="sports-teams" placeholder="Team names (comma-separated)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem;">Save Teams</button>
+                    <h3 style="font-size: 1.2rem; color: #667eea; margin-bottom: 1rem;">Manage Teams</h3>
+                    <form id="sports-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" id="sports-team-input" placeholder="Enter team name" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                        <select id="sports-sport-select" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="Basketball">Basketball (NBA)</option>
+                            <option value="American Football">American Football (NFL)</option>
+                            <option value="Baseball">Baseball (MLB)</option>
+                            <option value="Ice Hockey">Ice Hockey (NHL)</option>
+                            <option value="Soccer">Soccer</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Add Team</button>
                     </form>
+                    <div id="sports-teams-list" style="margin-top: 1rem;">
+                        <div style="text-align: center; color: #666; padding: 1rem;">Loading teams...</div>
+                    </div>
                 </div>
                 <div id="sports-widget" class="loading">
                     Loading sports scores...
@@ -661,6 +1026,14 @@
                         <span id="archive-page-info" style="color: #666;"></span>
                         <button id="archive-next-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Next</button>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Home Assistant Card -->
+            <div class="card forecast-card">
+                <h2>🏠 Home Assistant</h2>
+                <div id="ha-widget" class="loading">
+                    Loading Home Assistant data...
                 </div>
             </div>
         </div>
@@ -1066,20 +1439,20 @@
                     // Display text info with traffic events
                     let trafficNotices = '';
                     if (commute.traffic_events && commute.traffic_events.length > 0) {
-                        trafficNotices = '<div style="margin-top: 1rem; padding: 0.75rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">';
+                        trafficNotices = '<div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; max-height: 150px; overflow-y: auto; overflow-x: hidden;">';
                         commute.traffic_events.forEach(event => {
                             const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
                             const levelText = event.traffic_level.charAt(0).toUpperCase() + event.traffic_level.slice(1);
                             const eventIcon = event.type === 'crash' ? '🚨' : '⚠️';
-                            trafficNotices += `<div style="margin-bottom: 0.5rem; font-size: 0.9rem;">
+                            trafficNotices += `<div style="margin-bottom: 0.4rem; font-size: 0.85rem; line-height: 1.3;">
                                 ${eventIcon} <strong style="color: ${levelColor};">${levelText} Traffic</strong> at ${event.location} - ${event.description} (${event.time})
                             </div>`;
                         });
                         trafficNotices += '</div>';
                     } else {
                         // Show light traffic when no issues
-                        trafficNotices = '<div style="margin-top: 1rem; padding: 0.75rem; background: #d4edda; border-left: 4px solid #4caf50; border-radius: 4px; text-align: center;">';
-                        trafficNotices += '<div style="font-size: 0.9rem; color: #155724;"><strong style="color: #4caf50;">✓ Light Traffic</strong> - No traffic issues detected</div>';
+                        trafficNotices = '<div style="margin-top: 0.5rem; padding: 0.5rem; background: #d4edda; border-left: 4px solid #4caf50; border-radius: 4px; text-align: center;">';
+                        trafficNotices += '<div style="font-size: 0.85rem; color: #155724;"><strong style="color: #4caf50;">✓ Light Traffic</strong> - No traffic issues detected</div>';
                         trafficNotices += '</div>';
                     }
                     
@@ -1446,6 +1819,82 @@
         }
         
         // ==================== SPORTS FUNCTIONS ====================
+        async function loadSportsTeams() {
+            try {
+                const response = await fetch('/api/settings/sports');
+                const data = await response.json();
+                const teams = data.teams || [];
+                
+                const teamsList = document.getElementById('sports-teams-list');
+                if (teams.length > 0) {
+                    teamsList.innerHTML = '';
+                    teams.forEach(team => {
+                        // Handle both old format (string) and new format (object)
+                        const teamName = typeof team === 'string' ? team : (team.name || team);
+                        const teamSport = typeof team === 'object' ? (team.sport || 'Unknown') : 'Unknown';
+                        
+                        const teamDiv = document.createElement('div');
+                        teamDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8f9fa; border-radius: 5px; margin-bottom: 0.5rem;';
+                        
+                        const teamSpan = document.createElement('span');
+                        teamSpan.style.fontWeight = '500';
+                        teamSpan.textContent = `${teamName} (${teamSport})`;
+                        teamDiv.appendChild(teamSpan);
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'btn btn-secondary';
+                        removeBtn.style.cssText = 'padding: 0.25rem 0.75rem; font-size: 0.9rem;';
+                        removeBtn.textContent = 'Remove';
+                        removeBtn.onclick = () => removeTeam(teamName, teamSport);
+                        teamDiv.appendChild(removeBtn);
+                        
+                        teamsList.appendChild(teamDiv);
+                    });
+                } else {
+                    teamsList.innerHTML = '<div style="text-align: center; color: #666; padding: 1rem;">No teams added yet. Add a team above to get started.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading sports teams:', error);
+                document.getElementById('sports-teams-list').innerHTML = '<div class="error">Failed to load teams</div>';
+            }
+        }
+        
+        async function removeTeam(teamName, teamSport) {
+            if (!confirm(`Remove "${teamName}" from your teams?`)) return;
+            
+            try {
+                const response = await fetch('/api/settings/sports');
+                const data = await response.json();
+                let teams = data.teams || [];
+                
+                // Remove the team (handle both old string format and new object format)
+                teams = teams.filter(t => {
+                    if (typeof t === 'string') {
+                        return t !== teamName;
+                    } else {
+                        return t.name !== teamName || t.sport !== teamSport;
+                    }
+                });
+                
+                // Save updated teams
+                const saveResponse = await fetch('/api/settings/sports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teams })
+                });
+                
+                if (saveResponse.ok) {
+                    loadSportsTeams();
+                    loadSportsScores();
+                } else {
+                    alert('Error removing team');
+                }
+            } catch (error) {
+                console.error('Error removing team:', error);
+                alert('Error removing team');
+            }
+        }
+        
         async function loadSportsScores() {
             try {
                 const response = await fetch('/api/sports-scores');
@@ -1462,7 +1911,7 @@
                             </div>
                         `).join('') + '</div>';
                 } else {
-                    widget.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">Configure favorite teams above</div>';
+                    widget.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">Add teams above to see scores</div>';
                 }
             } catch (error) {
                 console.error('Error loading sports scores:', error);
@@ -1578,21 +2027,58 @@
         
         document.getElementById('sports-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const teamsStr = document.getElementById('sports-teams').value;
-            const teams = teamsStr.split(',').map(t => t.trim()).filter(t => t);
+            const teamInput = document.getElementById('sports-team-input');
+            const sportSelect = document.getElementById('sports-sport-select');
+            const newTeamName = teamInput.value.trim();
+            const newTeamSport = sportSelect.value;
+            
+            if (!newTeamName) {
+                alert('Please enter a team name');
+                return;
+            }
             
             try {
-                const response = await fetch('/api/settings/sports', {
+                // Get current teams
+                const getResponse = await fetch('/api/settings/sports');
+                const data = await getResponse.json();
+                let teams = data.teams || [];
+                
+                // Normalize teams to object format for comparison
+                const normalizedTeams = teams.map(t => {
+                    if (typeof t === 'string') {
+                        return { name: t, sport: 'Unknown' };
+                    }
+                    return t;
+                });
+                
+                // Check if team already exists
+                const teamExists = normalizedTeams.some(t => t.name.toLowerCase() === newTeamName.toLowerCase());
+                if (teamExists) {
+                    alert('This team is already in your list');
+                    teamInput.value = '';
+                    return;
+                }
+                
+                // Add new team as object with name and sport
+                teams.push({ name: newTeamName, sport: newTeamSport });
+                
+                // Save updated teams
+                const saveResponse = await fetch('/api/settings/sports', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ teams })
                 });
-                if (response.ok) {
+                
+                if (saveResponse.ok) {
+                    teamInput.value = '';
+                    loadSportsTeams();
                     loadSportsScores();
+                } else {
+                    alert('Error adding team');
                 }
             } catch (error) {
-                console.error('Error saving teams:', error);
-                alert('Error saving teams');
+                console.error('Error adding team:', error);
+                alert('Error adding team');
             }
         });
         
@@ -1770,6 +2256,214 @@
             }
         });
         
+        // ==================== HOME ASSISTANT FUNCTIONS ====================
+        // Domain icons mapping
+        const domainIcons = {
+            'light': '💡',
+            'switch': '🔌',
+            'binary_sensor': '📡',
+            'fan': '🌀',
+            'climate': '🌡️',
+            'media_player': '📺',
+            'cover': '🪟',
+            'lock': '🔐',
+            'sensor': '📊',
+            'other': '⚙️'
+        };
+        
+        async function loadHomeAssistant() {
+            try {
+                const response = await fetch('/api/home-assistant');
+                const data = await response.json();
+                
+                const widget = document.getElementById('ha-widget');
+                if (!widget) return;
+                
+                if (data.error) {
+                    widget.innerHTML = `<div class="error">Error loading Home Assistant data: ${data.error}</div>`;
+                    return;
+                }
+                
+                let html = '';
+                
+                // Group devices by domain
+                const devicesByDomain = {};
+                let totalDevices = 0;
+                let devicesOn = 0;
+                
+                if (data.devices && data.devices.length > 0) {
+                    data.devices.forEach(device => {
+                        const entityId = device.entity_id || '';
+                        const domain = entityId.split('.')[0] || 'other';
+                        if (!devicesByDomain[domain]) {
+                            devicesByDomain[domain] = [];
+                        }
+                        devicesByDomain[domain].push(device);
+                        totalDevices++;
+                        if (device.state?.toLowerCase() === 'on') devicesOn++;
+                    });
+                }
+                
+                // Count battery sensors
+                const batteryCount = data.battery_sensors?.length || 0;
+                const lowBatteryCount = data.battery_sensors?.filter(s => s.battery_level < 25).length || 0;
+                
+                // Stats bar
+                if (totalDevices > 0 || batteryCount > 0) {
+                    html += `
+                        <div class="ha-stats-bar">
+                            <div class="ha-stat-item">
+                                <div class="ha-stat-value">${totalDevices}</div>
+                                <div class="ha-stat-label">Total Devices</div>
+                            </div>
+                            <div class="ha-stat-divider"></div>
+                            <div class="ha-stat-item">
+                                <div class="ha-stat-value">${devicesOn}</div>
+                                <div class="ha-stat-label">Currently On</div>
+                            </div>
+                            <div class="ha-stat-divider"></div>
+                            <div class="ha-stat-item">
+                                <div class="ha-stat-value">${batteryCount}</div>
+                                <div class="ha-stat-label">Battery Sensors</div>
+                            </div>
+                            ${lowBatteryCount > 0 ? `
+                                <div class="ha-stat-divider"></div>
+                                <div class="ha-stat-item">
+                                    <div class="ha-stat-value" style="color: #ffcdd2;">${lowBatteryCount}</div>
+                                    <div class="ha-stat-label">Low Battery</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                
+                // Display devices grouped by domain
+                if (Object.keys(devicesByDomain).length > 0) {
+                    html += '<div class="ha-section">';
+                    html += `
+                        <div class="ha-section-header">
+                            <div class="ha-section-icon">⚡</div>
+                            <h3 class="ha-section-title">Devices</h3>
+                            <span class="ha-section-count">${totalDevices} devices</span>
+                        </div>
+                    `;
+                    
+                    // Sort domains with priority for common ones
+                    const domainOrder = ['switch', 'light', 'fan', 'climate', 'media_player', 'cover', 'lock', 'binary_sensor'];
+                    const sortedDomains = Object.keys(devicesByDomain).sort((a, b) => {
+                        const aIndex = domainOrder.indexOf(a);
+                        const bIndex = domainOrder.indexOf(b);
+                        if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+                        if (aIndex === -1) return 1;
+                        if (bIndex === -1) return -1;
+                        return aIndex - bIndex;
+                    });
+                    
+                    sortedDomains.forEach(domain => {
+                        const domainDevices = devicesByDomain[domain];
+                        const icon = domainIcons[domain] || domainIcons['other'];
+                        
+                        html += `<div class="ha-domain-group">`;
+                        html += `<div class="ha-domain-header">
+                            <span class="ha-domain-icon">${icon}</span>
+                            <span>${domain.replace('_', ' ')}</span>
+                        </div>`;
+                        html += '<div class="ha-devices-grid">';
+                        
+                        domainDevices.forEach(device => {
+                            const friendlyName = device.attributes?.friendly_name || device.entity_id;
+                            const state = device.state || 'unknown';
+                            const isOn = state.toLowerCase() === 'on';
+                            
+                            html += `
+                                <div class="ha-device-card ${isOn ? 'device-on' : ''}">
+                                    <div class="ha-device-icon">${icon}</div>
+                                    <div class="ha-device-info">
+                                        <div class="ha-device-name">${friendlyName}</div>
+                                        <div class="ha-device-entity">${device.entity_id}</div>
+                                    </div>
+                                    <div class="ha-device-status">
+                                        <span class="ha-status-indicator ${isOn ? 'status-on' : ''}"></span>
+                                        <span class="ha-status-text ${isOn ? 'status-on' : 'status-off'}">${state}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div></div>';
+                    });
+                    
+                    html += '</div>';
+                } else {
+                    html += `
+                        <div class="ha-empty-state">
+                            <div class="ha-empty-state-icon">🏠</div>
+                            <div class="ha-empty-state-text">No devices found</div>
+                        </div>
+                    `;
+                }
+                
+                // Display battery sensors
+                if (data.battery_sensors && data.battery_sensors.length > 0) {
+                    html += '<div class="ha-section">';
+                    html += `
+                        <div class="ha-section-header">
+                            <div class="ha-section-icon">🔋</div>
+                            <h3 class="ha-section-title">Battery Sensors</h3>
+                            <span class="ha-section-count">${batteryCount} sensors</span>
+                        </div>
+                    `;
+                    html += '<div class="ha-battery-grid">';
+                    
+                    // Sort by battery level (lowest first)
+                    const sortedBatteries = [...data.battery_sensors].sort((a, b) => 
+                        (a.battery_level || 0) - (b.battery_level || 0)
+                    );
+                    
+                    sortedBatteries.forEach(sensor => {
+                        const friendlyName = sensor.attributes?.friendly_name || sensor.entity_id;
+                        const batteryLevel = sensor.battery_level || 0;
+                        const levelClass = batteryLevel < 25 ? 'level-low' : batteryLevel < 50 ? 'level-medium' : 'level-high';
+                        const cardClass = batteryLevel < 25 ? 'battery-low' : batteryLevel < 50 ? 'battery-medium' : '';
+                        
+                        html += `
+                            <div class="ha-battery-card ${cardClass}">
+                                <div class="ha-battery-header">
+                                    <div class="ha-battery-name">${friendlyName}</div>
+                                    <div class="ha-battery-percent ${levelClass}">${batteryLevel}%</div>
+                                </div>
+                                <div class="ha-battery-bar-container">
+                                    <div class="ha-battery-bar ${levelClass}" style="width: ${batteryLevel}%;"></div>
+                                </div>
+                                <div class="ha-battery-entity">${sensor.entity_id}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div></div>';
+                }
+                
+                if (html === '') {
+                    html = `
+                        <div class="ha-empty-state">
+                            <div class="ha-empty-state-icon">🏠</div>
+                            <div class="ha-empty-state-text">No Home Assistant data available.<br>Check your configuration.</div>
+                        </div>
+                    `;
+                }
+                
+                widget.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading Home Assistant data:', error);
+                document.getElementById('ha-widget').innerHTML = `
+                    <div class="ha-empty-state">
+                        <div class="ha-empty-state-icon">❌</div>
+                        <div class="ha-empty-state-text">Failed to load Home Assistant data</div>
+                    </div>
+                `;
+            }
+        }
+        
         // Load all data on page load
         loadDashboardData();
         loadCalendarEvents();
@@ -1780,8 +2474,10 @@
         loadQuote();
         loadAstronomy();
         loadInternetSpeed();
+        loadSportsTeams();
         loadSportsScores();
         loadPhotos();
+        loadHomeAssistant();
         
         // Refresh data every 5 minutes
         setInterval(() => {
@@ -1794,6 +2490,7 @@
             loadInternetSpeed();
             loadSportsScores();
             loadTrafficHistory();
+            loadHomeAssistant();
         }, 300000);
         
         // Auto-refresh page every 60 seconds for device status

@@ -1,18 +1,19 @@
 # Project Name
 
 ## Description
-This project provides a simulated device monitoring system with package tracking functionality. It allows for adding devices, viewing their status, and tracking packages.
+This project creates a dynamic and visually engaging dashboard, inspired by Home Assistant. It fetches data and displays it with a festive holiday theme, including a large clock, particle effects, and holiday-themed animations.
 
 ## Features
-- Add devices with IP addresses, MAC addresses, and status.
-- View device status and last seen timestamps.
-- Track packages with tracking numbers, carriers, and status.
-- Archive tracked packages after they are delivered.
-- Generate random jokes to display.
+*   Dynamic Data Fetching: Automatically retrieves data from an external API.
+*   Large Clock: Displays the current time in a prominent format.
+*   Particle Effects: Creates visually appealing particle effects (snow, leaves, confetti).
+*   Holiday Theme: Implements a holiday theme with special characters and animations.
+*   Traffic and Home Automation Integration: (Placeholder - requires API integration)
+*   Screen Rotation
 
 ## Quick Start
-1.  Installation command:  `pip install -r requirements.txt`
-2.  Configuration needed:  None.
+1.  Installation command: `pip install -r requirements.txt`
+2.  Configuration needed:  The `url` variable in `templates/rpi_dashboard.html` needs to be set to the correct API endpoint.
 3.  How to run: `python app.py`
 
 ## Documentation
