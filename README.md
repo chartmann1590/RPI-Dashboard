@@ -1,14 +1,19 @@
 # Project Name
 
 ## Description
-This project provides a comprehensive dashboard integrating data from various sources, including Home Assistant, weather services, sports data providers, and a shopping list manager. It aims to provide a centralized view of key information and enable automation and control.
+This project provides a smart home dashboard with features like device status monitoring, package tracking, and a dynamic clock, designed for a Raspberry Pi. It incorporates data fetching, background processes, and a visually appealing user interface.
 
 ## Features
-*   Home Assistant Integration: Displays real-time status of Home Assistant devices.
-*   Weather Integration: Shows current weather conditions and forecasts from multiple sources.
-*   Sports Data: Provides live scores and updates for various sports.
-*   Shopping List Management: Enables users to create and manage shopping lists.
-*   Automated Updates: Regularly refreshes data every 5 minutes for core information and 60 seconds for others.
+* Device Status Monitoring
+* Package Tracking (USPS, FedEx - expandable)
+* Dynamic Clock with Holiday Themeing
+* Periodic Data Updates (Speed Test, Package Updates)
+* Interactive User Interface
+
+## Quick Start
+1.  Clone the repository: `git clone [repository URL]`
+2.  Install dependencies: `pip install -r requirements.txt`
+3.  Run the application: `python app.py`
 
 ## Documentation
 - [Overview](docs/OVERVIEW.md)

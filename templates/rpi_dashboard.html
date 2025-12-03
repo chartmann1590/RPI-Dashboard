@@ -1655,10 +1655,15 @@
     <div class="screen news-screen" id="screen-8">
         <div class="news-container">
             <h2 class="news-header" id="calendar-header">Calendar</h2>
-            <div class="news-article" id="calendar-event">
-                <div class="news-source" id="calendar-source"></div>
-                <div class="news-title" id="calendar-title"></div>
-                <div class="news-description" id="calendar-details"></div>
+            <div class="news-article" id="calendar-event-1">
+                <div class="news-source" id="calendar-source-1"></div>
+                <div class="news-title" id="calendar-title-1"></div>
+                <div class="news-description" id="calendar-details-1"></div>
+            </div>
+            <div class="news-article" id="calendar-event-2">
+                <div class="news-source" id="calendar-source-2"></div>
+                <div class="news-title" id="calendar-title-2"></div>
+                <div class="news-description" id="calendar-details-2"></div>
             </div>
         </div>
     </div>
@@ -2296,16 +2301,33 @@
                 document.getElementById('joke-updated').textContent = '';
             }
             
-            // Update calendar
-            if (data.random_calendar_event) {
-                document.getElementById('calendar-source').textContent = data.random_calendar_event.source;
-                document.getElementById('calendar-title').textContent = data.random_calendar_event.title;
-                document.getElementById('calendar-details').textContent = 
-                    `${data.random_calendar_event.date} at ${data.random_calendar_event.time}${data.random_calendar_event.location ? ' • ' + data.random_calendar_event.location : ''}`;
+            // Update calendar - show next two events
+            const calendarEvents = data.next_calendar_events || [];
+            
+            // First event
+            if (calendarEvents.length > 0) {
+                const event1 = calendarEvents[0];
+                document.getElementById('calendar-source-1').textContent = event1.source;
+                document.getElementById('calendar-title-1').textContent = event1.title;
+                document.getElementById('calendar-details-1').textContent = 
+                    `${event1.date} at ${event1.time}${event1.location ? ' • ' + event1.location : ''}`;
             } else {
-                document.getElementById('calendar-source').textContent = 'Calendar';
-                document.getElementById('calendar-title').textContent = 'No upcoming events';
-                document.getElementById('calendar-details').textContent = 'Add events or calendar feeds to see them here.';
+                document.getElementById('calendar-source-1').textContent = 'Calendar';
+                document.getElementById('calendar-title-1').textContent = 'No upcoming events';
+                document.getElementById('calendar-details-1').textContent = 'Add events or calendar feeds to see them here.';
+            }
+            
+            // Second event
+            if (calendarEvents.length > 1) {
+                const event2 = calendarEvents[1];
+                document.getElementById('calendar-event-2').style.display = 'block';
+                document.getElementById('calendar-source-2').textContent = event2.source;
+                document.getElementById('calendar-title-2').textContent = event2.title;
+                document.getElementById('calendar-details-2').textContent = 
+                    `${event2.date} at ${event2.time}${event2.location ? ' • ' + event2.location : ''}`;
+            } else {
+                // Hide second event if not available
+                document.getElementById('calendar-event-2').style.display = 'none';
             }
             
             // Update commute

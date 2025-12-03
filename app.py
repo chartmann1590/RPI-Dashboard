@@ -664,10 +664,10 @@ def dashboard_data():
         if photos and len(photos) > 0:
             random_photo = random.choice(photos)
         
-        # Select random calendar event for RPi dashboard
-        random_calendar_event = None
+        # Select next two calendar events for RPi dashboard
+        next_calendar_events = []
         if calendar_events and len(calendar_events) > 0:
-            random_calendar_event = random.choice(calendar_events[:5])  # Next 5 events
+            next_calendar_events = calendar_events[:2]  # Next 2 events
         
         return jsonify({
             'devices': [{'name': d[0], 'status': d[1]} for d in devices],
@@ -678,7 +678,7 @@ def dashboard_data():
             'joke': joke,
             'weather_alerts': weather_alerts,
             'calendar_events': calendar_events,
-            'random_calendar_event': random_calendar_event,
+            'next_calendar_events': next_calendar_events,
             'commute': commute,
             'air_quality': air_quality,
             'quote': quote,
