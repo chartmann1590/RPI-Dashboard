@@ -7,6 +7,63 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="/static/css/main.css" />
+    <style>
+        /* Map Marker Tooltips - matches RPi dashboard */
+        .marker-tooltip {
+            background: rgba(0, 0, 0, 0.85) !important;
+            color: white !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            font-weight: normal !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            backdrop-filter: blur(5px) !important;
+        }
+        
+        .marker-tooltip::before {
+            border-top-color: rgba(0, 0, 0, 0.85) !important;
+        }
+        
+        .marker-tooltip-start {
+            border-color: rgba(76, 175, 80, 0.6) !important;
+        }
+        
+        .marker-tooltip-finish {
+            border-color: rgba(244, 67, 54, 0.6) !important;
+        }
+        
+        /* Traffic incident marker animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 4px 15px rgba(244, 67, 54, 0.6);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            }
+        }
+        
+        .traffic-incident-marker {
+            z-index: 1000 !important;
+        }
+        
+        /* Traffic popup styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 10px 12px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -280,6 +337,14 @@
                 <h2>🏠 Home Assistant</h2>
                 <div id="ha-widget" class="loading">
                     Loading Home Assistant data...
+                </div>
+            </div>
+            
+            <!-- SwitchBot Locks Card -->
+            <div class="card">
+                <h2>🔐 SwitchBot Locks</h2>
+                <div id="switchbot-locks-widget" class="loading">
+                    Loading lock status...
                 </div>
             </div>
         </div>

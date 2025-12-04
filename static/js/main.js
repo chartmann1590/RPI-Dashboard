@@ -15,6 +15,7 @@ let loadPackages, loadPackagesArchive, setupPackageForm, setupArchivePagination,
 let loadShoppingList, setupShoppingListForm, toggleShoppingItem, deleteShoppingItem;
 let loadHomeAssistant;
 let loadWeatherAlerts;
+let loadSwitchbotLocks;
 
 (async () => {
     const loadModule = async (path, name) => {
@@ -116,6 +117,9 @@ let loadWeatherAlerts;
         
         const weatherAlertsModule = await loadModule('./components/weatherAlerts.js', 'weatherAlerts');
         if (weatherAlertsModule) loadWeatherAlerts = weatherAlertsModule.loadWeatherAlerts;
+        
+        const switchbotLocksModule = await loadModule('./components/switchbotLocks.js', 'switchbotLocks');
+        if (switchbotLocksModule) loadSwitchbotLocks = switchbotLocksModule.loadSwitchbotLocks;
         
         console.log('All modules loaded successfully');
         
@@ -322,6 +326,7 @@ function initializeDashboard() {
     if (loadShoppingList) componentPromises.push(loadShoppingList().catch(e => console.error('Error loading shopping list:', e)));
     if (loadHomeAssistant) componentPromises.push(loadHomeAssistant().catch(e => console.error('Error loading home assistant:', e)));
     if (loadPackagesArchive) componentPromises.push(loadPackagesArchive().catch(e => console.error('Error loading packages archive:', e)));
+    if (loadSwitchbotLocks) componentPromises.push(loadSwitchbotLocks().catch(e => console.error('Error loading SwitchBot locks:', e)));
     
     Promise.all(componentPromises);
     
@@ -343,6 +348,7 @@ function initializeDashboard() {
         if (loadSportsScores) loadSportsScores();
         if (loadTrafficHistory) loadTrafficHistory();
         if (loadHomeAssistant) loadHomeAssistant();
+        if (loadSwitchbotLocks) loadSwitchbotLocks();
     }, 300000); // 5 minutes
     
     // Auto-refresh page every 60 seconds for device status

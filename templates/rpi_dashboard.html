@@ -1818,6 +1818,14 @@
         </div>
     </div>
     
+    <!-- SwitchBot Locks Screen -->
+    <div class="screen home-screen" id="screen-20">
+        <h1>SwitchBot Locks</h1>
+        <div class="locks-container" id="locks-container" style="display: flex; flex-direction: column; gap: 2rem; align-items: center; justify-content: center; padding: 2rem;">
+            <div style="text-align: center; color: #999;">Loading lock status...</div>
+        </div>
+    </div>
+    
     <div class="indicators">
         <div class="indicator" id="indicator-0"></div>
         <div class="indicator" id="indicator-1"></div>
@@ -1839,6 +1847,7 @@
         <div class="indicator" id="indicator-17"></div>
         <div class="indicator" id="indicator-18"></div>
         <div class="indicator" id="indicator-19"></div>
+        <div class="indicator" id="indicator-20"></div>
     </div>
     
     <script>
@@ -1846,7 +1855,7 @@
         const TIMEZONE = '{{ timezone }}';
         
         let currentScreen = 0;
-        let totalScreens = 20; // Will be adjusted based on available screens
+        let totalScreens = 21; // Will be adjusted based on available screens (0-20 possible)
         const screenDuration = 10000; // 10 seconds per screen
         let data = {};
         let retryCount = 0;
@@ -2337,12 +2346,21 @@
             
             // Update commute
             if (data.commute) {
-                document.getElementById('commute-time').textContent = data.commute.duration_formatted;
+                // Show duration with traffic delay if any
+                let durationText = data.commute.duration_formatted;
+                if (data.commute.traffic_delay_min && data.commute.traffic_delay_min > 0) {
+                    durationText += ` (+${data.commute.traffic_delay_min}m delay)`;
+                }
+                document.getElementById('commute-time').textContent = durationText;
                 document.getElementById('commute-route').textContent = `${data.commute.distance_miles} miles`;
                 const details = document.getElementById('commute-details');
                 const trafficContainer = document.getElementById('traffic-alerts-container');
                 
-                // Update commute details (origin/destination)
+                // Check if using real-time traffic data
+                const isRealTime = data.commute.traffic_source && data.commute.traffic_source.includes('TomTom');
+                const sourceLabel = isRealTime ? '🔴 LIVE' : 'Estimated';
+                
+                // Update commute details (origin/destination + traffic source)
                 details.innerHTML = `
                     <div class="weather-detail">
                         <div>From</div>
@@ -2352,14 +2370,55 @@
                         <div>To</div>
                         <div>${data.commute.destination}</div>
                     </div>
+                    <div class="weather-detail" style="grid-column: 1 / -1; text-align: center; margin-top: 0.5rem;">
+                        <div style="font-size: 0.8rem; opacity: 0.7;">Traffic: ${sourceLabel}</div>
+                    </div>
+                `;
+                
+                // Calculate overall traffic level from segments
+                let overallTraffic = 'light';
+                if (data.commute.route_segments && data.commute.route_segments.length > 0) {
+                    let heavyCount = 0, mediumCount = 0;
+                    data.commute.route_segments.forEach(seg => {
+                        if (seg.traffic_level === 'heavy') heavyCount++;
+                        else if (seg.traffic_level === 'medium') mediumCount++;
+                    });
+                    const total = data.commute.route_segments.length;
+                    if (heavyCount / total > 0.2) overallTraffic = 'heavy';
+                    else if ((heavyCount + mediumCount) / total > 0.3) overallTraffic = 'medium';
+                }
+                
+                // Always show overall traffic status first (based on actual route traffic flow, not incidents)
+                const statusColor = overallTraffic === 'heavy' ? '#f44336' : 
+                                   overallTraffic === 'medium' ? '#ffc107' : '#4caf50';
+                const statusIcon = overallTraffic === 'heavy' ? '🚨' : 
+                                  overallTraffic === 'medium' ? '⚠️' : '✓';
+                const statusText = overallTraffic === 'heavy' ? 'Heavy Traffic on Route' :
+                                  overallTraffic === 'medium' ? 'Moderate Traffic on Route' : 'Route is Clear';
+                
+                // Subtext changes based on whether there are nearby incidents
+                const hasIncidents = data.commute.traffic_events && data.commute.traffic_events.length > 0;
+                let statusSubtext = '';
+                if (overallTraffic === 'light') {
+                    statusSubtext = hasIncidents ? 'Your route is clear - nearby incidents shown below' : 'No traffic issues on your route';
+                } else if (overallTraffic === 'medium') {
+                    statusSubtext = 'Some slowdowns on your route';
+                } else {
+                    statusSubtext = 'Significant delays on your route';
+                }
+                
+                let trafficAlertsHTML = `
+                    <div class="traffic-alert-card" style="border-left-color: ${statusColor}; background: ${overallTraffic === 'heavy' ? 'rgba(244, 67, 54, 0.2)' : overallTraffic === 'medium' ? 'rgba(255, 193, 7, 0.2)' : 'rgba(76, 175, 80, 0.2)'}; text-align: center; margin-bottom: calc(10px * var(--scale-factor));">
+                        <div style="font-size: calc(1.3rem * var(--scale-factor)); font-weight: bold; color: ${statusColor};">${statusIcon} ${statusText}</div>
+                        <div style="font-size: calc(0.9rem * var(--scale-factor)); color: rgba(255,255,255,0.8); margin-top: calc(5px * var(--scale-factor));">${statusSubtext}</div>
+                    </div>
                 `;
                 
                 // Build traffic alerts with card-based layout
                 if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
-                    let trafficAlertsHTML = '';
                     data.commute.traffic_events.forEach(event => {
                         const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
-                        const levelText = event.traffic_level.charAt(0).toUpperCase() + event.traffic_level.slice(1);
+                        const levelText = (event.traffic_level || 'unknown').charAt(0).toUpperCase() + (event.traffic_level || 'unknown').slice(1);
                         
                         // Determine icon and alert class
                         let eventIcon = '📊';
@@ -2367,11 +2426,17 @@
                         if (event.type === 'crash') {
                             eventIcon = '🚨';
                             alertClass = 'alert-crash';
+                        } else if (event.type === 'closure') {
+                            eventIcon = '🚫';
+                            alertClass = 'alert-heavy';
+                        } else if (event.type === 'construction') {
+                            eventIcon = '🚧';
+                            alertClass = 'alert-medium';
                         } else if (event.traffic_level === 'heavy') {
-                            eventIcon = '⚠️';
+                            eventIcon = '🚧';
                             alertClass = 'alert-heavy';
                         } else if (event.traffic_level === 'medium') {
-                            eventIcon = '📊';
+                            eventIcon = '⚠️';
                             alertClass = 'alert-medium';
                         } else {
                             alertClass = 'alert-light';
@@ -2382,12 +2447,12 @@
                                 <div class="traffic-alert-header">
                                     <span class="traffic-alert-icon">${eventIcon}</span>
                                     <span class="traffic-alert-level" style="color: ${levelColor};">
-                                        ${levelText}${event.type === 'crash' ? ' - CRASH' : ''}
+                                        ${levelText}${event.type === 'crash' ? ' - CRASH' : event.type === 'closure' ? ' - CLOSED' : ''}
                                     </span>
-                                    <span class="traffic-alert-time">${event.time}</span>
+                                    <span class="traffic-alert-time">${event.time || ''}</span>
                                 </div>
                                 ${event.location ? `<div class="traffic-alert-location">📍 ${event.location}</div>` : ''}
-                                <div class="traffic-alert-description">${event.description}</div>
+                                <div class="traffic-alert-description">${event.description || ''}</div>
                             </div>
                         `;
                     });
@@ -2397,13 +2462,8 @@
                     // Start auto-scrolling if content exceeds container height
                     startTrafficAlertsAutoScroll();
                 } else {
-                    // Show light traffic message when no issues
-                    trafficContainer.innerHTML = `
-                        <div class="no-traffic-message">
-                            <strong>✓ Light Traffic</strong><br>
-                            No traffic issues detected
-                        </div>
-                    `;
+                    // Just show the overall status (already in trafficAlertsHTML)
+                    trafficContainer.innerHTML = trafficAlertsHTML;
                     stopTrafficAlertsAutoScroll();
                 }
             } else {
@@ -2657,18 +2717,46 @@
                 document.getElementById('package-status').textContent = 'Add packages on the main dashboard';
             }
             
+            // Update SwitchBot locks - render immediately if screen 20 is active
+            if (currentScreen === 20 || (data.switchbot_locks && data.switchbot_locks.length > 0)) {
+                renderSwitchbotLocks();
+            }
+            
             // Adjust total screens based on available content
+            // Note: totalScreens is the COUNT, so screens 0-20 = 21 screens
             totalScreens = 19; // Base screens (0-18, weather alerts is now screen-4, HA is screen-18)
+            console.log('Initial totalScreens:', totalScreens);
             if (data.packages && data.packages.length > 0) {
                 totalScreens++; // Add package tracking screen (screen-17)
+                console.log('Added packages screen, totalScreens now:', totalScreens);
             }
             if (data.shopping_list && data.shopping_list.length > 0) {
                 totalScreens++; // Add shopping list screen (screen-19)
+                console.log('Added shopping screen, totalScreens now:', totalScreens);
+            }
+            if (data.switchbot_locks && data.switchbot_locks.length > 0) {
+                totalScreens++; // Add SwitchBot locks screen (screen-20) - this makes totalScreens = 21 for screens 0-20
+                console.log('Adding screen 20 to rotation. Total screens:', totalScreens, 'Locks:', data.switchbot_locks);
+            } else {
+                console.log('NOT adding screen 20. Locks data:', data.switchbot_locks);
+            }
+            console.log('Final totalScreens:', totalScreens, 'Will rotate through screens 0 to', totalScreens - 1);
+            
+            // CRITICAL FIX: If we have screen 20, totalScreens MUST be at least 21
+            if (data.switchbot_locks && data.switchbot_locks.length > 0 && totalScreens < 21) {
+                console.warn('FIXING: totalScreens should be 21 for screen 20, but was', totalScreens);
+                totalScreens = 21;
+                console.log('Fixed totalScreens to:', totalScreens);
             }
             // HA screen (screen-18) is always included if HA is configured
             
             // Load Home Assistant data
             loadHAData();
+            
+            // Load and render SwitchBot locks data immediately
+            if (data.switchbot_locks && data.switchbot_locks.length > 0) {
+                renderSwitchbotLocks();
+            }
             
             // Hide loading
             document.querySelector('.loading').style.display = 'none';
@@ -2827,23 +2915,76 @@
                         })
                         .openTooltip();
                     
-                    // Add crash markers from traffic events
+                    // Add traffic incident markers with type-specific icons
                     if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
+                        // Traffic level colors - NEVER blue
+                        const TRAFFIC_COLORS = {
+                            light: '#4caf50',   // Green
+                            medium: '#ffc107',  // Yellow/Amber
+                            heavy: '#f44336'    // Red
+                        };
+                        
+                        console.log(`Rendering ${data.commute.traffic_events.length} traffic incidents on RPi map`);
+                        
                         data.commute.traffic_events.forEach(event => {
-                            if (event.type === 'crash' && event.lat && event.lon) {
-                                // Create custom crash icon (red circle with warning symbol)
-                                const crashIcon = L.divIcon({
-                                    className: 'crash-marker',
-                                    html: '<div style="background-color: #f44336; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(244, 67, 54, 0.6); display: flex; align-items: center; justify-content: center; font-size: 20px; animation: pulse-crash 2s infinite;">🚨</div>',
-                                    iconSize: [32, 32],
-                                    iconAnchor: [16, 16]
+                            if (event.lat && event.lon) {
+                                const eventColor = TRAFFIC_COLORS[event.traffic_level] || TRAFFIC_COLORS.medium;
+                                
+                                // Get icon based on incident type
+                                let emoji = '⚠️';
+                                let pulseAnim = '';
+                                let markerSize = 28;
+                                
+                                switch (event.type) {
+                                    case 'crash':
+                                        emoji = '🚨';
+                                        pulseAnim = 'animation: pulse-crash 1.5s infinite;';
+                                        markerSize = 32;
+                                        break;
+                                    case 'closure':
+                                        emoji = '🚫';
+                                        pulseAnim = 'animation: pulse-crash 2s infinite;';
+                                        markerSize = 32;
+                                        break;
+                                    case 'construction':
+                                        emoji = '🚧';
+                                        break;
+                                    case 'weather':
+                                        emoji = '🌧️';
+                                        break;
+                                    case 'incident':
+                                        emoji = '⚠️';
+                                        break;
+                                    case 'traffic':
+                                        emoji = '🚗';
+                                        break;
+                                    default:
+                                        emoji = event.traffic_level === 'heavy' ? '🚧' : '⚠️';
+                                }
+                                
+                                const eventTitle = event.type ? event.type.charAt(0).toUpperCase() + event.type.slice(1) : 'Traffic Alert';
+                                
+                                const eventIcon = L.divIcon({
+                                    className: 'traffic-incident-marker',
+                                    html: `<div style="background-color: ${eventColor}; width: ${markerSize}px; height: ${markerSize}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: ${markerSize * 0.55}px; ${pulseAnim}">${emoji}</div>`,
+                                    iconSize: [markerSize, markerSize],
+                                    iconAnchor: [markerSize / 2, markerSize / 2]
                                 });
                                 
-                                const crashMarker = L.marker([event.lat, event.lon], { icon: crashIcon })
+                                L.marker([event.lat, event.lon], { icon: eventIcon })
                                     .addTo(commuteMapRpi)
-                                    .bindPopup(`<strong style="color: #f44336; font-size: 14px;">🚨 CRASH DETECTED</strong><br><strong>${event.location || 'Route'}</strong><br><small>${event.description || ''}</small><br><small style="color: #666;">${event.time || ''}</small>`, {
-                                        className: 'crash-popup'
+                                    .bindPopup(`
+                                        <div style="min-width: 150px;">
+                                            <strong style="color: ${eventColor}; font-size: 14px;">${emoji} ${eventTitle.toUpperCase()}</strong><br>
+                                            <span style="font-size: 12px;">${event.description || ''}</span><br>
+                                            ${event.location ? `<small style="color: #666;">📍 ${event.location}</small><br>` : ''}
+                                            ${event.time ? `<small style="color: #999;">${event.time}</small>` : ''}
+                                        </div>
+                                    `, {
+                                        className: 'traffic-popup'
                                     });
+                                
+                                console.log(`Incident marker: ${event.type} at ${event.lat}, ${event.lon}`);
                             }
                         });
                     }
@@ -2909,25 +3050,31 @@
             if (currentIndicatorEl) currentIndicatorEl.classList.remove('active');
             
             // Skip screens that shouldn't be shown
-            let nextScreen = (currentScreen + 1) % 20; // Max possible screens (0-19)
+            let nextScreen = (currentScreen + 1) % totalScreens;
             let attempts = 0;
             
             // Skip weather alerts screen (4) if no alerts
-            while (attempts < 20) {
+            while (attempts < totalScreens) {
                 if (nextScreen === 4 && (!data.weather_alerts || data.weather_alerts.length === 0)) {
-                    nextScreen = (nextScreen + 1) % 20;
+                    nextScreen = (nextScreen + 1) % totalScreens;
                     attempts++;
                     continue;
                 }
                 // Skip package screen (17) if no packages
                 if (nextScreen === 17 && (!data.packages || data.packages.length === 0)) {
-                    nextScreen = (nextScreen + 1) % 20;
+                    nextScreen = (nextScreen + 1) % totalScreens;
                     attempts++;
                     continue;
                 }
                 // Skip shopping list screen (19) if no items
                 if (nextScreen === 19 && (!data.shopping_list || data.shopping_list.length === 0)) {
-                    nextScreen = (nextScreen + 1) % 20;
+                    nextScreen = (nextScreen + 1) % totalScreens;
+                    attempts++;
+                    continue;
+                }
+                // Skip SwitchBot locks screen (20) if no locks
+                if (nextScreen === 20 && (!data.switchbot_locks || data.switchbot_locks.length === 0)) {
+                    nextScreen = (nextScreen + 1) % totalScreens;
                     attempts++;
                     continue;
                 }
@@ -2935,15 +3082,31 @@
             }
             
             currentScreen = nextScreen;
+            console.log('Switching to screen:', currentScreen, 'Total screens:', totalScreens);
             const nextScreenEl = document.getElementById(`screen-${currentScreen}`);
             const nextIndicatorEl = document.getElementById(`indicator-${currentScreen}`);
-            if (nextScreenEl) nextScreenEl.classList.add('active');
+            if (nextScreenEl) {
+                nextScreenEl.classList.add('active');
+                if (currentScreen === 20) console.log('*** SCREEN 20 ACTIVATED ***');
+            } else {
+                console.error('Screen element not found:', `screen-${currentScreen}`);
+            }
             if (nextIndicatorEl) nextIndicatorEl.classList.add('active');
             
             // Refresh radar image when showing radar screen
             if (currentScreen === 5 && data.weather_radar_url) {
                 const radarImage = document.getElementById('radar-image');
                 radarImage.src = data.weather_radar_url + '?t=' + new Date().getTime();
+            }
+            
+            // Render SwitchBot locks when showing locks screen
+            if (currentScreen === 20) {
+                console.log('*** Screen 20 is active! Rendering locks ***');
+                if (data && data.switchbot_locks) {
+                    renderSwitchbotLocks();
+                } else {
+                    console.error('No switchbot_locks data when screen 20 active');
+                }
             }
             
             // Update weather alerts when showing alerts screen
@@ -3015,6 +3178,61 @@
                 // Stop auto-scrolling when leaving shopping list screen
                 stopShoppingListAutoScroll();
             }
+            
+            // Render SwitchBot locks when showing locks screen
+            if (currentScreen === 20) {
+                console.log('Screen 20 active, rendering locks. Data:', data ? data.switchbot_locks : 'no data');
+                if (data && data.switchbot_locks) {
+                    renderSwitchbotLocks();
+                } else {
+                    console.error('No data available when screen 20 is active');
+                }
+            }
+        }
+        
+        // Render SwitchBot locks
+        function renderSwitchbotLocks() {
+            const container = document.getElementById('locks-container');
+            if (!container) {
+                console.error('locks-container not found');
+                return;
+            }
+            
+            if (!data || !data.switchbot_locks) {
+                console.error('No switchbot_locks data:', data);
+                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7);">No lock data available</div>';
+                return;
+            }
+            
+            if (data.switchbot_locks.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7);">No locks configured</div>';
+                return;
+            }
+            
+            console.log('Rendering locks:', data.switchbot_locks);
+            
+            container.innerHTML = data.switchbot_locks.map(lock => {
+                const statusIcon = lock.status === 'locked' ? '🔒' : 
+                                  lock.status === 'unlocked' ? '🔓' : '❓';
+                const statusText = lock.status.charAt(0).toUpperCase() + lock.status.slice(1);
+                const statusColor = lock.status === 'locked' ? '#4caf50' : 
+                                   lock.status === 'unlocked' ? '#f44336' : '#ff9800';
+                
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 90%; padding: calc(1.5rem * var(--scale-factor)); background: rgba(255,255,255,0.1); border-radius: calc(10px * var(--scale-factor)); border: 2px solid ${statusColor};">
+                        <div style="display: flex; align-items: center; gap: calc(1rem * var(--scale-factor));">
+                            <span style="font-size: calc(3rem * var(--scale-factor));">${statusIcon}</span>
+                            <div>
+                                <div style="font-size: calc(1.5rem * var(--scale-factor)); font-weight: 600; color: #fff;">${lock.name}</div>
+                                <div style="font-size: calc(1rem * var(--scale-factor)); color: rgba(255,255,255,0.7);">${lock.device_id}</div>
+                            </div>
+                        </div>
+                        <div style="font-size: calc(1.8rem * var(--scale-factor)); font-weight: 600; color: ${statusColor}; white-space: nowrap; padding-left: calc(1rem * var(--scale-factor));">
+                            ${statusText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
         
         // Start screen rotation

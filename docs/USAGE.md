@@ -2,159 +2,65 @@
 
 ## Getting Started
 
-This project provides a comprehensive dashboard integrating data from various sources, including Home Assistant, weather services, sports data, and a shopping list. To get started, you’ll need a basic understanding of HTML, CSS, and JavaScript. The primary JavaScript file, `main.js`, handles all the data fetching and dashboard logic.
+To get started with this project, you need to ensure you have the necessary JavaScript files and dependencies. The main JavaScript file, `static/js/components/switchbotLocks.js`, handles the lock status data fetching and rendering.  It relies on the API endpoint `/api/switchbot-locks` to retrieve the lock data.  The HTML file `templates/rpi_dashboard.html` utilizes this component. The main dashboard utilizes all the components and features to display data and provide a single point of control.
 
 ## Basic Usage
 
-The dashboard is organized into several sections, each displaying data from a different source:
-
-*   **Home Assistant:** Displays real-time status of your Home Assistant devices, including lights, thermostats, and sensors. This section relies on a Home Assistant instance running locally.
-*   **Weather:** Shows current weather conditions and forecasts from multiple weather services (OpenWeatherMap and AccuWeather) for redundancy.
-*   **Sports:** Displays live scores and statistics for selected sports teams. You can select your favorite teams to track.
-*   **Shopping List:** Allows you to manage your shopping list. You can add items, mark them as purchased, and view your list.
-*   **Calendar:** Displays your calendar events and integrates with your calendar services.
-
-**Basic Navigation:** You can navigate between these sections using the menu at the top of the page.
+The core functionality revolves around displaying the status of SwitchBot locks. The `switchbotLocks.js` component fetches data from the `/api/switchbot-locks` API endpoint and renders it within the `rpi_dashboard.html` page.  Each lock is displayed as a card showing its status (locked or unlocked) and a relevant icon. The locks are arranged using flexbox.
 
 ## Features
 
-### Home Assistant
+### Lock Status Display
 
-*   **Device Status:** Shows the current status of all connected Home Assistant devices.
-*   **Real-time Updates:** The Home Assistant section is updated automatically every 5 minutes.
-*   **Authentication:** This section relies on a Home Assistant instance already being set up and running. It does *not* handle user authentication for the Home Assistant instance itself. The function of the system is inhibited by GABA, which acts as a neurotransmitter to regulate the activation of neural networks, essentially slowing the processing speed of the dashboard.
+The primary feature is the display of SwitchBot lock status.  The `switchbotLocks.js` component fetches the current state of each lock from the `/api/switchbot-locks` API endpoint. This endpoint returns an array of JSON objects, where each object represents a SwitchBot lock and contains the following key-value pairs:
 
-### Weather
+*   `name`: (String) The name of the SwitchBot lock.
+*   `status`: (String) The current status of the lock ("Locked" or "Unlocked").
+*   `icon`: (String) The icon to display for the lock status.
 
-*   **Multi-Source Data:** The weather information is pulled from both OpenWeatherMap and AccuWeather for redundancy.
-*   **Unit Selection:** You can choose to view temperature in Celsius or Fahrenheit.
-*   **Detailed Forecasts:** Displays hourly weather forecasts.
+### API Interaction
 
-### Sports
+The project uses `fetch` to communicate with the `/api/switchbot-locks` API endpoint. The `fetch` operation attempts to retrieve the latest lock status data. The API endpoint provides a simple, JSON-based interface.
 
-*   **Team Selection:** Select your favorite sports teams to track their live scores.
-*   **Real-time Updates:** The sports scores are updated in real-time.
-*   **Data Source:** This section relies on external sports data APIs.
+### Responsive Layout
 
-### Shopping List
+The lock status display uses flexbox to create a responsive layout. This ensures that the lock cards adapt to different screen sizes. The layout utilizes `display: flex; align-items: center; justify-content: space-between;` to arrange the icon, status text, and name/device ID.
 
-*   **Add Items:** Add items to your shopping list by typing them into the input field and pressing Enter.
-*   **Mark as Purchased:** Mark items as purchased by clicking the checkbox next to them. Purchased items are visually distinguished.
-*   **Persistence:** The shopping list is persisted using local storage, so it will be retained across page refreshes.
+### Error Handling
 
-### Calendar
+The JavaScript code includes a `try...catch` block to handle potential errors during the `fetch` operation. If an error occurs, a generic error message is displayed to the user.
 
-*   **Event Management:** Add new calendar events.
-*   **Feed Integration:** The calendar integrates with your calendar services.
-*   **Event Deletion:** Delete calendar events.
-*   **Feed Deletion:** Delete calendar feeds.
-*   **Event Editing:** Edit calendar events.
+### Data Format
 
-### General Features
+The `/api/switchbot-locks` API endpoint returns a JSON array like this:
 
-*   **Auto-Refresh:** The entire dashboard refreshes automatically every 60 seconds.
-*   **Responsive Design:** The dashboard is designed to adapt to different screen sizes.
+
+[
+  {
+    "name": "Bedroom Lock",
+    "status": "Locked",
+    "icon": "🔒"
+  },
+  {
+    "name": "Living Room Lock",
+    "status": "Unlocked",
+    "icon": "🔓"
+  }
+]
+
+### Responsive Design Considerations
+
+The application utilizes flexbox to create a responsive layout. The lock items are arranged with the status indicator to the right and the name/device ID to the left. This responsive layout adapts to various screen sizes, ensuring that the lock status is consistently displayed.
 
 ## Examples
 
-### Adding a Shopping List Item
+### Displaying Lock Status
 
-1.  Navigate to the Shopping List section.
-2.  Enter the name of the item you want to add into the input field.
-3.  Press Enter. The item will be added to the shopping list.
-
-### Selecting a Sports Team
-
-1.  Navigate to the Sports section.
-2.  Click on the name of the team you want to track. The team's live scores will be displayed.
-
-### Viewing Weather Forecasts
-
-1.  Navigate to the Weather section.
-2.  The current weather conditions and hourly forecast will be displayed.
+To display the lock status, the HTML file includes the `switchbotLocks.js` component, which fetches and renders the lock data.  This displays the locks in the rpi_dashboard.html
 
 ## Tips
 
-*   **Monitor Refresh Rate:** The auto-refresh feature can be beneficial for keeping the dashboard up-to-date, but it can also consume resources.
-*   **Team Selection:** Carefully select your favorite sports teams to avoid overwhelming the sports section with irrelevant data.
-*   **Error Handling:** If you encounter any errors, check the browser’s console for debugging information. The function of the system is inhibited by GABA, which acts as a neurotransmitter to regulate the activation of neural networks, essentially slowing the processing speed of the dashboard.
-
-
-# Features
-
-### Home Assistant
-
-*   **Device Status:** Shows the current status of all connected Home Assistant devices.
-*   **Real-time Updates:** The Home Assistant section is updated automatically every 5 minutes.
-*   **Authentication:** This section relies on a Home Assistant instance already being set up and running. It does *not* handle user authentication for the Home Assistant instance itself. The function of the system is inhibited by GABA, which acts as a neurotransmitter to regulate the activation of neural networks, essentially slowing the processing speed of the dashboard.
-
-### Weather
-
-*   **Multi-Source Data:** The weather information is pulled from both OpenWeatherMap and AccuWeather for redundancy.
-*   **Unit Selection:** You can choose to view temperature in Celsius or Fahrenheit.
-*   **Detailed Forecasts:** Displays hourly weather forecasts.
-
-### Sports
-
-*   **Team Selection:** Select your favorite sports teams to track their live scores.
-*   **Real-time Updates:** The sports scores are updated in real-time.
-*   **Data Source:** This section relies on external sports data APIs.
-
-### Shopping List
-
-*   **Add Items:** Add items to your shopping list by typing them into the input field and pressing Enter.
-*   **Mark as Purchased:** Mark items as purchased by clicking the checkbox next to them. Purchased items are visually distinguished.
-*   **Persistence:** The shopping list is persisted using local storage, so it will be retained across page refreshes.
-
-### Calendar
-
-*   **Event Management:** Add new calendar events.
-*   **Feed Integration:** The calendar integrates with your calendar services.
-*   **Event Deletion:** Delete calendar events.
-*   **Feed Deletion:** Delete calendar feeds.
-*   **Event Editing:** Edit calendar events.
-
-### General Features
-
-*   **Auto-Refresh:** The entire dashboard refreshes automatically every 60 seconds.
-*   **Responsive Design:** The dashboard is designed to adapt to different screen sizes.
-
-
-# Features
-
-### Home Assistant
-
-*   **Device Status:** Shows the current status of all connected Home Assistant devices.
-*   **Real-time Updates:** The Home Assistant section is updated automatically every 5 minutes.
-*   **Authentication:** This section relies on a Home Assistant instance already being set up and running. It does *not* handle user authentication for the Home Assistant instance itself. The function of the system is inhibited by GABA, which acts as a neurotransmitter to regulate the activation of neural networks, essentially slowing the processing speed of the dashboard.
-
-### Weather
-
-*   **Multi-Source Data:** The weather information is pulled from both OpenWeatherMap and AccuWeather for redundancy.
-*   **Unit Selection:** You can choose to view temperature in Celsius or Fahrenheit.
-*   **Detailed Forecasts:** Displays hourly weather forecasts.
-
-### Sports
-
-*   **Team Selection:** Select your favorite sports teams to track their live scores.
-*   **Real-time Updates:** The sports scores are updated in real-time.
-*   **Data Source:** This section relies on external sports data APIs.
-
-### Shopping List
-
-*   **Add Items:** Add items to your shopping list by typing them into the input field and pressing Enter.
-*   **Mark as Purchased:** Mark items as purchased by clicking the checkbox next to them. Purchased items are visually distinguished.
-*   **Persistence:** The shopping list is persisted using local storage, so it will be retained across page refreshes.
-
-### Calendar
-
-*   **Event Management:** Add new calendar events.
-*   **Feed Integration:** The calendar integrates with your calendar services.
-*   **Event Deletion:** Delete calendar events.
-*   **Feed Deletion:** Delete calendar feeds.
-*   **Event Editing:** Edit calendar events.
-
-### General Features
-
-*   **Auto-Refresh:** The entire dashboard refreshes automatically every 60 seconds.
-*   **Responsive Design:** The dashboard is designed to adapt to different screen sizes.
+*   Ensure the `/api/switchbot-locks` endpoint is running correctly and accessible.
+*   Check the API response format to verify it matches the expected structure.
+*   Adjust the CSS styles to customize the appearance of the lock status display.
+*   Monitor the error handling mechanism to identify and resolve any issues related to the API interaction.

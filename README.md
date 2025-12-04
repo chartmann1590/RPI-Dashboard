@@ -1,23 +1,24 @@
-# Project Name
+# RPI-Dashboard
 
 ## Description
-This project provides a web-based dashboard for a Raspberry Pi, displaying real-time information including news, weather, traffic, a photo album, calendar, shopping list, home device status, and more.  It utilizes Python (Flask) for the backend and a dynamic HTML frontend for a responsive user interface.
+A web-based dashboard that displays a variety of information, including news, weather, traffic, a photo album, calendar, shopping list, home automation status (via SwitchBot locks), and more.  It’s designed to be a central hub of information and control for a smart home environment.
 
 ## Features
-*   Real-time News Feed
-*   Current Weather Information
-*   Traffic Updates
-*   Photo Album Display
-*   Calendar Integration
-*   Shopping List Management
-*   Home Device Status Monitoring
-*   Dynamic Holiday Theme Support
-*   API Endpoints for Data Retrieval
+*   Real-time weather updates
+*   Traffic information
+*   News feed
+*   Shopping list management
+*   Calendar integration
+*   Photo album display
+*   Home automation status (via SwitchBot locks)
+*   Package tracking
+*   Holiday-themed dashboard
 
 ## Quick Start
-1.  Ensure Python and Flask are installed on your Raspberry Pi.
-2.  Clone the repository to your Pi.
-3.  Run `app.py` using `python app.py`
+1.  Ensure you have Python and Flask installed.
+2.  Clone the repository: `git clone [repository_url]`
+3.  Navigate to the project directory: `cd RPI-Dashboard`
+4.  Run the application: `python app.py`
 
 ## Documentation
 - [Overview](docs/OVERVIEW.md)

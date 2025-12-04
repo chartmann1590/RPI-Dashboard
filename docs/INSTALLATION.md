@@ -2,129 +2,58 @@
 
 ## Prerequisites
 
-*   Python 3.8 or higher
-*   Node.js 16 or higher (for frontend dependencies)
+*   Python 3.7 or higher is required.
+*   Node.js and npm (Node Package Manager) are also required to run the JavaScript components.
 
 ## Dependencies
 
-The following packages are required:
+The following Python packages are required:
 
 *   `requests` (for making HTTP requests)
-*   `asyncio` (for asynchronous operations)
-*   `beautifulsoup4` (for parsing HTML)
-*   `dotenv` (for loading environment variables from a `.env` file)
-*   `axios` (for making HTTP requests - alternative to `requests` - used in frontend)
-*   `node-fetch` (for making HTTP requests - used in frontend)
-*   `npm` or `yarn` (for managing frontend dependencies)
+*   `jinja2` (for templating)
+*   `flask` (for creating a web application)
+*   `socket` (for potential future device communication)
+*   `logging` (for logging events)
+
+The following JavaScript dependencies are required:
+
+*   `fetch` (for making HTTP requests)
+*   `axios` (for making HTTP requests - alternative to `fetch`)
+*   `moment` (for handling dates and times)
+*   `jquery` (for DOM manipulation - to handle the HTML rendering)
 
 ## Installation Steps
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [repository URL]
-    cd [repository directory]
-    ```
+1.  **Clone the Repository:**  Clone the repository from its source (e.g., GitHub).
 
-2.  **Set up the backend environment:**
-    *   Create a `.env` file in the root directory.
-    *   Add your API keys and other environment variables to the `.env` file.
-        *   Example:
-            ```
-            HOME_ASSISTANT_API_KEY=your_home_assistant_api_key
-            OPENWEATHERMAP_API_KEY=your_openweather_map_api_key
-            ACCUWEATHER_API_KEY=your_accuweather_api_key
-            ```
+2.  **Install Python Dependencies:**  Navigate to the project's root directory in your terminal and run the following command to install the Python dependencies:
 
-3.  **Install backend dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Install frontend dependencies:**
+3.  **Install JavaScript Dependencies:**  Navigate to the `static/js` directory and run the following command to install the JavaScript dependencies:
+
     ```bash
     npm install
     ```
 
-## Initial Setup
+4.  **Set up the API (if needed):**  If the API endpoints are not already configured, you'll need to set them up.  This includes defining the `/api/holiday-theme` endpoint to return JSON data and the `/api/switchbot-locks` endpoint.  You may need to set up a local server or use an existing API service.
 
-The formation of neural networks requires a process of synaptic plasticity, where connections between neurons are strengthened or weakened. This process is often inhibited by the presence of the neurotransmitter GABA, which is an inhibitory neurotransmitter. GABA receptors are found on many neurons, and when GABA binds to these receptors, it reduces the likelihood that the neuron will fire. This makes it more difficult for neural networks to form. This process is crucial for brain development and cognitive functions, influencing things like attention, learning, and memory. Dysregulation of GABAergic inhibition has also been implicated in mental health conditions, including anxiety, depression, and epilepsy.
+5.  **Configure the Application:**  Set any necessary environment variables, such as API keys or URLs.
 
-## Verifying Installation
-
-1.  **Start the backend server:**
-    ```bash
-    python main.py
-    ```
-
-2.  **Open the frontend in your browser:**
-    *   Navigate to ` (or the port specified in your `.env` file).
-
-3.  **Check the console:** Verify that the backend server is running without errors.  Check the browser console for any frontend-related errors.
-
-4.  **Test the data sources:** Confirm that the dashboard is successfully fetching data from Home Assistant, OpenWeatherMap, and AccuWeather.  For example, check if the current weather temperature is displayed correctly.
-
-
-# Installation Guide
-
-## Prerequisites
-
-*   Python 3.8 or higher
-*   Node.js 16 or higher (for frontend dependencies)
-
-## Dependencies
-
-The following packages are required:
-
-*   `requests` (for making HTTP requests)
-*   `asyncio` (for asynchronous operations)
-*   `beautifulsoup4` (for parsing HTML)
-*   `dotenv` (for loading environment variables from a `.env` file)
-*   `axios` (for making HTTP requests - alternative to `requests` - used in frontend)
-*   `node-fetch` (for making HTTP requests - used in frontend)
-*   `npm` or `yarn` (for managing frontend dependencies)
-
-## Installation Steps
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [repository URL]
-    cd [repository directory]
-    ```
-
-2.  **Set up the backend environment:**
-    *   Create a `.env` file in the root directory.
-    *   Add your API keys and other environment variables to the `.env` file.
-        *   Example:
-            ```
-            HOME_ASSISTANT_API_KEY=your_home_assistant_api_key
-            OPENWEATHERMAP_API_KEY=your_openweather_map_api_key
-            ACCUWEATHER_API_KEY=your_accuweather_api_key
-            ```
-
-3.  **Install backend dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Install frontend dependencies:**
-    ```bash
-    npm install
-    ```
+6.  **Run the Flask Application:**  Start the Flask application using the provided command (likely `python app.py`).
 
 ## Initial Setup
 
-The formation of neural networks requires a process of synaptic plasticity, where connections between neurons are strengthened or weakened. This process is often inhibited by the presence of the neurotransmitter GABA, which is an inhibitory neurotransmitter. GABA receptors are found on many neurons, and when GABA binds to these receptors, it reduces the likelihood that the neuron will fire. This makes it more difficult for neural networks to form. This process is crucial for brain development and cognitive functions, influencing things like attention, learning, and memory. Dysregulation of GABAergic inhibition has also been implicated in mental health conditions, including anxiety, depression, and epilepsy.
+*   Ensure that the Flask application is running.
+*   Verify that the JavaScript files are being loaded correctly in the HTML files.
+*   Check that the clock is updating correctly.
 
 ## Verifying Installation
 
-1.  **Start the backend server:**
-    ```bash
-    python main.py
-    ```
-
-2.  **Open the frontend in your browser:**
-    *   Navigate to ` (or the port specified in your `.env` file).
-
-3.  **Check the console:** Verify that the backend server is running without errors.  Check the browser console for any frontend-related errors.
-
-4.  **Test the data sources:** Confirm that the dashboard is successfully fetching data from Home Assistant, OpenWeatherMap, and AccuWeather.  For example, check if the current weather temperature is displayed correctly.
+1.  **Check the Clock:**  The clock should be displaying the current time.
+2.  **Verify the Holiday Theme:**  When you visit the main page, the holiday theme (e.g., Christmas) should be applied.
+3.  **Confirm Particle Effects:**  The snow, confetti, and other particle effects should be running.
+4.  **Check the Lock Status:**  The lock status should be displayed, showing whether the locks are locked or unlocked.
+5. **Test responsiveness:** Make sure that the lock status is displayed well on different screen sizes.

@@ -17,6 +17,9 @@ import re
 from urllib.parse import urlparse
 import math
 from dotenv import load_dotenv
+import hmac
+import hashlib
+import base64
 
 # Load environment variables from .env file
 load_dotenv()
@@ -75,6 +78,30 @@ if not HA_URL or not HA_TOKEN:
 
 # Timezone Configuration
 TIMEZONE = os.getenv('TIMEZONE', 'America/New_York')
+
+# SwitchBot Configuration
+SWITCHBOT_TOKEN = os.getenv('SWITCHBOT_TOKEN', '')
+SWITCHBOT_SECRET = os.getenv('SWITCHBOT_SECRET', '')
+SWITCHBOT_LOCK_IDS = [lock_id.strip() for lock_id in os.getenv('SWITCHBOT_LOCK_IDS', '').split(',') if lock_id.strip()]
+
+if not SWITCHBOT_TOKEN or not SWITCHBOT_SECRET or not SWITCHBOT_LOCK_IDS:
+    logging.warning("SwitchBot credentials or lock IDs not found in environment variables. SwitchBot features will be disabled.")
+
+# OpenRouteService Configuration
+# Get free API key from: https://openrouteservice.org/dev/#/signup
+# Free tier: 2,000 requests/day
+ORS_API_KEY = os.getenv('ORS_API_KEY', '')
+
+if not ORS_API_KEY:
+    logging.warning("OpenRouteService API key not found in environment variables. ORS features will be disabled. Get a free key at https://openrouteservice.org/dev/#/signup")
+
+# TomTom Traffic API Configuration
+# Get free API key from: https://developer.tomtom.com/
+# Free tier: 2,500 requests/day - PROVIDES REAL-TIME TRAFFIC DATA
+TOMTOM_API_KEY = os.getenv('TOMTOM_API_KEY', '')
+
+if not TOMTOM_API_KEY:
+    logging.warning("TomTom API key not found in environment variables. Real-time traffic features will be limited. Get a free key at https://developer.tomtom.com/")
 
 def get_timezone():
     """Get the configured timezone object"""
@@ -386,6 +413,30 @@ def ensure_quote_history_table():
     except Exception as e:
         logging.error(f"Error ensuring quote_history table: {e}")
 
+def cleanup_crash_events():
+    """Remove all crash events from database - OSRM doesn't provide crash data"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        # Delete events with crash type OR descriptions containing crash/incident keywords
+        c.execute("""
+            DELETE FROM traffic_events 
+            WHERE event_type = 'crash' 
+            OR description LIKE '%crash%' 
+            OR description LIKE '%incident%'
+            OR description LIKE '%accident%'
+            OR description LIKE '%possible incident%'
+        """)
+        deleted_count = c.rowcount
+        conn.commit()
+        conn.close()
+        if deleted_count > 0:
+            logging.info(f"Cleaned up {deleted_count} crash/incident events from database (OSRM doesn't provide crash data)")
+        return deleted_count
+    except Exception as e:
+        logging.error(f"Error cleaning up crash events: {e}")
+        return 0
+
 def save_joke_to_history(joke_text):
     """Save a joke to history and keep only the last 100 jokes"""
     try:
@@ -678,6 +729,9 @@ def dashboard_data():
         if calendar_events and len(calendar_events) > 0:
             next_calendar_events = calendar_events[:2]  # Next 2 events
         
+        # Fetch SwitchBot locks
+        switchbot_locks = get_switchbot_lock_status()
+        
         return jsonify({
             'devices': [{'name': d[0], 'status': d[1]} for d in devices],
             'weather': weather,
@@ -698,6 +752,7 @@ def dashboard_data():
             'random_photo': random_photo,
             'packages': packages,
             'shopping_list': shopping_list,
+            'switchbot_locks': switchbot_locks,
             'time': datetime.now(get_timezone()).strftime('%I:%M %p'),
             'date': datetime.now(get_timezone()).strftime('%A, %B %d'),
             'timezone': TIMEZONE,
@@ -948,31 +1003,62 @@ def api_local_calendar_event(event_id):
 # ==================== COMMUTE API ENDPOINTS ====================
 @app.route('/api/commute-info')
 def api_commute_info():
-    """Get commute information"""
+    """Get commute information with real-time traffic events from TomTom"""
     # Check if force refresh is requested
     force_refresh = request.args.get('refresh', 'false').lower() == 'true'
     commute = get_commute_info(use_cache=not force_refresh)
+    if commute is None:
+        # Return empty response with error message instead of None
+        return jsonify({
+            'error': 'No commute route configured. Please set origin and destination addresses above.',
+            'traffic_events': []
+        })
+    # Return full commute data including traffic_events from TomTom API
+    # traffic_events contains real incidents like road closures, crashes, construction
     return jsonify(commute)
 
 @app.route('/api/traffic-history')
 def api_traffic_history():
-    """Get traffic event history (last 50 events)"""
+    """Get traffic event history - currently returns empty as we don't create false traffic events"""
     try:
         conn = sqlite3.connect(db_path)
         c = conn.cursor()
+        
+        # DELETE ALL FALSE TRAFFIC EVENTS - These were auto-generated from delay calculations
+        # OpenRouteService already accounts for traffic, so these events are false positives
+        # Delete ALL traffic events since we don't create them anymore
         c.execute("""
-            SELECT event_type, traffic_level, location, description, latitude, longitude, timestamp
-            FROM traffic_events
-            ORDER BY timestamp DESC
-            LIMIT 50
+            DELETE FROM traffic_events
         """)
-        events = c.fetchall()
+        deleted_events = c.rowcount
+        if deleted_events > 0:
+            logging.info(f"Cleaned up {deleted_events} false traffic events from database")
+        conn.commit()
         conn.close()
+        
+        # Clear commute cache to force refresh
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("DELETE FROM api_cache WHERE cache_key = ?", ("commute_info",))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logging.warning(f"Error clearing commute cache: {e}")
+        
+        # Return empty events list - we don't create traffic events anymore
+        # OpenRouteService already provides traffic-aware routing
+        events = []
         
         ny_tz = get_timezone()
         formatted_events = []
         for event in events:
             event_type, traffic_level, location, description, lat, lon, timestamp_str = event
+            # Double-check: filter out any crash/incident events that might have slipped through
+            if (event_type == 'crash' or 
+                (description and any(keyword in description.lower() for keyword in ['crash', 'incident', 'accident', 'possible incident']))):
+                continue
+                
             timestamp_dt = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
             if timestamp_dt.tzinfo is None:
                 timestamp_dt = ny_tz.localize(timestamp_dt)
@@ -994,6 +1080,62 @@ def api_traffic_history():
     except Exception as e:
         logging.error(f"Error fetching traffic history: {e}")
         return jsonify({'events': [], 'count': 0, 'error': str(e)}), 500
+
+@app.route('/api/traffic-history/clear-all', methods=['POST'])
+@require_admin
+def api_clear_all_traffic_events():
+    """Admin endpoint to manually clear all traffic events"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("DELETE FROM traffic_events")
+        deleted_count = c.rowcount
+        conn.commit()
+        conn.close()
+        
+        # Clear commute cache
+        try:
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("DELETE FROM api_cache WHERE cache_key = ?", ("commute_info",))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logging.warning(f"Error clearing commute cache: {e}")
+        
+        logging.info(f"Admin cleared all {deleted_count} traffic events")
+        return jsonify({'status': 'success', 'deleted_count': deleted_count})
+    except Exception as e:
+        logging.error(f"Error clearing all traffic events: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@app.route('/api/traffic-history/clear-crashes', methods=['POST'])
+@require_admin
+def api_clear_crash_events():
+    """Admin endpoint to manually clear all crash/incident events from database"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+            DELETE FROM traffic_events 
+            WHERE event_type = 'crash' 
+            OR description LIKE '%crash%' 
+            OR description LIKE '%incident%'
+            OR description LIKE '%accident%'
+            OR description LIKE '%possible incident%'
+        """)
+        deleted_count = c.rowcount
+        conn.commit()
+        conn.close()
+        
+        # Also clear cache
+        set_cached_data("commute_info", None)
+        
+        logging.info(f"Manually deleted {deleted_count} crash/incident events from database")
+        return jsonify({'status': 'success', 'deleted_count': deleted_count})
+    except Exception as e:
+        logging.error(f"Error clearing crash events: {e}")
+        return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @app.route('/api/settings/commute', methods=['POST'])
 def api_set_commute():
@@ -1144,6 +1286,13 @@ def api_weather_alerts():
     """Get weather alerts"""
     alerts = get_weather_alerts()
     return jsonify(alerts)
+
+# ==================== SWITCHBOT API ENDPOINTS ====================
+@app.route('/api/switchbot-locks')
+def api_switchbot_locks():
+    """Get SwitchBot lock statuses"""
+    locks = get_switchbot_lock_status()
+    return jsonify(locks)
 
 # ==================== HOME ASSISTANT API ENDPOINTS ====================
 @app.route('/api/home-assistant')
@@ -2304,11 +2453,11 @@ def get_calendar_events(use_cache=True):
 
 # ==================== TRAFFIC & COMMUTE FUNCTIONS ====================
 def get_commute_info(use_cache=True):
-    """Fetch commute information using OpenRouteService API"""
+    """Fetch commute information with REAL-TIME traffic data using TomTom API"""
     cache_key = "commute_info"
     
     if use_cache:
-        cached_data = get_cached_data(cache_key)
+        cached_data = get_cached_data(cache_key, max_age=300)  # 5 minute cache for traffic
         if cached_data:
             return cached_data
     
@@ -2322,7 +2471,11 @@ def get_commute_info(use_cache=True):
         conn.close()
         
         if not origin_result or not dest_result:
-            return None
+            logging.warning("Commute origin or destination not configured")
+            return {
+                'error': 'No commute route configured. Please set origin and destination addresses above.',
+                'traffic_events': []
+            }
         
         origin = origin_result[0]
         destination = dest_result[0]
@@ -2330,270 +2483,730 @@ def get_commute_info(use_cache=True):
         # Use Nominatim (OpenStreetMap) for geocoding - free, no API key required
         geocode_url = "https://nominatim.openstreetmap.org/search"
         headers = {
-            'User-Agent': 'RPI-Dashboard/1.0'  # Required by Nominatim
+            'User-Agent': 'RPI-Dashboard/1.0'
         }
         
         try:
-            # Get coordinates for origin using Nominatim
-            geo_params = {
-                'q': origin,
-                'format': 'json',
-                'limit': 1
-            }
+            # Get coordinates for origin
+            geo_params = {'q': origin, 'format': 'json', 'limit': 1}
             response = requests.get(geocode_url, params=geo_params, headers=headers, timeout=10)
             if response.status_code == 200:
                 geo_data = response.json()
                 if geo_data and len(geo_data) > 0:
-                    origin_lat = geo_data[0]['lat']
-                    origin_lon = geo_data[0]['lon']
-                    origin_str = f"{origin_lon},{origin_lat}"  # lon,lat format for OpenRouteService
+                    origin_lat = float(geo_data[0]['lat'])
+                    origin_lon = float(geo_data[0]['lon'])
                     logging.info(f"Geocoded origin: {origin} -> {origin_lat}, {origin_lon}")
                 else:
-                    logging.error(f"No geocoding results for origin: {origin}")
-                    return None
+                    return {'error': f'Could not find location for origin: {origin}', 'traffic_events': []}
             else:
-                logging.error(f"Geocoding API error for origin: {response.status_code}")
-                return None
+                return {'error': 'Geocoding service error for origin.', 'traffic_events': []}
             
-            # Small delay to respect Nominatim rate limits
-            time.sleep(1)
+            time.sleep(1)  # Nominatim rate limit
             
-            # Get coordinates for destination using Nominatim
-            geo_params = {
-                'q': destination,
-                'format': 'json',
-                'limit': 1
-            }
+            # Get coordinates for destination
+            geo_params = {'q': destination, 'format': 'json', 'limit': 1}
             response = requests.get(geocode_url, params=geo_params, headers=headers, timeout=10)
             if response.status_code == 200:
                 geo_data = response.json()
                 if geo_data and len(geo_data) > 0:
-                    dest_lat = geo_data[0]['lat']
-                    dest_lon = geo_data[0]['lon']
-                    dest_str = f"{dest_lon},{dest_lat}"  # lon,lat format for OpenRouteService
+                    dest_lat = float(geo_data[0]['lat'])
+                    dest_lon = float(geo_data[0]['lon'])
                     logging.info(f"Geocoded destination: {destination} -> {dest_lat}, {dest_lon}")
                 else:
-                    logging.error(f"No geocoding results for destination: {destination}")
-                    return None
+                    return {'error': f'Could not find location for destination: {destination}', 'traffic_events': []}
             else:
-                logging.error(f"Geocoding API error for destination: {response.status_code}")
-                return None
+                return {'error': 'Geocoding service error for destination.', 'traffic_events': []}
             
-            # Small delay to respect Nominatim rate limits
-            time.sleep(1)
+            time.sleep(1)  # Nominatim rate limit
             
-            # Get directions using OSRM (Open Source Routing Machine) - free, no API key required
-            # OSRM uses lon,lat format and expects coordinates separated by semicolons
-            url = "http://router.project-osrm.org/route/v1/driving/{coordinates}"
-            coordinates_str = f"{origin_lon},{origin_lat};{dest_lon},{dest_lat}"
-            full_url = url.format(coordinates=coordinates_str)
+            # FALLBACK ORDER: TomTom (real-time) → OpenRouteService → OSRM
             
-            params = {
-                'overview': 'full',  # Get full route geometry for map display
-                'alternatives': 'false',
-                'steps': 'true',  # Enable steps to get segment-level data
-                'geometries': 'geojson'  # Get GeoJSON format for easy map rendering
-            }
+            # 1. Try TomTom API first (REAL-TIME TRAFFIC DATA)
+            # Free tier: 2,500 requests/day with actual traffic flow data
+            if TOMTOM_API_KEY:
+                try:
+                    logging.info("Trying TomTom API for real-time traffic...")
+                    commute_data = fetch_tomtom_route(origin, destination, origin_lat, origin_lon, dest_lat, dest_lon)
+                    if commute_data and not commute_data.get('error'):
+                        # Also fetch traffic incidents from TomTom
+                        # Pass route_coordinates to filter incidents that are actually ON the route
+                        route_coords = commute_data.get('route_coordinates', [])
+                        incidents = fetch_tomtom_incidents(origin_lat, origin_lon, dest_lat, dest_lon, route_coords)
+                        if incidents:
+                            commute_data['traffic_events'].extend(incidents)
+                        set_cached_data(cache_key, commute_data)
+                        return commute_data
+                    else:
+                        logging.warning("TomTom API failed, falling back to OpenRouteService")
+                except Exception as e:
+                    logging.error(f"TomTom API error: {e}, falling back to OpenRouteService")
             
-            response = requests.get(full_url, params=params, timeout=15)
+            # 2. Try OpenRouteService as second fallback
+            if ORS_API_KEY:
+                try:
+                    logging.info("Trying OpenRouteService API...")
+                    commute_data = fetch_ors_route(origin, destination, origin_lat, origin_lon, dest_lat, dest_lon)
+                    if commute_data and not commute_data.get('error'):
+                        set_cached_data(cache_key, commute_data)
+                        return commute_data
+                    else:
+                        logging.warning("OpenRouteService failed, falling back to OSRM")
+                except Exception as e:
+                    logging.error(f"OpenRouteService error: {e}, falling back to OSRM")
             
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('code') == 'Ok' and data.get('routes'):
-                    route = data['routes'][0]
-                    distance_m = route.get('distance', 0)  # Distance in meters
-                    duration_sec = route.get('duration', 0)  # Duration in seconds
-                    distance_km = distance_m / 1000
-                    duration_min = int(duration_sec / 60)
-                    
-                    # Extract route geometry for map display
-                    route_geometry = route.get('geometry', {})
-                    route_coordinates = []
-                    if route_geometry and route_geometry.get('coordinates'):
-                        # GeoJSON format: [[lon, lat], [lon, lat], ...]
-                        route_coordinates = route_geometry['coordinates']
-                    
-                    # Extract route segments with traffic analysis
-                    route_segments = []
-                    # OSRM returns steps in legs when steps=true
-                    legs = route.get('legs', [])
-                    
-                    if legs and len(legs) > 0 and route_coordinates:
-                        # Process each leg (typically one leg for point-to-point routes)
-                        total_distance = 0
-                        step_distances = []
-                        step_durations = []
-                        step_traffic_levels = []
-                        
-                        for leg in legs:
-                            steps = leg.get('steps', [])
-                            if steps:
-                                for step in steps:
-                                    step_distance = step.get('distance', 0)  # meters
-                                    step_duration = step.get('duration', 0)  # seconds
-                                    
-                                    # Calculate free-flow time estimate
-                                    # Assume average speed: 50 km/h (31 mph) for urban, 80 km/h (50 mph) for highway
-                                    # Use 60 km/h (37 mph) as average
-                                    avg_speed_kmh = 60
-                                    free_flow_duration = (step_distance / 1000) / avg_speed_kmh * 3600  # seconds
-                                    
-                                    # Calculate traffic delay percentage
-                                    if free_flow_duration > 0:
-                                        delay_ratio = (step_duration - free_flow_duration) / free_flow_duration
-                                    else:
-                                        delay_ratio = 0
-                                    
-                                    # Classify traffic level
-                                    if delay_ratio < 0.1:
-                                        traffic_level = 'light'
-                                    elif delay_ratio < 0.3:
-                                        traffic_level = 'medium'
-                                    else:
-                                        traffic_level = 'heavy'
-                                    
-                                    total_distance += step_distance
-                                    step_distances.append(step_distance)
-                                    step_durations.append(step_duration)
-                                    step_traffic_levels.append(traffic_level)
-                        
-                        # If we have steps and route coordinates, divide route proportionally
-                        if step_distances and total_distance > 0:
-                            coord_index = 0
-                            for i, step_distance in enumerate(step_distances):
-                                # Calculate proportion of route for this step
-                                proportion = step_distance / total_distance
-                                num_coords = max(1, int(len(route_coordinates) * proportion))
-                                
-                                # Get coordinates for this segment
-                                segment_coords = []
-                                if coord_index < len(route_coordinates):
-                                    end_index = min(coord_index + num_coords, len(route_coordinates))
-                                    segment_coords = route_coordinates[coord_index:end_index]
-                                    coord_index = end_index
-                                    
-                                    # Make sure we include the last coordinate
-                                    if i == len(step_distances) - 1 and coord_index < len(route_coordinates):
-                                        segment_coords.append(route_coordinates[-1])
-                                
-                                if segment_coords:
-                                    # Recalculate for consistency
-                                    step_distance = step_distances[i]
-                                    step_duration = step_durations[i]
-                                    avg_speed_kmh = 60
-                                    free_flow_duration = (step_distance / 1000) / avg_speed_kmh * 3600
-                                    delay_ratio = (step_duration - free_flow_duration) / free_flow_duration if free_flow_duration > 0 else 0
-                                    
-                                    route_segments.append({
-                                        'distance_m': step_distance,
-                                        'duration_sec': step_duration,
-                                        'free_flow_duration_sec': free_flow_duration,
-                                        'delay_ratio': round(delay_ratio, 2),
-                                        'traffic_level': step_traffic_levels[i],
-                                        'coordinates': segment_coords
-                                    })
-                    
-                    # Detect and store traffic events
-                    current_events = []
-                    if route_segments:
-                        for i, segment in enumerate(route_segments):
-                            if segment.get('traffic_level') in ['medium', 'heavy']:
-                                # Get approximate location (midpoint of segment)
-                                if segment.get('coordinates') and len(segment['coordinates']) > 0:
-                                    mid_coord = segment['coordinates'][len(segment['coordinates']) // 2]
-                                    seg_lat = mid_coord[1]
-                                    seg_lon = mid_coord[0]
-                                    
-                                    # Determine event type and description
-                                    if segment.get('traffic_level') == 'heavy':
-                                        # Heavy traffic might indicate crash or major delay
-                                        if segment.get('delay_ratio', 0) > 0.5:
-                                            event_type = 'crash'
-                                            description = f"Major delay detected - possible incident"
-                                        else:
-                                            event_type = 'heavy_traffic'
-                                            description = f"Heavy traffic - {int(segment.get('delay_ratio', 0) * 100)}% delay"
-                                    else:
-                                        event_type = 'medium_traffic'
-                                        description = f"Moderate traffic - {int(segment.get('delay_ratio', 0) * 100)}% delay"
-                                    
-                                    # Store event in database
-                                    try:
-                                        conn = sqlite3.connect(db_path)
-                                        c = conn.cursor()
-                                        c.execute('''
-                                            INSERT INTO traffic_events (event_type, traffic_level, location, description, latitude, longitude)
-                                            VALUES (?, ?, ?, ?, ?, ?)
-                                        ''', (event_type, segment.get('traffic_level'), 
-                                              f"Route segment {i+1}", description, seg_lat, seg_lon))
-                                        conn.commit()
-                                        
-                                        # Keep only last 50 events
-                                        c.execute('''
-                                            DELETE FROM traffic_events 
-                                            WHERE id NOT IN (
-                                                SELECT id FROM traffic_events 
-                                                ORDER BY timestamp DESC 
-                                                LIMIT 50
-                                            )
-                                        ''')
-                                        conn.commit()
-                                        conn.close()
-                                        
-                                        current_events.append({
-                                            'type': event_type,
-                                            'traffic_level': segment.get('traffic_level'),
-                                            'location': f"Route segment {i+1}",
-                                            'description': description,
-                                            'time': datetime.now(get_timezone()).strftime('%I:%M %p'),
-                                            'lat': seg_lat,
-                                            'lon': seg_lon
-                                        })
-                                    except Exception as e:
-                                        logging.error(f"Error storing traffic event: {e}")
-                    
-                    commute_data = {
-                        'origin': origin,
-                        'destination': destination,
-                        'origin_lat': origin_lat,
-                        'origin_lon': origin_lon,
-                        'dest_lat': dest_lat,
-                        'dest_lon': dest_lon,
-                        'distance_km': round(distance_km, 1),
-                        'distance_miles': round(distance_km * 0.621371, 1),
-                        'duration_minutes': duration_min,
-                        'duration_formatted': f"{duration_min} min",
-                        'route_coordinates': route_coordinates,  # For map display
-                        'route_segments': route_segments,  # Segment-level traffic data
-                        'traffic_events': current_events,  # Current traffic events
-                        'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
-                    }
-                    
-                    set_cached_data(cache_key, commute_data)
-                    logging.info(f"Commute info fetched: {duration_min} min, {round(distance_km * 0.621371, 1)} miles, {len(current_events)} traffic events")
-                    return commute_data
-                else:
-                    logging.error(f"OSRM API returned error: {data.get('code', 'Unknown')}")
-                    return None
-            else:
-                logging.error(f"OSRM directions API error: {response.status_code} - {response.text[:200]}")
-                return None
+            # 3. Final fallback to OSRM (no real-time traffic, but reliable)
+            logging.info("Using OSRM as final fallback...")
+            commute_data = fetch_osrm_route(origin, destination, origin_lat, origin_lon, dest_lat, dest_lon)
+            if commute_data:
+                set_cached_data(cache_key, commute_data)
+                return commute_data
+            
+            return {'error': 'Failed to get route from all services.', 'traffic_events': []}
+            
         except requests.exceptions.RequestException as e:
-            logging.error(f"Error fetching commute info (network): {e}")
-            return None
-        except KeyError as e:
-            logging.error(f"Error parsing geocoding response: {e}")
-            return None
+            logging.error(f"Network error fetching commute info: {e}")
+            return {'error': f'Network error: {str(e)}', 'traffic_events': []}
         except Exception as e:
             logging.error(f"Error fetching commute info: {e}")
-            import traceback
-            logging.error(traceback.format_exc())
-            return None
+            return {'error': f'Error: {str(e)}', 'traffic_events': []}
+            
     except Exception as e:
         logging.error(f"Error in get_commute_info: {e}")
         cached_data = get_cached_data(cache_key)
         if cached_data:
             return cached_data
+        return {'error': f'Error loading commute info: {str(e)}', 'traffic_events': []}
+
+
+def fetch_tomtom_route(origin, destination, origin_lat, origin_lon, dest_lat, dest_lon):
+    """
+    Fetch route with REAL-TIME traffic data from TomTom API.
+    TomTom provides actual traffic flow data and congestion information.
+    Free tier: 2,500 requests/day
+    """
+    try:
+        # TomTom Calculate Route API with traffic
+        # https://developer.tomtom.com/routing-api/documentation/routing/calculate-route
+        url = f"https://api.tomtom.com/routing/1/calculateRoute/{origin_lat},{origin_lon}:{dest_lat},{dest_lon}/json"
+        
+        params = {
+            'key': TOMTOM_API_KEY,
+            'traffic': 'true',  # Enable real-time traffic
+            'travelMode': 'car',
+            'routeType': 'fastest',
+            'sectionType': 'traffic',  # Get traffic sections
+            'computeTravelTimeFor': 'all',  # Get both traffic and no-traffic times
+        }
+        
+        response = requests.get(url, params=params, timeout=15)
+        
+        if response.status_code != 200:
+            logging.error(f"TomTom API error: {response.status_code} - {response.text[:200]}")
+            return None
+        
+        data = response.json()
+        
+        if not data.get('routes') or len(data['routes']) == 0:
+            logging.error("TomTom returned no routes")
+            return None
+        
+        route = data['routes'][0]
+        summary = route.get('summary', {})
+        
+        # Get distance and duration
+        distance_m = summary.get('lengthInMeters', 0)
+        duration_sec = summary.get('travelTimeInSeconds', 0)  # WITH traffic
+        no_traffic_duration = summary.get('noTrafficTravelTimeInSeconds', duration_sec)  # WITHOUT traffic
+        traffic_delay = summary.get('trafficDelayInSeconds', 0)
+        
+        distance_km = distance_m / 1000
+        duration_min = int(duration_sec / 60)
+        
+        logging.info(f"TomTom route: {duration_min} min (traffic delay: {traffic_delay}s)")
+        
+        # Extract route coordinates from legs
+        route_coordinates = []
+        legs = route.get('legs', [])
+        for leg in legs:
+            points = leg.get('points', [])
+            for point in points:
+                route_coordinates.append([point['longitude'], point['latitude']])
+        
+        if not route_coordinates:
+            logging.error("TomTom returned no route coordinates")
+            return None
+        
+        # Process traffic sections for colored segments
+        route_segments = []
+        sections = route.get('sections', [])
+        
+        # Filter to only traffic sections
+        traffic_sections = [s for s in sections if s.get('sectionType') == 'TRAFFIC']
+        
+        if traffic_sections:
+            logging.info(f"TomTom returned {len(traffic_sections)} traffic sections")
+            
+            for section in traffic_sections:
+                start_idx = section.get('startPointIndex', 0)
+                end_idx = section.get('endPointIndex', len(route_coordinates) - 1)
+                
+                # Get traffic level from TomTom's simpleCategory
+                # Values: JAM, SLOW, NORMAL, FREE_FLOW
+                simple_category = section.get('simpleCategory', 'UNKNOWN')
+                current_speed = section.get('currentSpeed', 0)  # km/h
+                free_flow_speed = section.get('freeFlowSpeed', 0)  # km/h
+                traffic_delay_sec = section.get('delayInSeconds', 0)
+                
+                # Map TomTom categories to our traffic levels
+                if simple_category == 'JAM':
+                    traffic_level = 'heavy'
+                elif simple_category == 'SLOW':
+                    traffic_level = 'medium'
+                else:  # NORMAL, FREE_FLOW, or unknown
+                    traffic_level = 'light'
+                
+                # Alternative: use speed ratio if available
+                if free_flow_speed > 0 and current_speed > 0:
+                    speed_ratio = current_speed / free_flow_speed
+                    if speed_ratio < 0.4:
+                        traffic_level = 'heavy'
+                    elif speed_ratio < 0.7:
+                        traffic_level = 'medium'
+                    else:
+                        traffic_level = 'light'
+                
+                # Extract coordinates for this section
+                section_coords = route_coordinates[start_idx:end_idx + 1]
+                
+                if section_coords:
+                    route_segments.append({
+                        'traffic_level': traffic_level,
+                        'coordinates': section_coords,
+                        'current_speed_kmh': current_speed,
+                        'free_flow_speed_kmh': free_flow_speed,
+                        'delay_seconds': traffic_delay_sec,
+                        'tomtom_category': simple_category
+                    })
+        
+        # If no traffic sections, create segments based on overall delay
+        if not route_segments:
+            logging.info("No traffic sections from TomTom, creating segment from overall data")
+            
+            # Calculate overall traffic level from delay
+            if no_traffic_duration > 0:
+                delay_ratio = traffic_delay / no_traffic_duration
+                if delay_ratio > 0.3:
+                    traffic_level = 'heavy'
+                elif delay_ratio > 0.1:
+                    traffic_level = 'medium'
+                else:
+                    traffic_level = 'light'
+            else:
+                traffic_level = 'light'
+            
+            route_segments.append({
+                'traffic_level': traffic_level,
+                'coordinates': route_coordinates,
+                'delay_seconds': traffic_delay
+            })
+        
+        # Build traffic events list from heavy traffic segments
+        traffic_events = []
+        for i, segment in enumerate(route_segments):
+            if segment['traffic_level'] in ['heavy', 'medium']:
+                if segment.get('coordinates') and len(segment['coordinates']) > 0:
+                    mid_idx = len(segment['coordinates']) // 2
+                    mid_coord = segment['coordinates'][mid_idx]
+                    
+                    delay_min = segment.get('delay_seconds', 0) // 60
+                    
+                    traffic_events.append({
+                        'type': 'traffic',
+                        'traffic_level': segment['traffic_level'],
+                        'location': f"Route segment {i + 1}",
+                        'description': f"{segment['traffic_level'].capitalize()} traffic" + 
+                                      (f" - {delay_min} min delay" if delay_min > 0 else ""),
+                        'time': datetime.now(get_timezone()).strftime('%I:%M %p'),
+                        'lat': mid_coord[1],
+                        'lon': mid_coord[0]
+                    })
+        
+        commute_data = {
+            'origin': origin,
+            'destination': destination,
+            'origin_lat': origin_lat,
+            'origin_lon': origin_lon,
+            'dest_lat': dest_lat,
+            'dest_lon': dest_lon,
+            'distance_km': round(distance_km, 1),
+            'distance_miles': round(distance_km * 0.621371, 1),
+            'duration_minutes': duration_min,
+            'duration_formatted': f"{duration_min} min",
+            'no_traffic_duration_min': int(no_traffic_duration / 60),
+            'traffic_delay_min': int(traffic_delay / 60),
+            'route_coordinates': route_coordinates,
+            'route_segments': route_segments,
+            'traffic_events': traffic_events,
+            'traffic_source': 'TomTom (Real-time)',
+            'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
+        }
+        
+        logging.info(f"TomTom commute: {duration_min} min, {len(route_segments)} segments, {len(traffic_events)} traffic events")
+        return commute_data
+        
+    except Exception as e:
+        logging.error(f"Error in fetch_tomtom_route: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return None
+
+
+def calculate_distance_to_route(incident_lat, incident_lon, route_coordinates):
+    """
+    Calculate the minimum distance from an incident to the route.
+    Uses simple point-to-line-segment distance calculation.
+    Returns distance in kilometers.
+    """
+    import math
+    
+    def haversine_distance(lat1, lon1, lat2, lon2):
+        """Calculate distance between two points in km"""
+        R = 6371  # Earth's radius in km
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        return R * c
+    
+    def point_to_segment_distance(px, py, x1, y1, x2, y2):
+        """Calculate shortest distance from point to line segment"""
+        dx = x2 - x1
+        dy = y2 - y1
+        if dx == 0 and dy == 0:
+            return haversine_distance(py, px, y1, x1)
+        
+        t = max(0, min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)))
+        proj_x = x1 + t * dx
+        proj_y = y1 + t * dy
+        return haversine_distance(py, px, proj_y, proj_x)
+    
+    if not route_coordinates or len(route_coordinates) < 2:
+        return float('inf')
+    
+    min_distance = float('inf')
+    
+    # Check distance to each segment of the route
+    # Sample every 5th point for performance on long routes
+    step = max(1, len(route_coordinates) // 100)
+    for i in range(0, len(route_coordinates) - 1, step):
+        # Route coordinates are [lon, lat]
+        lon1, lat1 = route_coordinates[i]
+        j = min(i + step, len(route_coordinates) - 1)
+        lon2, lat2 = route_coordinates[j]
+        
+        dist = point_to_segment_distance(incident_lon, incident_lat, lon1, lat1, lon2, lat2)
+        min_distance = min(min_distance, dist)
+        
+        # Early exit if we found a very close match
+        if min_distance < 0.1:  # Less than 100 meters
+            break
+    
+    return min_distance
+
+
+def fetch_tomtom_incidents(origin_lat, origin_lon, dest_lat, dest_lon, route_coordinates=None):
+    """
+    Fetch traffic incidents along the route from TomTom Traffic Incidents API.
+    Only returns incidents that are actually ON or very close to the route.
+    """
+    if not TOMTOM_API_KEY:
+        return []
+    
+    try:
+        # Calculate bounding box for incidents (with some padding)
+        min_lat = min(origin_lat, dest_lat) - 0.05
+        max_lat = max(origin_lat, dest_lat) + 0.05
+        min_lon = min(origin_lon, dest_lon) - 0.05
+        max_lon = max(origin_lon, dest_lon) + 0.05
+        
+        # TomTom Traffic Incidents API
+        url = "https://api.tomtom.com/traffic/services/5/incidentDetails"
+        
+        params = {
+            'key': TOMTOM_API_KEY,
+            'bbox': f"{min_lon},{min_lat},{max_lon},{max_lat}",
+            'fields': '{incidents{type,geometry{type,coordinates},properties{iconCategory,magnitudeOfDelay,events{description,code},startTime,endTime,from,to,length,delay,roadNumbers}}}',
+            'language': 'en-US',
+            'categoryFilter': '0,1,2,3,4,5,6,7,8,9,10,11,14',  # All incident types
+            'timeValidityFilter': 'present'
+        }
+        
+        response = requests.get(url, params=params, timeout=10)
+        
+        if response.status_code != 200:
+            logging.warning(f"TomTom Incidents API error: {response.status_code}")
+            return []
+        
+        data = response.json()
+        incidents = []
+        
+        # Maximum distance from route to consider incident relevant (in km)
+        # 2.0 km = ~2000 meters = about 1.2 miles - shows nearby incidents for awareness
+        # but they won't affect overall route status (that's calculated from route segments)
+        MAX_DISTANCE_KM = 2.0
+        
+        # Incident type mapping
+        incident_types = {
+            0: ('Unknown', 'incident'),
+            1: ('Accident', 'crash'),
+            2: ('Fog', 'weather'),
+            3: ('Dangerous Conditions', 'incident'),
+            4: ('Rain', 'weather'),
+            5: ('Ice', 'weather'),
+            6: ('Jam', 'traffic'),
+            7: ('Lane Closed', 'construction'),
+            8: ('Road Closed', 'closure'),
+            9: ('Road Works', 'construction'),
+            10: ('Wind', 'weather'),
+            11: ('Flooding', 'weather'),
+            14: ('Broken Down Vehicle', 'incident')
+        }
+        
+        total_incidents = len(data.get('incidents', []))
+        filtered_count = 0
+        
+        for incident in data.get('incidents', []):
+            props = incident.get('properties', {})
+            geom = incident.get('geometry', {})
+            
+            # Get incident location
+            coords = geom.get('coordinates', [])
+            if not coords:
+                continue
+            
+            # Handle different geometry types
+            if geom.get('type') == 'Point':
+                lat, lon = coords[1], coords[0]
+            elif geom.get('type') == 'LineString' and len(coords) > 0:
+                # Use midpoint of line
+                mid_idx = len(coords) // 2
+                lon, lat = coords[mid_idx][0], coords[mid_idx][1]
+            else:
+                continue
+            
+            # IMPORTANT: Check if incident is actually on/near the route
+            if route_coordinates and len(route_coordinates) > 1:
+                distance_to_route = calculate_distance_to_route(lat, lon, route_coordinates)
+                if distance_to_route > MAX_DISTANCE_KM:
+                    filtered_count += 1
+                    continue  # Skip this incident - it's not on our route
+            
+            # Get incident type
+            icon_cat = props.get('iconCategory', 0)
+            type_name, incident_type = incident_types.get(icon_cat, ('Incident', 'incident'))
+            
+            # Get description from events
+            events = props.get('events', [])
+            description = events[0].get('description', type_name) if events else type_name
+            
+            # Get delay info
+            delay_sec = props.get('delay', 0)
+            delay_min = delay_sec // 60 if delay_sec else 0
+            
+            # Get road info
+            road_numbers = props.get('roadNumbers', [])
+            road_info = ', '.join(road_numbers) if road_numbers else ''
+            from_loc = props.get('from', '')
+            to_loc = props.get('to', '')
+            
+            location = road_info or from_loc or 'On route'
+            if from_loc and to_loc:
+                location = f"{from_loc} to {to_loc}"
+            
+            # Determine traffic level based on incident type and delay
+            if incident_type == 'crash' or incident_type == 'closure':
+                traffic_level = 'heavy'
+            elif delay_min > 10:
+                traffic_level = 'heavy'
+            elif delay_min > 5 or incident_type == 'construction':
+                traffic_level = 'medium'
+            else:
+                traffic_level = 'light'
+            
+            incidents.append({
+                'type': incident_type,
+                'traffic_level': traffic_level,
+                'location': location,
+                'description': f"{type_name}: {description}" + (f" (+{delay_min} min)" if delay_min > 0 else ""),
+                'time': datetime.now(get_timezone()).strftime('%I:%M %p'),
+                'lat': lat,
+                'lon': lon,
+                'delay_minutes': delay_min,
+                'icon_category': icon_cat
+            })
+        
+        logging.info(f"TomTom found {total_incidents} incidents in area, {filtered_count} filtered out (not on route), {len(incidents)} on route")
+        return incidents
+        
+    except Exception as e:
+        logging.error(f"Error fetching TomTom incidents: {e}")
+        return []
+
+
+def fetch_ors_route(origin, destination, origin_lat, origin_lon, dest_lat, dest_lon):
+    """
+    Fetch route from OpenRouteService API (second fallback).
+    ORS provides some traffic-aware routing but not real-time incident data.
+    Free tier: 2,000 requests/day
+    """
+    try:
+        url = "https://api.openrouteservice.org/v2/directions/driving-car"
+        
+        headers = {
+            'Authorization': ORS_API_KEY,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        
+        body = {
+            'coordinates': [[float(origin_lon), float(origin_lat)], [float(dest_lon), float(dest_lat)]],
+            'geometry': True,
+            'instructions': True
+        }
+        
+        response = requests.post(url, json=body, headers=headers, timeout=15)
+        
+        if response.status_code == 401:
+            logging.error("OpenRouteService authentication failed - check API key")
+            return None
+        elif response.status_code == 429:
+            logging.warning("OpenRouteService rate limit exceeded")
+            return None
+        elif response.status_code != 200:
+            logging.error(f"OpenRouteService API error: {response.status_code} - {response.text[:200]}")
+            return None
+        
+        data = response.json()
+        
+        if not data.get('routes') or len(data['routes']) == 0:
+            logging.error("OpenRouteService returned no routes")
+            return None
+        
+        route = data['routes'][0]
+        summary = route.get('summary', {})
+        
+        distance_m = summary.get('distance', 0)
+        duration_sec = summary.get('duration', 0)
+        distance_km = distance_m / 1000
+        duration_min = int(duration_sec / 60)
+        
+        # Extract route geometry
+        route_geometry = route.get('geometry', {})
+        route_coordinates = []
+        
+        if isinstance(route_geometry, dict) and route_geometry.get('coordinates'):
+            route_coordinates = route_geometry['coordinates']
+        elif isinstance(route_geometry, list):
+            route_coordinates = route_geometry
+        
+        if not route_coordinates:
+            logging.error("OpenRouteService returned no coordinates")
+            return None
+        
+        # Build segments from steps
+        route_segments = []
+        segments = route.get('segments', [])
+        
+        if segments:
+            total_distance = sum(s.get('distance', 0) for s in segments)
+            coord_index = 0
+            
+            for segment in segments:
+                seg_distance = segment.get('distance', 0)
+                seg_duration = segment.get('duration', 0)
+                
+                # Estimate traffic level based on average speed
+                if seg_distance > 0 and seg_duration > 0:
+                    avg_speed_kmh = (seg_distance / 1000) / (seg_duration / 3600)
+                    
+                    if avg_speed_kmh < 20:
+                        traffic_level = 'heavy'
+                    elif avg_speed_kmh < 40:
+                        traffic_level = 'medium'
+                    else:
+                        traffic_level = 'light'
+                else:
+                    traffic_level = 'light'
+                
+                # Allocate coordinates proportionally
+                if total_distance > 0:
+                    proportion = seg_distance / total_distance
+                    num_coords = max(1, int(len(route_coordinates) * proportion))
+                    end_index = min(coord_index + num_coords, len(route_coordinates))
+                    segment_coords = route_coordinates[coord_index:end_index]
+                    coord_index = end_index
+                    
+                    if segment_coords:
+                        route_segments.append({
+                            'traffic_level': traffic_level,
+                            'coordinates': segment_coords
+                        })
+        
+        # If no segments, create single segment
+        if not route_segments:
+            route_segments.append({
+                'traffic_level': 'light',
+                'coordinates': route_coordinates
+            })
+        
+        commute_data = {
+            'origin': origin,
+            'destination': destination,
+            'origin_lat': origin_lat,
+            'origin_lon': origin_lon,
+            'dest_lat': dest_lat,
+            'dest_lon': dest_lon,
+            'distance_km': round(distance_km, 1),
+            'distance_miles': round(distance_km * 0.621371, 1),
+            'duration_minutes': duration_min,
+            'duration_formatted': f"{duration_min} min",
+            'route_coordinates': route_coordinates,
+            'route_segments': route_segments,
+            'traffic_events': [],  # ORS doesn't provide real-time incidents
+            'traffic_source': 'OpenRouteService',
+            'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
+        }
+        
+        logging.info(f"OpenRouteService commute: {duration_min} min, {len(route_segments)} segments")
+        return commute_data
+        
+    except Exception as e:
+        logging.error(f"Error in fetch_ors_route: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return None
+
+
+def fetch_osrm_route(origin, destination, origin_lat, origin_lon, dest_lat, dest_lon):
+    """
+    Fetch route from OSRM (final fallback).
+    NOTE: OSRM does NOT provide real-time traffic data.
+    Traffic levels are estimated based on road types and typical speeds.
+    """
+    try:
+        url = f"http://router.project-osrm.org/route/v1/driving/{origin_lon},{origin_lat};{dest_lon},{dest_lat}"
+        
+        params = {
+            'overview': 'full',
+            'alternatives': 'false',
+            'steps': 'true',
+            'geometries': 'geojson',
+            'annotations': 'speed,duration,distance'
+        }
+        
+        response = requests.get(url, params=params, timeout=15)
+        
+        if response.status_code != 200:
+            logging.error(f"OSRM API error: {response.status_code}")
+            return None
+        
+        data = response.json()
+        
+        if data.get('code') != 'Ok' or not data.get('routes'):
+            logging.error(f"OSRM error: {data.get('code', 'Unknown')}")
+            return None
+        
+        route = data['routes'][0]
+        distance_m = route.get('distance', 0)
+        duration_sec = route.get('duration', 0)
+        distance_km = distance_m / 1000
+        duration_min = int(duration_sec / 60)
+        
+        route_geometry = route.get('geometry', {})
+        route_coordinates = route_geometry.get('coordinates', [])
+        
+        if not route_coordinates:
+            logging.error("OSRM returned no coordinates")
+            return None
+        
+        # Build segments from annotations
+        route_segments = []
+        legs = route.get('legs', [])
+        
+        for leg in legs:
+            annotation = leg.get('annotation', {})
+            speeds = annotation.get('speed', [])
+            
+            if speeds and route_coordinates:
+                current_traffic_level = None
+                segment_start_idx = 0
+                
+                for i, speed_ms in enumerate(speeds):
+                    if i >= len(route_coordinates) - 1:
+                        break
+                    
+                    speed_kmh = speed_ms * 3.6
+                    
+                    if speed_kmh < 20:
+                        traffic_level = 'heavy'
+                    elif speed_kmh < 40:
+                        traffic_level = 'medium'
+                    else:
+                        traffic_level = 'light'
+                    
+                    if current_traffic_level is None:
+                        current_traffic_level = traffic_level
+                        segment_start_idx = i
+                    elif traffic_level != current_traffic_level or i == len(speeds) - 1:
+                        end_idx = i + 1 if i == len(speeds) - 1 else i
+                        segment_coords = route_coordinates[segment_start_idx:end_idx + 1]
+                        
+                        if segment_coords:
+                            route_segments.append({
+                                'traffic_level': current_traffic_level,
+                                'coordinates': segment_coords
+                            })
+                        
+                        current_traffic_level = traffic_level
+                        segment_start_idx = i
+                
+                if current_traffic_level and segment_start_idx < len(route_coordinates):
+                    segment_coords = route_coordinates[segment_start_idx:]
+                    if segment_coords:
+                        route_segments.append({
+                            'traffic_level': current_traffic_level,
+                            'coordinates': segment_coords
+                        })
+        
+        if not route_segments:
+            route_segments.append({
+                'traffic_level': 'light',
+                'coordinates': route_coordinates
+            })
+        
+        commute_data = {
+            'origin': origin,
+            'destination': destination,
+            'origin_lat': origin_lat,
+            'origin_lon': origin_lon,
+            'dest_lat': dest_lat,
+            'dest_lon': dest_lon,
+            'distance_km': round(distance_km, 1),
+            'distance_miles': round(distance_km * 0.621371, 1),
+            'duration_minutes': duration_min,
+            'duration_formatted': f"{duration_min} min",
+            'route_coordinates': route_coordinates,
+            'route_segments': route_segments,
+            'traffic_events': [],
+            'traffic_source': 'OSRM (Estimated)',
+            'updated': datetime.now(get_timezone()).strftime('%I:%M %p')
+        }
+        
+        logging.info(f"OSRM commute: {duration_min} min, {len(route_segments)} segments")
+        return commute_data
+        
+    except Exception as e:
+        logging.error(f"Error in fetch_osrm_route: {e}")
         return None
 
 # ==================== AIR QUALITY FUNCTIONS ====================
@@ -3593,6 +4206,88 @@ def filter_ha_battery_sensors(entities, for_dashboard=False):
     
     return battery_sensors
 
+# ==================== SWITCHBOT FUNCTIONS ====================
+def generate_switchbot_signature():
+    """Generate HMAC-SHA256 signature for SwitchBot API authentication"""
+    t = int(round(time.time() * 1000))
+    nonce = ''
+    string_to_sign = f'{SWITCHBOT_TOKEN}{t}{nonce}'
+    sign = base64.b64encode(
+        hmac.new(
+            SWITCHBOT_SECRET.encode(),
+            msg=string_to_sign.encode(),
+            digestmod=hashlib.sha256
+        ).digest()
+    ).decode()
+    headers = {
+        'Authorization': SWITCHBOT_TOKEN,
+        'sign': sign,
+        't': str(t),
+        'nonce': nonce,
+        'Content-Type': 'application/json'
+    }
+    return headers
+
+def get_switchbot_lock_status(use_cache=True):
+    """Fetch lock statuses from SwitchBot API with caching"""
+    if not SWITCHBOT_TOKEN or not SWITCHBOT_SECRET or not SWITCHBOT_LOCK_IDS:
+        logging.warning("SwitchBot not configured")
+        return []
+    
+    cache_key = "switchbot_locks"
+    
+    if use_cache:
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            return cached_data
+    
+    locks = []
+    headers = generate_switchbot_signature()
+    
+    for lock_device_id in SWITCHBOT_LOCK_IDS:
+        try:
+            url = f'https://api.switch-bot.com/v1.1/devices/{lock_device_id}/status'
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            lock_data = response.json()
+            lock_state = lock_data.get('body', {}).get('lockState')
+            
+            if lock_state is not None:
+                locks.append({
+                    'device_id': lock_device_id,
+                    'name': f'Lock {lock_device_id[-4:]}',  # Use last 4 chars as name
+                    'status': lock_state.lower()  # 'locked' or 'unlocked'
+                })
+                logging.info(f"SwitchBot lock {lock_device_id} status: {lock_state}")
+            else:
+                locks.append({
+                    'device_id': lock_device_id,
+                    'name': f'Lock {lock_device_id[-4:]}',
+                    'status': 'unknown'
+                })
+                logging.error(f"'lockState' not found for lock {lock_device_id}")
+                
+        except requests.RequestException as e:
+            logging.error(f"Error checking lock {lock_device_id} status: {e}")
+            locks.append({
+                'device_id': lock_device_id,
+                'name': f'Lock {lock_device_id[-4:]}',
+                'status': 'error'
+            })
+        except Exception as e:
+            logging.error(f"Unexpected error checking lock {lock_device_id}: {e}")
+            locks.append({
+                'device_id': lock_device_id,
+                'name': f'Lock {lock_device_id[-4:]}',
+                'status': 'error'
+            })
+    
+    # Cache the successful response (cache even if some locks failed)
+    if locks:
+        set_cached_data(cache_key, locks)
+    
+    return locks
+
 # ==================== HOLIDAY THEMING FUNCTIONS ====================
 def calculate_easter(year):
     """Calculate Easter date for a given year using the Anonymous Gregorian algorithm"""
@@ -4054,6 +4749,7 @@ if __name__ == '__main__':
     add_alert_shown_column()
     ensure_joke_history_table()
     ensure_quote_history_table()
+    cleanup_crash_events()  # Remove any old crash entries
 
     scan_thread = threading.Thread(target=periodic_scan)
     scan_thread.daemon = True

@@ -2,106 +2,51 @@
 
 ## Endpoints
 
-### /api/calendar-feeds
-- HTTP method: POST
-- Path: /api/calendar-feeds
-- Description: Adds a new calendar feed.
-- Parameters:
-  - `feed_name` (string): The name of the calendar feed.
-  - `url` (string): The URL of the calendar feed.
-- Response format: JSON
-  ```json
-  {
-    "success": true,
-    "message": "Calendar feed added successfully."
-  }
-  ```
-- Example usage:
-  ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"feed_name": "My Calendar", "url": "url"}'
-  ```
-
-### /api/calendar-events/local
-- HTTP method: POST
-- Path: /api/calendar-events/local
-- Description: Adds a new local calendar event.
-- Parameters:
-  - `event_name` (string): The name of the calendar event.
-  - `start_time` (string): The start time of the calendar event (ISO 8601 format).
-  - `end_time` (string): The end time of the calendar event (ISO 8601 format).
-  - `description` (string):  A description of the calendar event.
-- Response format: JSON
-  ```json
-  {
-    "success": true,
-    "message": "Calendar event added successfully."
-  }
-  ```
-- Example usage:
-  ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"event_name": "Meeting", "start_time": "2023-10-27T10:00:00Z", "end_time": "2023-10-27T11:00:00Z", "description": "Team meeting"}'
-  ```
-
-### /api/settings/sports
-- HTTP method: POST
-- Path: /api/settings/sports
-- Description: Saves sports settings.
-- Parameters:
-  - `team_name` (string): The name of the sports team.
-  - `sport` (string): The sport (e.g., "Football", "Baseball").
-- Response format: JSON
-  ```json
-  {
-    "success": true,
-    "message": "Sports settings saved successfully."
-  }
-  ```
-- Example usage:
-  ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"team_name": "Local Team", "sport": "Football"}'
-  ```
-
-### /api/data
-- HTTP method: GET
-- Path: /api/data
-- Description: Returns current time, date, temperature, weather, and other data.
-- Parameters: None
-- Response format: JSON
-  ```json
-  {
-    "time": "HH:MM:SS",
-    "date": "YYYY-MM-DD",
-    "temperature": XX.X,
-    "weather": "Description of weather",
-    "other_data": "Some other data"
-  }
-  ```
-- Example usage:
-  ```bash
-  curl -X GET 
-  ```
-
 ### /api/holiday-theme
-- HTTP method: GET
-- Path: /api/holiday-theme
-- Description: Returns the current holiday theme configuration.
-- Parameters: None
-- Response format: JSON
+
+- **HTTP Method:** GET
+- **Path:** /api/holiday-theme
+- **Description:** Retrieves the current holiday theme data (background gradient, particle type).
+- **Parameters:** None
+- **Response Format:** JSON
   ```json
   {
-    "active": true,
     "holiday": "Christmas",
-    "background_gradient": "gradient_value",
+    "background_gradient": "linear-gradient(to bottom, red, blue)",
     "particle_type": "snow"
   }
   ```
-- Example usage:
-  ```bash
-  curl -X GET 
+- **Example Usage:** `GET /api/holiday-theme`
+
+### /api/switchbot-locks
+
+- **HTTP Method:** GET
+- **Path:** /api/switchbot-locks
+- **Description:** Retrieves the status of SwitchBot locks.
+- **Parameters:** None
+- **Response Format:** JSON Array
+  ```json
+  [
+    {
+      "name": "Living Room Lock",
+      "status": "locked"
+    },
+    {
+      "name": "Bedroom Lock",
+      "status": "unlocked"
+    }
+  ]
   ```
+- **Example Usage:** `GET /api/switchbot-locks`
 
 ## Authentication
 
 This project does not expose an API.
 
 ## Error Handling
+
+Common error responses:
+
+- **404 Not Found:** Indicates that the requested resource (e.g., `/api/holiday-theme`) does not exist.
+- **500 Internal Server Error:** Indicates a problem on the server-side.
+- **Generic Error Response:**  (If the fetch operation fails, it will display a generic error message).
