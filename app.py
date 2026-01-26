@@ -2303,12 +2303,24 @@ def get_internet_speed():
         
         if result:
             download, upload, ping, timestamp = result
+            # Convert UTC timestamp to local timezone
+            try:
+                import pytz
+                utc_time = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+                utc_time = pytz.utc.localize(utc_time)
+                local_tz = pytz.timezone(TIMEZONE)
+                local_time = utc_time.astimezone(local_tz)
+                last_test_str = local_time.strftime('%I:%M %p')
+                timestamp_str = local_time.strftime('%Y-%m-%d %H:%M:%S')
+            except:
+                last_test_str = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%I:%M %p')
+                timestamp_str = timestamp
             return {
                 'download_mbps': round(download, 2),
                 'upload_mbps': round(upload, 2),
                 'ping_ms': round(ping, 2),
-                'timestamp': timestamp,
-                'last_test': datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%I:%M %p')
+                'timestamp': timestamp_str,
+                'last_test': last_test_str
             }
         else:
             return None
@@ -2343,12 +2355,21 @@ def get_sports_scores(use_cache=True):
         
         if not teams:
             return []
-        
+
         all_scores = []
-        
+
         # Use TheSportsDB API (free, no key required)
         # Reduced timeout to 3 seconds and limit to 3 teams for faster response
-        for team_name in teams[:3]:  # Limit to 3 teams for faster loading
+        for team_entry in teams[:3]:  # Limit to 3 teams for faster loading
+            # Handle both dict format {"name": "Team Name"} and plain string format
+            if isinstance(team_entry, dict):
+                team_name = team_entry.get('name', '')
+            else:
+                team_name = str(team_entry)
+
+            if not team_name:
+                continue
+
             try:
                 # Search for team with shorter timeout
                 search_url = f"https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t={team_name}"
@@ -2360,21 +2381,26 @@ def get_sports_scores(use_cache=True):
                         team_id = team.get('idTeam')
                         
                         # Get next event with shorter timeout
+                        # Verify it's actually for this team (API sometimes returns wrong data)
                         try:
                             events_url = f"https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id={team_id}"
                             response = requests.get(events_url, timeout=3)
                             if response.status_code == 200:
                                 events_data = response.json()
                                 if events_data.get('events'):
-                                    event = events_data['events'][0]
-                                    all_scores.append({
-                                        'team': team_name,
-                                        'event': event.get('strEvent', ''),
-                                        'date': event.get('dateEvent', ''),
-                                        'time': event.get('strTime', ''),
-                                        'league': event.get('strLeague', ''),
-                                        'status': 'Upcoming'
-                                    })
+                                    for event in events_data['events'][:5]:
+                                        event_str = event.get('strEvent', '')
+                                        # Only include if team name appears in the event
+                                        if team_name.split()[-1].lower() in event_str.lower():
+                                            all_scores.append({
+                                                'team': team_name,
+                                                'event': event_str,
+                                                'date': event.get('dateEvent', ''),
+                                                'time': event.get('strTime', ''),
+                                                'league': event.get('strLeague', ''),
+                                                'status': 'Upcoming'
+                                            })
+                                            break
                         except requests.exceptions.Timeout:
                             logging.warning(f"Timeout fetching next event for {team_name}")
                         except Exception as e:
