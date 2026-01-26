@@ -2072,21 +2072,13 @@ def get_air_quality(use_cache=True):
 
 # ==================== QUOTES FUNCTIONS ====================
 def get_daily_quote(use_cache=True):
-    """Fetch daily quote from multiple APIs with fallbacks"""
+    """Fetch quote from multiple APIs with fallbacks (refreshes every 4 hours)"""
     cache_key = "daily_quote"
 
     if use_cache:
-        cached_data = get_cached_data(cache_key)
+        cached_data = get_cached_data(cache_key, max_age_hours=4)
         if cached_data:
-            # Check if it's from today
-            try:
-                updated_str = cached_data.get('updated', '')
-                if updated_str:
-                    cached_time = datetime.strptime(updated_str, '%Y-%m-%d')
-                    if cached_time.date() == datetime.now().date():
-                        return cached_data
-            except (ValueError, TypeError) as e:
-                logging.warning(f"Error parsing cached quote date: {e}")
+            return cached_data
 
     quote_data = None
 
@@ -2636,9 +2628,9 @@ def get_joke(use_cache=True, retry_count=3):
     """Fetch a random joke from Ollama AI with caching and retry logic, with fallback server"""
     cache_key = "joke_data"
 
-    # Try to get cached data first (jokes cache for 6 hours max)
+    # Try to get cached data first (jokes cache for 2 hours max)
     if use_cache:
-        cached_data = get_cached_data(cache_key, max_age_hours=6)
+        cached_data = get_cached_data(cache_key, max_age_hours=2)
         if cached_data:
             return cached_data
 

@@ -1609,6 +1609,18 @@
             <div id="carousel-ra-achievements" style="max-width: 800px; width: 90%;"></div>
         </div>
 
+        <!-- 18: Smart Locks -->
+        <div class="carousel-screen bg-gradient-6" id="carousel-18">
+            <h1>🔐 Smart Locks</h1>
+            <div id="carousel-locks" style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;"></div>
+        </div>
+
+        <!-- 19: Home Assistant -->
+        <div class="carousel-screen bg-gradient-8" id="carousel-19">
+            <h1>🏠 Home Assistant</h1>
+            <div id="carousel-ha-devices" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; width: 90%;"></div>
+        </div>
+
         <div class="carousel-indicators" id="carousel-indicators"></div>
     </div>
 
@@ -1621,7 +1633,7 @@
         let gridInterval = null;
 
         let currentCarouselScreen = 0;
-        const totalCarouselScreens = 18;
+        const totalCarouselScreens = 20;
         const carouselDuration = 10000;
         let carouselInterval = null;
 
@@ -2154,7 +2166,7 @@
                 haBattery.innerHTML = '<div class="no-data">No battery data</div>';
             }
 
-            // SwitchBot Locks
+            // SwitchBot Locks (Grid)
             if (data.switchbot_locks && data.switchbot_locks.length > 0) {
                 locksContainer.innerHTML = data.switchbot_locks.map(lock => {
                     const icon = lock.status === 'locked' ? '🔒' : lock.status === 'unlocked' ? '🔓' : '❓';
@@ -2166,6 +2178,55 @@
                 }).join('');
             } else {
                 locksContainer.innerHTML = '<div class="no-data">No locks configured</div>';
+            }
+
+            // Carousel - Locks (Screen 18)
+            const carouselLocks = document.getElementById('carousel-locks');
+            if (data.switchbot_locks && data.switchbot_locks.length > 0) {
+                carouselLocks.innerHTML = data.switchbot_locks.map(lock => {
+                    const icon = lock.status === 'locked' ? '🔒' : lock.status === 'unlocked' ? '🔓' : '❓';
+                    const color = lock.status === 'locked' ? 'var(--accent-green)' : lock.status === 'unlocked' ? 'var(--accent-red)' : 'var(--text-muted)';
+                    return `<div style="background: rgba(255,255,255,0.1); padding: 30px 50px; border-radius: 20px; text-align: center;">
+                        <div style="font-size: 5rem; margin-bottom: 15px;">${icon}</div>
+                        <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 10px;">${lock.name}</div>
+                        <div style="font-size: 1.4rem; color: ${color}; text-transform: uppercase;">${lock.status}</div>
+                    </div>`;
+                }).join('');
+            } else {
+                carouselLocks.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 1.5rem;">No locks configured</div>';
+            }
+
+            // Carousel - Home Assistant (Screen 19)
+            const carouselHA = document.getElementById('carousel-ha-devices');
+            if (data.home_assistant) {
+                let haHtml = '';
+                // Devices
+                if (data.home_assistant.devices && data.home_assistant.devices.length > 0) {
+                    haHtml += data.home_assistant.devices.map(d => {
+                        const name = d.attributes?.friendly_name || d.entity_id.split('.')[1].replace(/_/g, ' ');
+                        return `<div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📱</div>
+                            <div style="font-size: 1.2rem; font-weight: bold;">${name}</div>
+                            <div style="font-size: 1rem; color: var(--accent-green);">${d.state}</div>
+                        </div>`;
+                    }).join('');
+                }
+                // Battery sensors
+                if (data.home_assistant.battery_sensors && data.home_assistant.battery_sensors.length > 0) {
+                    haHtml += data.home_assistant.battery_sensors.map(s => {
+                        const name = s.attributes?.friendly_name || s.entity_id.split('.')[1].replace(/_/g, ' ');
+                        const level = Math.round(s.battery_level);
+                        const color = level > 50 ? 'var(--accent-green)' : level > 20 ? 'var(--accent-yellow)' : 'var(--accent-red)';
+                        return `<div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🔋</div>
+                            <div style="font-size: 1.2rem; font-weight: bold;">${name}</div>
+                            <div style="font-size: 1.5rem; color: ${color};">${level}%</div>
+                        </div>`;
+                    }).join('');
+                }
+                carouselHA.innerHTML = haHtml || '<div style="text-align: center; color: var(--text-muted); font-size: 1.5rem;">No devices</div>';
+            } else {
+                carouselHA.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 1.5rem;">Home Assistant not configured</div>';
             }
         }
 
