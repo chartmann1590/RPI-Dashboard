@@ -262,6 +262,31 @@ def create_db(retry_count=5, delay=0.1):
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             ''')
+            # Create packages table for package tracking
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS packages (
+                id INTEGER PRIMARY KEY,
+                tracking_number TEXT NOT NULL,
+                carrier TEXT,
+                description TEXT,
+                status TEXT DEFAULT 'In Transit',
+                expected_delivery TEXT,
+                delivered INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            # Create shopping_list table
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS shopping_list (
+                id INTEGER PRIMARY KEY,
+                item_name TEXT NOT NULL,
+                quantity INTEGER DEFAULT 1,
+                category TEXT,
+                checked INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
             conn.commit()
             conn.close()
             logging.info("Database created and initialized.")
@@ -533,19 +558,36 @@ def get_switchbot_device_names():
         return {}
 
 def get_switchbot_lock_status(use_cache=True):
-    """Fetch lock statuses from SwitchBot API with caching"""
+    """Fetch lock statuses from SwitchBot API with caching and rate limit handling"""
     if not SWITCHBOT_TOKEN or not SWITCHBOT_SECRET or not SWITCHBOT_LOCK_IDS:
         logging.warning("SwitchBot not configured")
         return []
 
     cache_key = "switchbot_locks"
+    rate_limit_key = "switchbot_rate_limit"
+    last_good_key = "switchbot_locks_last_good"
+
+    # Check if we're in a rate limit backoff period (15 minutes)
+    rate_limit_data = get_cached_data(rate_limit_key, max_age_hours=0.25)  # 15 minutes
+    if rate_limit_data:
+        logging.debug("SwitchBot API rate limited, using last known good data")
+        # Return last known good data if available
+        last_good = get_cached_data(last_good_key, max_age_hours=24)  # Keep for 24 hours
+        if last_good:
+            return last_good
+        # If no good data, return error status for all locks
+        return [{'device_id': lid, 'name': f'Lock {lid[-4:]}', 'status': 'rate_limited'}
+                for lid in SWITCHBOT_LOCK_IDS]
 
     if use_cache:
-        cached_data = get_cached_data(cache_key)
+        # Use longer cache (10 minutes) to avoid rate limiting
+        cached_data = get_cached_data(cache_key, max_age_hours=0.167)  # 10 minutes
         if cached_data:
             return cached_data
 
     locks = []
+    has_errors = False
+    is_rate_limited = False
     headers = generate_switchbot_signature()
     device_names = get_switchbot_device_names()
 
@@ -554,6 +596,19 @@ def get_switchbot_lock_status(use_cache=True):
         try:
             url = f'https://api.switch-bot.com/v1.1/devices/{lock_device_id}/status'
             response = requests.get(url, headers=headers, timeout=10)
+
+            # Check for rate limiting specifically
+            if response.status_code == 429:
+                logging.warning(f"SwitchBot API rate limited (429)")
+                is_rate_limited = True
+                has_errors = True
+                locks.append({
+                    'device_id': lock_device_id,
+                    'name': lock_name,
+                    'status': 'rate_limited'
+                })
+                continue
+
             response.raise_for_status()
             lock_data = response.json()
             lock_state = lock_data.get('body', {}).get('lockState')
@@ -574,6 +629,9 @@ def get_switchbot_lock_status(use_cache=True):
 
         except requests.RequestException as e:
             logging.error(f"Error checking lock {lock_device_id} status: {e}")
+            if '429' in str(e):
+                is_rate_limited = True
+            has_errors = True
             locks.append({
                 'device_id': lock_device_id,
                 'name': lock_name,
@@ -581,14 +639,28 @@ def get_switchbot_lock_status(use_cache=True):
             })
         except Exception as e:
             logging.error(f"Unexpected error checking lock {lock_device_id}: {e}")
+            has_errors = True
             locks.append({
                 'device_id': lock_device_id,
                 'name': lock_name,
                 'status': 'error'
             })
 
-    if locks:
+    # If rate limited, set backoff period and return last good data
+    if is_rate_limited:
+        set_cached_data(rate_limit_key, {'rate_limited': True})
+        logging.info("SwitchBot rate limit detected, entering 15-minute backoff period")
+        # Return last known good data if available
+        last_good = get_cached_data(last_good_key, max_age_hours=24)
+        if last_good:
+            return last_good
+        return locks
+
+    # Cache successful results
+    if locks and not has_errors:
         set_cached_data(cache_key, locks)
+        # Also save as last known good data
+        set_cached_data(last_good_key, locks)
 
     return locks
 
@@ -675,37 +747,45 @@ def tv_dashboard():
 @app.route('/api/dashboard-data')
 def dashboard_data():
     """API endpoint for dashboard data with caching"""
+    # Check if refresh parameter is set to bypass cache
+    force_refresh = request.args.get('refresh', '').lower() == 'true'
+    use_cache = not force_refresh
+
     with sqlite3.connect(db_path) as conn:
         c = conn.cursor()
-        
+
         c.execute("SELECT name, status FROM devices")
         devices = c.fetchall()
-        
+
         # Fetch weather, forecast, news, and joke with caching
-        weather = get_weather()
-        forecast = get_weather_forecast()
-        news = get_news()
-        joke = get_joke()
-        
+        weather = get_weather(use_cache=use_cache)
+        forecast = get_weather_forecast(use_cache=use_cache)
+        news = get_news(use_cache=use_cache)
+        joke = get_joke(use_cache=use_cache)
+
         # Fetch new features
-        calendar_events = get_calendar_events()
-        commute = get_commute_info()
-        air_quality = get_air_quality()
-        quote = get_daily_quote()
-        astronomy = get_astronomy_data()
+        calendar_events = get_calendar_events(use_cache=use_cache)
+        commute = get_commute_info(use_cache=use_cache)
+        air_quality = get_air_quality(use_cache=use_cache)
+        quote = get_daily_quote(use_cache=use_cache)
+        astronomy = get_astronomy_data(use_cache=use_cache)
         internet_speed = get_internet_speed()
-        sports_scores = get_sports_scores()
+        sports_scores = get_sports_scores(use_cache=use_cache)
         photos = get_photos()
 
         # Gaming integrations
-        romm_playing = get_romm_currently_playing()
-        retroachievements = get_retroachievements()
+        romm_playing = get_romm_currently_playing(use_cache=use_cache)
+        retroachievements = get_retroachievements(use_cache=use_cache)
 
         # Smart home integrations
-        switchbot_locks = get_switchbot_lock_status()
-        ha_entities = get_ha_states()
+        switchbot_locks = get_switchbot_lock_status(use_cache=use_cache)
+        ha_entities = get_ha_states(use_cache=use_cache)
         ha_devices = filter_ha_devices(ha_entities, for_dashboard=True)
         ha_battery = filter_ha_battery_sensors(ha_entities, for_dashboard=True)
+
+        # Package tracking and shopping list
+        packages = get_packages()
+        shopping_list = get_shopping_list()
 
         # For RPi dashboard, select one random news article
         random_news = None
@@ -753,6 +833,8 @@ def dashboard_data():
                 'total_on_devices': len(ha_devices),
                 'total_low_battery': len(ha_battery)
             },
+            'packages': packages,
+            'shopping_list': shopping_list,
             'time': datetime.now().strftime('%I:%M %p'),
             'date': datetime.now().strftime('%A, %B %d'),
             'weather_radar_url': f"https://radar.weather.gov/ridge/standard/KENX_loop.gif"  # Albany, NY radar
@@ -1070,6 +1152,24 @@ def api_sports_scores():
     scores = get_sports_scores()
     return jsonify(scores)
 
+@app.route('/api/settings/sports', methods=['GET'])
+def api_get_sports_teams():
+    """Get favorite sports teams"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("SELECT value FROM settings WHERE key = 'sports_teams'")
+        result = c.fetchone()
+        conn.close()
+
+        if result:
+            teams = json.loads(result[0])
+            return jsonify({'teams': teams})
+        return jsonify({'teams': []})
+    except Exception as e:
+        logging.error(f"Error getting sports teams: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/settings/sports', methods=['POST'])
 def api_set_sports_teams():
     """Set favorite sports teams"""
@@ -1206,12 +1306,325 @@ def api_delete_photo(filename):
     filename = secure_filename(filename)
     gallery_dir = os.path.join('static', 'images', 'gallery')
     filepath = os.path.join(gallery_dir, filename)
-    
+
     if os.path.exists(filepath):
         os.remove(filepath)
         return jsonify({'status': 'success'})
     else:
         return jsonify({'error': 'File not found'}), 404
+
+# ==================== PACKAGE TRACKING ====================
+def get_packages():
+    """Get active (undelivered) packages for dashboard"""
+    ensure_packages_table()
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+            SELECT id, tracking_number, carrier, description, status, expected_delivery, created_at
+            FROM packages
+            WHERE delivered = 0
+            ORDER BY expected_delivery ASC, created_at DESC
+        """)
+        packages = c.fetchall()
+        conn.close()
+
+        return [{
+            'id': p[0],
+            'tracking_number': p[1],
+            'carrier': p[2] or 'Unknown',
+            'description': p[3] or 'Package',
+            'status': p[4] or 'In Transit',
+            'expected_delivery': p[5],
+            'created_at': p[6]
+        } for p in packages]
+    except Exception as e:
+        logging.error(f"Error getting packages: {e}")
+        return []
+
+def ensure_packages_table():
+    """Ensure packages table exists"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS packages (
+                id INTEGER PRIMARY KEY,
+                tracking_number TEXT NOT NULL,
+                carrier TEXT,
+                description TEXT,
+                status TEXT DEFAULT 'In Transit',
+                expected_delivery TEXT,
+                delivered INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error ensuring packages table: {e}")
+
+@app.route('/api/packages', methods=['GET'])
+def api_get_packages():
+    """Get all packages"""
+    ensure_packages_table()
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+            SELECT id, tracking_number, carrier, description, status, expected_delivery, delivered, created_at
+            FROM packages
+            WHERE delivered = 0
+            ORDER BY created_at DESC
+        """)
+        packages = c.fetchall()
+        conn.close()
+
+        return jsonify([{
+            'id': p[0],
+            'tracking_number': p[1],
+            'carrier': p[2],
+            'description': p[3],
+            'status': p[4],
+            'expected_delivery': p[5],
+            'delivered': p[6] == 1,
+            'created_at': p[7]
+        } for p in packages])
+    except Exception as e:
+        logging.error(f"Error getting packages: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/packages', methods=['POST'])
+def api_add_package():
+    """Add a new package"""
+    ensure_packages_table()
+    try:
+        data = request.get_json()
+        tracking_number = data.get('tracking_number', '').strip()
+        carrier = data.get('carrier', '').strip()
+        description = data.get('description', '').strip()
+        expected_delivery = data.get('expected_delivery', '').strip()
+
+        if not tracking_number:
+            return jsonify({'error': 'Tracking number is required'}), 400
+
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO packages (tracking_number, carrier, description, expected_delivery)
+            VALUES (?, ?, ?, ?)
+        """, (tracking_number, carrier, description, expected_delivery))
+        conn.commit()
+        package_id = c.lastrowid
+        conn.close()
+
+        return jsonify({'status': 'success', 'id': package_id})
+    except Exception as e:
+        logging.error(f"Error adding package: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>', methods=['PUT'])
+def api_update_package(package_id):
+    """Update a package"""
+    ensure_packages_table()
+    try:
+        data = request.get_json()
+        status = data.get('status')
+        delivered = data.get('delivered')
+
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+
+        if delivered is not None:
+            c.execute("UPDATE packages SET delivered = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                     (1 if delivered else 0, package_id))
+        if status:
+            c.execute("UPDATE packages SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                     (status, package_id))
+
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logging.error(f"Error updating package: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>', methods=['DELETE'])
+def api_delete_package(package_id):
+    """Delete a package"""
+    ensure_packages_table()
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("DELETE FROM packages WHERE id = ?", (package_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logging.error(f"Error deleting package: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ==================== SHOPPING LIST ====================
+def get_shopping_list():
+    """Get unchecked shopping list items for dashboard"""
+    ensure_shopping_list_table()
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+            SELECT id, item_name, quantity, category
+            FROM shopping_list
+            WHERE checked = 0
+            ORDER BY category ASC, created_at DESC
+        """)
+        items = c.fetchall()
+        conn.close()
+
+        return [{
+            'id': i[0],
+            'item_name': i[1],
+            'quantity': i[2],
+            'category': i[3] or 'General'
+        } for i in items]
+    except Exception as e:
+        logging.error(f"Error getting shopping list: {e}")
+        return []
+
+def ensure_shopping_list_table():
+    """Ensure shopping_list table exists"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS shopping_list (
+                id INTEGER PRIMARY KEY,
+                item_name TEXT NOT NULL,
+                quantity INTEGER DEFAULT 1,
+                category TEXT,
+                checked INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Error ensuring shopping_list table: {e}")
+
+@app.route('/api/shopping-list', methods=['GET'])
+def api_get_shopping_list():
+    """Get shopping list items"""
+    ensure_shopping_list_table()
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+            SELECT id, item_name, quantity, category, checked, created_at
+            FROM shopping_list
+            ORDER BY checked ASC, created_at DESC
+        """)
+        items = c.fetchall()
+        conn.close()
+
+        return jsonify([{
+            'id': i[0],
+            'item_name': i[1],
+            'quantity': i[2],
+            'category': i[3],
+            'checked': i[4] == 1,
+            'created_at': i[5]
+        } for i in items])
+    except Exception as e:
+        logging.error(f"Error getting shopping list: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/shopping-list', methods=['POST'])
+def api_add_shopping_item():
+    """Add item to shopping list"""
+    ensure_shopping_list_table()
+    try:
+        data = request.get_json()
+        item_name = data.get('item_name', '').strip()
+        quantity = data.get('quantity', 1)
+        category = data.get('category', '').strip()
+
+        if not item_name:
+            return jsonify({'error': 'Item name is required'}), 400
+
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO shopping_list (item_name, quantity, category)
+            VALUES (?, ?, ?)
+        """, (item_name, quantity, category))
+        conn.commit()
+        item_id = c.lastrowid
+        conn.close()
+
+        return jsonify({'status': 'success', 'id': item_id})
+    except Exception as e:
+        logging.error(f"Error adding shopping item: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/shopping-list/<int:item_id>', methods=['PUT'])
+def api_update_shopping_item(item_id):
+    """Update shopping list item (toggle checked, update quantity)"""
+    ensure_shopping_list_table()
+    try:
+        data = request.get_json()
+        checked = data.get('checked')
+        quantity = data.get('quantity')
+        item_name = data.get('item_name')
+
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+
+        if checked is not None:
+            c.execute("UPDATE shopping_list SET checked = ? WHERE id = ?",
+                     (1 if checked else 0, item_id))
+        if quantity is not None:
+            c.execute("UPDATE shopping_list SET quantity = ? WHERE id = ?",
+                     (quantity, item_id))
+        if item_name is not None:
+            c.execute("UPDATE shopping_list SET item_name = ? WHERE id = ?",
+                     (item_name, item_id))
+
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logging.error(f"Error updating shopping item: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/shopping-list/<int:item_id>', methods=['DELETE'])
+def api_delete_shopping_item(item_id):
+    """Delete shopping list item"""
+    ensure_shopping_list_table()
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("DELETE FROM shopping_list WHERE id = ?", (item_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logging.error(f"Error deleting shopping item: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/shopping-list/clear-checked', methods=['DELETE'])
+def api_clear_checked_items():
+    """Clear all checked items from shopping list"""
+    ensure_shopping_list_table()
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("DELETE FROM shopping_list WHERE checked = 1")
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logging.error(f"Error clearing checked items: {e}")
+        return jsonify({'error': str(e)}), 500
 
 def ping_device(ip):
     logging.debug(f"Pinging IP: {ip}")
@@ -2616,10 +3029,22 @@ def get_retroachievements(use_cache=True):
         summary = {}
         if summary_response.status_code == 200:
             summary_data = summary_response.json()
+            # Combine hardcore and softcore points for total
+            hardcore_points = summary_data.get('TotalPoints', 0) or 0
+            softcore_points = summary_data.get('TotalSoftcorePoints', 0) or 0
+            total_points = hardcore_points + softcore_points
+
+            # Handle rank - API returns None if not ranked
+            rank = summary_data.get('Rank')
+            if rank is None or rank == 'None':
+                rank = 'Unranked'
+
             summary = {
-                'total_points': summary_data.get('TotalPoints', 0),
-                'total_true_points': summary_data.get('TotalTruePoints', 0),
-                'rank': summary_data.get('Rank', 'N/A'),
+                'total_points': total_points,
+                'hardcore_points': hardcore_points,
+                'softcore_points': softcore_points,
+                'total_true_points': summary_data.get('TotalTruePoints', 0) or 0,
+                'rank': rank,
                 'user_pic': f"https://retroachievements.org{summary_data.get('UserPic', '')}",
                 'recent_games': []
             }

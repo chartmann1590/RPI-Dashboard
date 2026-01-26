@@ -1393,6 +1393,23 @@
             <div class="ticker-container"><div class="ticker-content" id="ticker-content-7"></div></div>
         </div>
 
+        <!-- Grid Screen 9: Packages & Shopping List -->
+        <div class="grid-screen" id="grid-screen-8">
+            <div class="widget" style="grid-column: span 2;">
+                <div class="widget-header"><span class="icon">📦</span> Package Tracking</div>
+                <div class="widget-content" id="grid-packages" style="justify-content: flex-start; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--text-muted);">No packages being tracked</div>
+                </div>
+            </div>
+            <div class="widget" style="grid-column: span 2;">
+                <div class="widget-header"><span class="icon">🛒</span> Shopping List</div>
+                <div class="widget-content" id="grid-shopping" style="justify-content: flex-start; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--text-muted);">Shopping list is empty</div>
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-8"></div></div>
+        </div>
+
         <!-- Grid Indicators -->
         <div class="grid-indicators" id="grid-indicators">
             <div class="grid-indicator active" id="grid-ind-0" onclick="showGridScreen(0)"></div>
@@ -1403,6 +1420,7 @@
             <div class="grid-indicator" id="grid-ind-5" onclick="showGridScreen(5)"></div>
             <div class="grid-indicator" id="grid-ind-6" onclick="showGridScreen(6)"></div>
             <div class="grid-indicator" id="grid-ind-7" onclick="showGridScreen(7)"></div>
+            <div class="grid-indicator" id="grid-ind-8" onclick="showGridScreen(8)"></div>
         </div>
     </div>
 
@@ -1621,6 +1639,18 @@
             <div id="carousel-ha-devices" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; width: 90%;"></div>
         </div>
 
+        <!-- 20: Package Tracking -->
+        <div class="carousel-screen bg-gradient-3" id="carousel-20">
+            <h1>📦 Package Tracking</h1>
+            <div id="carousel-packages" style="display: flex; flex-direction: column; gap: 20px; width: 90%; max-width: 800px;"></div>
+        </div>
+
+        <!-- 21: Shopping List -->
+        <div class="carousel-screen bg-gradient-4" id="carousel-21">
+            <h1>🛒 Shopping List</h1>
+            <div id="carousel-shopping" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 90%; max-width: 1000px;"></div>
+        </div>
+
         <div class="carousel-indicators" id="carousel-indicators"></div>
     </div>
 
@@ -1628,12 +1658,12 @@
         let viewMode = 'grid';
         let data = {};
         let currentGridScreen = 0;
-        const totalGridScreens = 8;
+        const totalGridScreens = 9;
         const gridDuration = 10000;
         let gridInterval = null;
 
         let currentCarouselScreen = 0;
-        const totalCarouselScreens = 20;
+        const totalCarouselScreens = 22;
         const carouselDuration = 10000;
         let carouselInterval = null;
 
@@ -1689,11 +1719,13 @@
             document.getElementById('carousel-date').textContent = dateStr;
         }
 
-        async function fetchData() {
+        async function fetchData(forceRefresh = true) {
             const refreshEl = document.getElementById('lastRefresh');
             refreshEl.classList.add('refreshing');
             try {
-                const response = await fetch('/api/dashboard-data', { headers: { 'Cache-Control': 'no-cache' } });
+                // Use refresh=true to bypass server cache and get fresh data
+                const url = forceRefresh ? '/api/dashboard-data?refresh=true' : '/api/dashboard-data';
+                const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
                 if (!response.ok) throw new Error('Failed');
                 data = await response.json();
                 updateAllWidgets();
@@ -1733,6 +1765,7 @@
             updatePhotoGallery();
             updateGaming();
             updateSmartHome();
+            updatePackagesAndShopping();
             updateTicker();
         }
 
@@ -2169,8 +2202,18 @@
             // SwitchBot Locks (Grid)
             if (data.switchbot_locks && data.switchbot_locks.length > 0) {
                 locksContainer.innerHTML = data.switchbot_locks.map(lock => {
-                    const icon = lock.status === 'locked' ? '🔒' : lock.status === 'unlocked' ? '🔓' : '❓';
-                    const statusClass = lock.status === 'locked' ? 'locked' : lock.status === 'unlocked' ? 'unlocked' : '';
+                    let icon, statusClass;
+                    if (lock.status === 'locked') {
+                        icon = '🔒'; statusClass = 'locked';
+                    } else if (lock.status === 'unlocked') {
+                        icon = '🔓'; statusClass = 'unlocked';
+                    } else if (lock.status === 'rate_limited') {
+                        icon = '⏳'; statusClass = '';
+                    } else if (lock.status === 'error') {
+                        icon = '⚠️'; statusClass = '';
+                    } else {
+                        icon = '❓'; statusClass = '';
+                    }
                     return `<div class="lock-item">
                         <span class="lock-name">${lock.name}</span>
                         <span class="lock-status ${statusClass}">${icon}</span>
@@ -2184,12 +2227,22 @@
             const carouselLocks = document.getElementById('carousel-locks');
             if (data.switchbot_locks && data.switchbot_locks.length > 0) {
                 carouselLocks.innerHTML = data.switchbot_locks.map(lock => {
-                    const icon = lock.status === 'locked' ? '🔒' : lock.status === 'unlocked' ? '🔓' : '❓';
-                    const color = lock.status === 'locked' ? 'var(--accent-green)' : lock.status === 'unlocked' ? 'var(--accent-red)' : 'var(--text-muted)';
+                    let icon, color, displayStatus;
+                    if (lock.status === 'locked') {
+                        icon = '🔒'; color = 'var(--accent-green)'; displayStatus = 'locked';
+                    } else if (lock.status === 'unlocked') {
+                        icon = '🔓'; color = 'var(--accent-red)'; displayStatus = 'unlocked';
+                    } else if (lock.status === 'rate_limited') {
+                        icon = '⏳'; color = 'var(--accent-yellow, #f1c40f)'; displayStatus = 'API Limited';
+                    } else if (lock.status === 'error') {
+                        icon = '⚠️'; color = 'var(--accent-red)'; displayStatus = 'error';
+                    } else {
+                        icon = '❓'; color = 'var(--text-muted)'; displayStatus = lock.status;
+                    }
                     return `<div style="background: rgba(255,255,255,0.1); padding: 30px 50px; border-radius: 20px; text-align: center;">
                         <div style="font-size: 5rem; margin-bottom: 15px;">${icon}</div>
                         <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 10px;">${lock.name}</div>
-                        <div style="font-size: 1.4rem; color: ${color}; text-transform: uppercase;">${lock.status}</div>
+                        <div style="font-size: 1.4rem; color: ${color}; text-transform: uppercase;">${displayStatus}</div>
                     </div>`;
                 }).join('');
             } else {
@@ -2230,6 +2283,76 @@
             }
         }
 
+        function updatePackagesAndShopping() {
+            // Grid - Packages
+            const gridPackages = document.getElementById('grid-packages');
+            if (data.packages && data.packages.length > 0) {
+                gridPackages.innerHTML = data.packages.map(p => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 1.1rem;">${p.description || 'Package'}</div>
+                            <div style="font-size: 0.9rem; color: var(--text-muted);">${p.carrier || 'Unknown Carrier'} • ${p.tracking_number}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1rem; color: var(--accent-yellow);">${p.status}</div>
+                            ${p.expected_delivery ? `<div style="font-size: 0.85rem; color: var(--text-muted);">ETA: ${p.expected_delivery}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                gridPackages.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No packages being tracked</div>';
+            }
+
+            // Grid - Shopping List
+            const gridShopping = document.getElementById('grid-shopping');
+            if (data.shopping_list && data.shopping_list.length > 0) {
+                gridShopping.innerHTML = data.shopping_list.map(item => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 6px;">
+                        <span style="font-size: 1rem;">${item.item_name}</span>
+                        ${item.quantity > 1 ? `<span style="background: var(--accent-blue); padding: 2px 8px; border-radius: 10px; font-size: 0.85rem;">x${item.quantity}</span>` : ''}
+                    </div>
+                `).join('');
+            } else {
+                gridShopping.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Shopping list is empty</div>';
+            }
+
+            // Carousel - Packages (Screen 20)
+            const carouselPackages = document.getElementById('carousel-packages');
+            if (data.packages && data.packages.length > 0) {
+                carouselPackages.innerHTML = data.packages.map(p => `
+                    <div style="background: rgba(255,255,255,0.1); padding: 25px 30px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 8px;">${p.description || 'Package'}</div>
+                            <div style="font-size: 1.2rem; color: var(--text-muted);">${p.carrier || 'Unknown Carrier'}</div>
+                            <div style="font-size: 1rem; color: var(--text-muted); margin-top: 5px;">${p.tracking_number}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">📦</div>
+                            <div style="font-size: 1.3rem; color: var(--accent-yellow);">${p.status}</div>
+                            ${p.expected_delivery ? `<div style="font-size: 1rem; color: var(--text-muted); margin-top: 5px;">ETA: ${p.expected_delivery}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                carouselPackages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 1.5rem;">No packages being tracked</div>';
+            }
+
+            // Carousel - Shopping List (Screen 21)
+            const carouselShopping = document.getElementById('carousel-shopping');
+            if (data.shopping_list && data.shopping_list.length > 0) {
+                carouselShopping.innerHTML = data.shopping_list.map(item => `
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🛒</div>
+                        <div style="font-size: 1.3rem; font-weight: bold;">${item.item_name}</div>
+                        ${item.quantity > 1 ? `<div style="font-size: 1rem; color: var(--accent-blue); margin-top: 5px;">Qty: ${item.quantity}</div>` : ''}
+                        ${item.category ? `<div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 5px;">${item.category}</div>` : ''}
+                    </div>
+                `).join('');
+            } else {
+                carouselShopping.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 1.5rem;">Shopping list is empty</div>';
+            }
+        }
+
         function updateTicker() {
             let items = [];
             if (data.air_quality) items.push(`<span class="ticker-item"><span class="icon">🌬️</span> Air: ${data.air_quality.level} (AQI: ${data.air_quality.aqi})</span>`);
@@ -2239,6 +2362,14 @@
             if (data.devices) {
                 const home = data.devices.filter(d => d.status === 'home').length;
                 items.push(`<span class="ticker-item"><span class="icon">🏠</span> ${home} home, ${data.devices.length - home} away</span>`);
+            }
+            // Add packages to ticker
+            if (data.packages?.length) {
+                items.push(`<span class="ticker-item"><span class="icon">📦</span> ${data.packages.length} package(s) in transit</span>`);
+            }
+            // Add shopping list to ticker
+            if (data.shopping_list?.length) {
+                items.push(`<span class="ticker-item"><span class="icon">🛒</span> ${data.shopping_list.length} item(s) on shopping list</span>`);
             }
             if (!items.length) items.push(`<span class="ticker-item"><span class="icon">📡</span> Dashboard connected</span>`);
             const content = items.join('') + items.join('');

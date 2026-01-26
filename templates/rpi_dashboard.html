@@ -1078,6 +1078,26 @@
         </div>
     </div>
 
+    <!-- Package Tracking Screen -->
+    <div class="screen" id="screen-17">
+        <div class="packages-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: #ffd700;">📦 Package Tracking</h2>
+            <div id="rpi-packages" style="width: 90%; max-width: 600px;">
+                <div style="text-align: center; color: rgba(255,255,255,0.6);">No packages being tracked</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping List Screen -->
+    <div class="screen" id="screen-18">
+        <div class="shopping-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: #ffd700;">🛒 Shopping List</h2>
+            <div id="rpi-shopping" style="width: 90%; max-width: 600px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div style="text-align: center; color: rgba(255,255,255,0.6); grid-column: span 2;">Shopping list is empty</div>
+            </div>
+        </div>
+    </div>
+
     <div class="indicators">
         <div class="indicator" id="indicator-0"></div>
         <div class="indicator" id="indicator-1"></div>
@@ -1096,11 +1116,13 @@
         <div class="indicator" id="indicator-14"></div>
         <div class="indicator" id="indicator-15"></div>
         <div class="indicator" id="indicator-16"></div>
+        <div class="indicator" id="indicator-17"></div>
+        <div class="indicator" id="indicator-18"></div>
     </div>
     
     <script>
         let currentScreen = 0;
-        const totalScreens = 17;
+        const totalScreens = 19;
         const screenDuration = 10000; // 10 seconds per screen
         let data = {};
         let retryCount = 0;
@@ -1571,6 +1593,43 @@
                 document.getElementById('ra-points').textContent = '--';
                 document.getElementById('ra-rank').textContent = '--';
                 document.getElementById('ra-achievements').innerHTML = '<div class="ra-achievement-item"><div class="ra-achievement-info"><div class="ra-achievement-title">Not configured</div><div class="ra-achievement-game">Add API key to .env</div></div></div>';
+            }
+
+            // Update Packages (Screen 17)
+            const packagesDiv = document.getElementById('rpi-packages');
+            if (data.packages && data.packages.length > 0) {
+                packagesDiv.innerHTML = data.packages.map(p => `
+                    <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">${p.description || 'Package'}</div>
+                                <div style="font-size: 1rem; color: rgba(255,255,255,0.7);">${p.carrier || 'Unknown Carrier'}</div>
+                                <div style="font-size: 0.9rem; color: rgba(255,255,255,0.5);">${p.tracking_number}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 3rem;">📦</div>
+                                <div style="font-size: 1.2rem; color: #ffd700;">${p.status}</div>
+                                ${p.expected_delivery ? `<div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">ETA: ${p.expected_delivery}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                packagesDiv.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 1.3rem;">No packages being tracked</div>';
+            }
+
+            // Update Shopping List (Screen 18)
+            const shoppingDiv = document.getElementById('rpi-shopping');
+            if (data.shopping_list && data.shopping_list.length > 0) {
+                shoppingDiv.innerHTML = data.shopping_list.map(item => `
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 1.3rem; font-weight: bold;">${item.item_name}</div>
+                        ${item.quantity > 1 ? `<div style="font-size: 1rem; color: #64b5f6; margin-top: 0.3rem;">Qty: ${item.quantity}</div>` : ''}
+                        ${item.category ? `<div style="font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 0.3rem;">${item.category}</div>` : ''}
+                    </div>
+                `).join('');
+            } else {
+                shoppingDiv.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 1.3rem; grid-column: span 2;">Shopping list is empty</div>';
             }
 
             // Hide loading
