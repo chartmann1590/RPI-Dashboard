@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Home Dashboard</title>
+    <!-- Leaflet.js for maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -399,158 +400,6 @@
             line-height: 1.6;
         }
         
-        /* Sports Screen */
-        .sports-screen {
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1a1a2e, #2d1b1b, #1a2e1a);
-            padding: calc(40px * var(--scale-factor));
-        }
-        
-        .sports-container {
-            width: 100%;
-            max-width: calc(900px * var(--scale-factor));
-            text-align: center;
-        }
-        
-        .sports-header {
-            font-size: calc(2.5rem * var(--scale-factor));
-            margin-bottom: calc(40px * var(--scale-factor));
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        .sports-card {
-            background: rgba(255,255,255,0.1);
-            padding: calc(40px * var(--scale-factor));
-            border-radius: calc(25px * var(--scale-factor));
-            backdrop-filter: blur(10px);
-            border: calc(2px * var(--scale-factor)) solid rgba(255,255,255,0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        
-        .sports-status-badge {
-            display: inline-block;
-            padding: calc(8px * var(--scale-factor)) calc(20px * var(--scale-factor));
-            border-radius: calc(20px * var(--scale-factor));
-            font-size: calc(1rem * var(--scale-factor));
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: calc(25px * var(--scale-factor));
-        }
-        
-        .sports-status-badge.upcoming {
-            background: rgba(33, 150, 243, 0.3);
-            color: #64b5f6;
-            border: calc(1px * var(--scale-factor)) solid #2196F3;
-        }
-        
-        .sports-status-badge.completed {
-            background: rgba(76, 175, 80, 0.3);
-            color: #81c784;
-            border: calc(1px * var(--scale-factor)) solid #4caf50;
-        }
-        
-        .sports-status-badge.live {
-            background: rgba(244, 67, 54, 0.3);
-            color: #e57373;
-            border: calc(1px * var(--scale-factor)) solid #f44336;
-            animation: pulse 2s infinite;
-        }
-        
-        .sports-league {
-            color: #90caf9;
-            font-size: calc(1.2rem * var(--scale-factor));
-            margin-bottom: calc(15px * var(--scale-factor));
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.9;
-        }
-        
-        .sports-teams-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: calc(30px * var(--scale-factor)) 0;
-            gap: calc(20px * var(--scale-factor));
-        }
-        
-        .sports-team {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .sports-team-name {
-            font-size: calc(1.8rem * var(--scale-factor));
-            font-weight: bold;
-            margin-bottom: calc(10px * var(--scale-factor));
-            line-height: 1.3;
-            word-wrap: break-word;
-        }
-        
-        .sports-score-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: calc(150px * var(--scale-factor));
-        }
-        
-        .sports-score {
-            font-size: calc(5rem * var(--scale-factor));
-            font-weight: bold;
-            line-height: 1;
-            margin: calc(10px * var(--scale-factor)) 0;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
-        }
-        
-        .sports-score-separator {
-            font-size: calc(3rem * var(--scale-factor));
-            opacity: 0.7;
-            margin: 0 calc(10px * var(--scale-factor));
-        }
-        
-        .sports-team-score {
-            font-size: calc(4rem * var(--scale-factor));
-            font-weight: bold;
-            line-height: 1;
-        }
-        
-        .sports-game-info {
-            margin-top: calc(30px * var(--scale-factor));
-            padding-top: calc(25px * var(--scale-factor));
-            border-top: calc(1px * var(--scale-factor)) solid rgba(255,255,255,0.2);
-        }
-        
-        .sports-game-date {
-            font-size: calc(1.3rem * var(--scale-factor));
-            color: #ddd;
-            margin-bottom: calc(10px * var(--scale-factor));
-        }
-        
-        .sports-game-time {
-            font-size: calc(1.5rem * var(--scale-factor));
-            color: #fff;
-            font-weight: 500;
-        }
-        
-        .sports-no-data {
-            text-align: center;
-            padding: calc(40px * var(--scale-factor));
-            color: #999;
-        }
-        
-        .sports-no-data-title {
-            font-size: calc(2rem * var(--scale-factor));
-            margin-bottom: calc(20px * var(--scale-factor));
-        }
-        
-        .sports-no-data-description {
-            font-size: calc(1.3rem * var(--scale-factor));
-            color: #777;
-        }
-        
         /* Joke Screen */
         .joke-screen {
             flex-direction: column;
@@ -593,6 +442,53 @@
             font-size: calc(1rem * var(--scale-factor));
             opacity: 0.8;
             color: rgba(255,255,255,0.9);
+        }
+        
+        /* Commute Screen */
+        .commute-screen {
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298, #7e8ba3);
+            padding: calc(20px * var(--scale-factor));
+        }
+        
+        .commute-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: calc(20px * var(--scale-factor));
+        }
+        
+        .commute-header {
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .commute-info {
+            text-align: center;
+            margin-bottom: calc(10px * var(--scale-factor));
+        }
+        
+        #commute-map {
+            width: 100%;
+            height: 60%;
+            border-radius: calc(10px * var(--scale-factor));
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        
+        /* Override Leaflet default styles for better visibility */
+        #commute-map .leaflet-container {
+            background: rgba(0,0,0,0.3);
+        }
+        
+        #commute-map .leaflet-tile-container img {
+            filter: brightness(0.8) contrast(1.1);
         }
         
         /* Screen indicators */
@@ -733,763 +629,157 @@
                 --scale-factor: 0.85;
             }
         }
-        
-        /* ==================== HOLIDAY THEMING ==================== */
-        .particles-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
-        }
-        
-        .particle {
-            position: absolute;
-            pointer-events: none;
-        }
-        
-        /* Snow particles */
-        .snow-particle {
-            color: #ffffff;
-            font-size: calc(1rem * var(--scale-factor));
-            animation: snowfall linear infinite;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-        }
-        
-        @keyframes snowfall {
-            0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(var(--drift, 20px)) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Leaf particles */
-        .leaf-particle {
-            color: #ff8c00;
-            font-size: calc(1.5rem * var(--scale-factor));
-            animation: leaffall linear infinite;
-        }
-        
-        @keyframes leaffall {
-            0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(var(--drift, 50px)) rotate(720deg);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes snowfall {
-            0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(var(--drift, 20px)) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Confetti particles */
-        .confetti-particle {
-            width: calc(8px * var(--scale-factor));
-            height: calc(8px * var(--scale-factor));
-            background: #FFD700;
-            animation: confettifall linear infinite;
-            border-radius: 50%;
-        }
-        
-        @keyframes confettifall {
-            0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(calc(100px * var(--scale-factor))) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Heart particles */
-        .heart-particle {
-            color: #FF1493;
-            font-size: calc(1.2rem * var(--scale-factor));
-            animation: heartfloat linear infinite;
-        }
-        
-        @keyframes heartfloat {
-            0% {
-                transform: translateY(-100px) translateX(0) scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: translateY(calc(50vh)) translateX(calc(30px * var(--scale-factor))) scale(1.2);
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(calc(60px * var(--scale-factor))) scale(0.8);
-                opacity: 0;
-            }
-        }
-        
-        /* Star particles */
-        .star-particle {
-            color: #ffffff;
-            font-size: calc(1rem * var(--scale-factor));
-            animation: starfall linear infinite;
-            text-shadow: 0 0 10px currentColor;
-        }
-        
-        @keyframes starfall {
-            0% {
-                transform: translateY(-100px) rotate(0deg) scale(1);
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) rotate(360deg) scale(0.5);
-                opacity: 0;
-            }
-        }
-        
-        /* Shamrock particles */
-        .shamrock-particle {
-            color: #228B22;
-            font-size: calc(1.2rem * var(--scale-factor));
-            animation: shamrockfall linear infinite;
-        }
-        
-        @keyframes shamrockfall {
-            0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(calc(40px * var(--scale-factor))) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Egg particles */
-        .egg-particle {
-            color: #FFB6C1;
-            font-size: calc(1.3rem * var(--scale-factor));
-            animation: eggfall linear infinite;
-        }
-        
-        @keyframes eggfall {
-            0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(calc(35px * var(--scale-factor))) rotate(180deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Bat particles */
-        .bat-particle {
-            color: #000000;
-            font-size: calc(1.1rem * var(--scale-factor));
-            animation: batfly linear infinite;
-        }
-        
-        @keyframes batfly {
-            0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
-                opacity: 0.8;
-            }
-            50% {
-                transform: translateY(calc(50vh)) translateX(calc(80px * var(--scale-factor))) rotate(180deg);
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) translateX(calc(160px * var(--scale-factor))) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Holiday background overlay */
-        .holiday-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            transition: background 1s ease;
-        }
-        
-        /* Ensure screens are above particles */
-        .screen {
-            position: relative;
-            z-index: 2;
-        }
-        
-        /* Special character animations */
-        .special-character {
-            position: fixed;
-            pointer-events: none;
-            z-index: 3;
-            font-size: calc(60px * var(--scale-factor));
-            line-height: 1;
-            opacity: 0;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-        }
-        
-        .santa-flying {
-            /* Animation will be set dynamically */
-        }
-        
-        .cupid-flying {
-            /* Animation will be set dynamically */
-        }
-        
-        .turkey-flying {
-            /* Animation will be set dynamically */
-        }
-        
-        .leprechaun-flying {
-            /* Animation will be set dynamically */
-        }
-        
-        @keyframes flyLeftToRight {
-            0% {
-                transform: translateX(-100px) scale(0.8);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(calc(100vw + 100px)) scale(0.8);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes flyRightToLeft {
-            0% {
-                transform: translateX(calc(100vw + 100px)) scale(0.8) scaleX(-1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(-100px) scale(0.8) scaleX(-1);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes flyTopToBottom {
-            0% {
-                transform: translateY(-100px) scale(0.8);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) scale(0.8);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes flyBottomToTop {
-            0% {
-                transform: translateY(calc(100vh + 100px)) scale(0.8) scaleY(-1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) scale(0.8) scaleY(-1);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes flyDiagonalTopLeft {
-            0% {
-                transform: translate(0, 0) scale(0.8);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translate(calc(100vw + 200px), calc(100vh + 200px)) scale(0.8);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes flyDiagonalTopRight {
-            0% {
-                transform: translate(0, 0) scale(0.8) scaleX(-1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translate(calc(-100vw - 200px), calc(100vh + 200px)) scale(0.8) scaleX(-1);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes flyDiagonalBottomLeft {
-            0% {
-                transform: translate(0, 0) scale(0.8) scaleY(-1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translate(calc(100vw + 200px), calc(-100vh - 200px)) scale(0.8) scaleY(-1);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes flyDiagonalBottomRight {
-            0% {
-                transform: translate(0, 0) scale(0.8) scaleX(-1) scaleY(-1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translate(calc(-100vw - 200px), calc(-100vh - 200px)) scale(0.8) scaleX(-1) scaleY(-1);
-                opacity: 0;
-            }
-        }
-        
-        /* Enhanced particle visibility */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            will-change: transform, opacity;
-        }
-        
-        .snow-particle {
-            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
-        }
-        
-        .leaf-particle {
-            filter: drop-shadow(0 0 2px rgba(255, 140, 0, 0.6));
-        }
-        
-        /* Traffic Alerts Styles */
-        .traffic-alerts-container {
-            margin-top: calc(20px * var(--scale-factor));
-            max-height: calc(300px * var(--scale-factor));
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: calc(10px * var(--scale-factor));
-            border-radius: calc(10px * var(--scale-factor));
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(5px);
-            scroll-behavior: auto; /* Let JavaScript control smoothness */
-        }
-        
-        .traffic-alerts-container::-webkit-scrollbar {
-            width: calc(8px * var(--scale-factor));
-        }
-        
-        .traffic-alerts-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: calc(4px * var(--scale-factor));
-        }
-        
-        .traffic-alerts-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: calc(4px * var(--scale-factor));
-        }
-        
-        .traffic-alerts-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        .traffic-alert-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: calc(15px * var(--scale-factor));
-            margin-bottom: calc(12px * var(--scale-factor));
-            border-radius: calc(10px * var(--scale-factor));
-            border-left: calc(5px * var(--scale-factor)) solid;
-            backdrop-filter: blur(10px);
-            border: calc(1px * var(--scale-factor)) solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .traffic-alert-card:last-child {
-            margin-bottom: 0;
-        }
-        
-        .traffic-alert-card:hover {
-            transform: translateX(calc(5px * var(--scale-factor)));
-            box-shadow: 0 calc(4px * var(--scale-factor)) calc(8px * var(--scale-factor)) rgba(0, 0, 0, 0.3);
-        }
-        
-        .traffic-alert-header {
+
+        /* Gaming Screen - Now Playing */
+        .gaming-screen {
             display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: calc(10px * var(--scale-factor));
-            margin-bottom: calc(8px * var(--scale-factor));
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: calc(40px * var(--scale-factor));
+            text-align: center;
         }
-        
-        .traffic-alert-icon {
-            font-size: calc(1.5rem * var(--scale-factor));
-            line-height: 1;
+
+        .gaming-title {
+            font-size: calc(2.5rem * var(--scale-factor));
+            margin-bottom: calc(30px * var(--scale-factor));
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
-        
-        .traffic-alert-level {
-            font-size: calc(1.2rem * var(--scale-factor));
+
+        .game-cover {
+            width: calc(150px * var(--scale-factor));
+            height: calc(150px * var(--scale-factor));
+            border-radius: calc(15px * var(--scale-factor));
+            object-fit: cover;
+            margin-bottom: calc(20px * var(--scale-factor));
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+
+        .game-name {
+            font-size: calc(2rem * var(--scale-factor));
             font-weight: bold;
-            flex: 1;
+            margin-bottom: calc(10px * var(--scale-factor));
         }
-        
-        .traffic-alert-time {
-            font-size: calc(0.9rem * var(--scale-factor));
-            opacity: 0.8;
-            white-space: nowrap;
+
+        .game-platform {
+            font-size: calc(1.3rem * var(--scale-factor));
+            color: #aaa;
         }
-        
-        .traffic-alert-location {
+
+        .game-status {
+            font-size: calc(1.2rem * var(--scale-factor));
+            color: #4ade80;
+            margin-top: calc(15px * var(--scale-factor));
+        }
+
+        /* ROMM Library Stats */
+        .romm-library-stats {
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .romm-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: calc(12px * var(--scale-factor)) 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: calc(1.5rem * var(--scale-factor));
+        }
+
+        .romm-stat-label {
+            color: #aaa;
+        }
+
+        .romm-stat-value {
+            font-weight: bold;
+            color: #a855f7;
+        }
+
+        .romm-platforms-list {
+            margin-top: calc(20px * var(--scale-factor));
             font-size: calc(1rem * var(--scale-factor));
-            margin-bottom: calc(6px * var(--scale-factor));
-            opacity: 0.9;
-            font-weight: 500;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
-        .traffic-alert-description {
-            font-size: calc(0.95rem * var(--scale-factor));
-            line-height: 1.4;
-            opacity: 0.85;
-        }
-        
-        .traffic-alert-card.alert-heavy {
-            border-left-color: #f44336;
-            background: rgba(244, 67, 54, 0.15);
-        }
-        
-        .traffic-alert-card.alert-medium {
-            border-left-color: #ffc107;
-            background: rgba(255, 193, 7, 0.15);
-        }
-        
-        .traffic-alert-card.alert-light {
-            border-left-color: #4caf50;
-            background: rgba(76, 175, 80, 0.15);
-        }
-        
-        .traffic-alert-card.alert-crash {
-            border-left-color: #f44336;
-            background: rgba(244, 67, 54, 0.25);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
-            }
-            50% {
-                box-shadow: 0 0 0 calc(5px * var(--scale-factor)) rgba(244, 67, 54, 0);
-            }
-        }
-        
-        .no-traffic-message {
-            text-align: center;
-            padding: calc(20px * var(--scale-factor));
-            background: rgba(76, 175, 80, 0.2);
-            border-left: calc(4px * var(--scale-factor)) solid #4caf50;
-            border-radius: calc(10px * var(--scale-factor));
-            font-size: calc(1.1rem * var(--scale-factor));
-            color: #4caf50;
-        }
-        
-        /* Home Assistant Screen Styles */
-        .ha-screen {
+
+        /* RetroAchievements Screen */
+        .achievements-screen {
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-            padding: calc(40px * var(--scale-factor));
+            background: linear-gradient(135deg, #1e3a5f, #0f2027);
+            padding: calc(30px * var(--scale-factor));
         }
-        
-        .ha-container {
-            width: 100%;
-            max-width: calc(900px * var(--scale-factor));
-            text-align: center;
-        }
-        
-        .ha-header {
+
+        .achievements-title {
             font-size: calc(2.5rem * var(--scale-factor));
-            margin-bottom: calc(30px * var(--scale-factor));
+            margin-bottom: calc(20px * var(--scale-factor));
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
-        
-        .ha-devices-container {
-            margin-top: calc(20px * var(--scale-factor));
-            max-height: calc(500px * var(--scale-factor));
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: calc(10px * var(--scale-factor));
-            border-radius: calc(10px * var(--scale-factor));
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(5px);
-            scroll-behavior: auto;
+
+        .ra-stats-row {
+            display: flex;
+            gap: calc(50px * var(--scale-factor));
+            margin-bottom: calc(30px * var(--scale-factor));
         }
-        
-        .ha-devices-container::-webkit-scrollbar {
-            width: calc(8px * var(--scale-factor));
-        }
-        
-        .ha-devices-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: calc(4px * var(--scale-factor));
-        }
-        
-        .ha-devices-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: calc(4px * var(--scale-factor));
-        }
-        
-        .ha-devices-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        .ha-device-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: calc(20px * var(--scale-factor));
-            margin-bottom: calc(15px * var(--scale-factor));
-            border-radius: calc(10px * var(--scale-factor));
-            border-left: calc(5px * var(--scale-factor)) solid #4caf50;
-            backdrop-filter: blur(10px);
-        
-        /* Shopping List Screen Styles */
-        .shopping-screen {
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-            padding: calc(40px * var(--scale-factor));
-        }
-        
-        .shopping-container {
-            width: 100%;
-            max-width: calc(900px * var(--scale-factor));
+
+        .ra-stat {
             text-align: center;
         }
-        
-        .shopping-header {
-            font-size: calc(2.5rem * var(--scale-factor));
-            margin-bottom: calc(30px * var(--scale-factor));
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+
+        .ra-stat-value {
+            font-size: calc(3rem * var(--scale-factor));
+            font-weight: bold;
+            color: #fbbf24;
         }
-        
-        .shopping-list-container {
-            margin-top: calc(20px * var(--scale-factor));
-            max-height: calc(500px * var(--scale-factor));
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: calc(10px * var(--scale-factor));
-            border-radius: calc(10px * var(--scale-factor));
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(5px);
-            scroll-behavior: auto;
+
+        .ra-stat-label {
+            font-size: calc(1rem * var(--scale-factor));
+            color: #aaa;
         }
-        
-        .shopping-list-container::-webkit-scrollbar {
-            width: calc(8px * var(--scale-factor));
+
+        .ra-achievements-list {
+            width: 100%;
+            max-width: calc(600px * var(--scale-factor));
         }
-        
-        .shopping-list-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: calc(4px * var(--scale-factor));
-        }
-        
-        .shopping-list-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: calc(4px * var(--scale-factor));
-        }
-        
-        .shopping-list-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        .shopping-list-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: calc(20px * var(--scale-factor));
-            margin-bottom: calc(15px * var(--scale-factor));
-            border-radius: calc(10px * var(--scale-factor));
-            border-left: calc(5px * var(--scale-factor)) solid #ff9800;
-            backdrop-filter: blur(10px);
+
+        .ra-achievement-item {
             display: flex;
             align-items: center;
             gap: calc(15px * var(--scale-factor));
-            font-size: calc(1.3rem * var(--scale-factor));
+            padding: calc(15px * var(--scale-factor));
+            background: rgba(255,255,255,0.1);
+            border-radius: calc(10px * var(--scale-factor));
+            margin-bottom: calc(10px * var(--scale-factor));
         }
-        
-        .shopping-list-item.completed {
-            opacity: 0.6;
-            text-decoration: line-through;
+
+        .ra-achievement-badge {
+            width: calc(50px * var(--scale-factor));
+            height: calc(50px * var(--scale-factor));
+            border-radius: calc(5px * var(--scale-factor));
         }
-        
-        .shopping-list-item-checkbox {
-            width: calc(25px * var(--scale-factor));
-            height: calc(25px * var(--scale-factor));
-            cursor: pointer;
-        }
-        
-        .shopping-list-item-name {
+
+        .ra-achievement-info {
             flex: 1;
             text-align: left;
-            border: calc(1px * var(--scale-factor)) solid rgba(255, 255, 255, 0.2);
-            text-align: left;
         }
-        
-        .ha-device-card:last-child {
-            margin-bottom: 0;
-        }
-        
-        .ha-device-name {
-            font-size: calc(1.5rem * var(--scale-factor));
-            font-weight: bold;
-            margin-bottom: calc(8px * var(--scale-factor));
-        }
-        
-        .ha-device-state {
+
+        .ra-achievement-title {
             font-size: calc(1.2rem * var(--scale-factor));
-            color: #4caf50;
-            font-weight: bold;
+            font-weight: 600;
         }
-        
-        .ha-device-entity {
+
+        .ra-achievement-game {
             font-size: calc(0.9rem * var(--scale-factor));
-            opacity: 0.7;
-            margin-top: calc(5px * var(--scale-factor));
+            color: #aaa;
         }
-        
-        .ha-battery-card {
-            background: rgba(244, 67, 54, 0.15);
-            border-left-color: #f44336;
-        }
-        
-        .ha-battery-level {
-            color: #f44336;
-            font-weight: bold;
-        }
-        
-        .no-ha-data-message {
-            text-align: center;
-            padding: calc(40px * var(--scale-factor));
-            font-size: calc(1.3rem * var(--scale-factor));
-            opacity: 0.8;
-        }
-        
-        /* Map Marker Tooltips */
-        .marker-tooltip {
-            background: rgba(0, 0, 0, 0.85) !important;
-            color: white !important;
-            border: 2px solid rgba(255, 255, 255, 0.3) !important;
-            border-radius: calc(8px * var(--scale-factor)) !important;
-            padding: calc(8px * var(--scale-factor)) calc(12px * var(--scale-factor)) !important;
-            font-size: calc(1rem * var(--scale-factor)) !important;
-            font-weight: 500 !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-            white-space: nowrap !important;
-            text-align: center !important;
-            backdrop-filter: blur(5px) !important;
-        }
-        
-        .marker-tooltip::before {
-            border-top-color: rgba(0, 0, 0, 0.85) !important;
-        }
-        
-        .marker-tooltip-start {
-            border-color: rgba(76, 175, 80, 0.6) !important;
-        }
-        
-        .marker-tooltip-finish {
-            border-color: rgba(244, 67, 54, 0.6) !important;
-        }
-        
-        /* Crash Marker Animation */
-        @keyframes pulse-crash {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 2px 10px rgba(244, 67, 54, 0.6);
-            }
-            50% {
-                transform: scale(1.15);
-                box-shadow: 0 4px 20px rgba(244, 67, 54, 0.9);
-            }
-        }
-        
-        .crash-marker {
-            background: transparent !important;
-            border: none !important;
-        }
-        
-        /* Crash Popup Styling */
-        .crash-popup .leaflet-popup-content-wrapper {
-            background: rgba(244, 67, 54, 0.95) !important;
-            color: white !important;
-            border: 2px solid white !important;
-            border-radius: calc(8px * var(--scale-factor)) !important;
-            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.5) !important;
-        }
-        
-        .crash-popup .leaflet-popup-content {
-            margin: calc(12px * var(--scale-factor)) !important;
-            font-size: calc(0.95rem * var(--scale-factor)) !important;
-            line-height: 1.5 !important;
-        }
-        
-        .crash-popup .leaflet-popup-tip {
-            background: rgba(244, 67, 54, 0.95) !important;
-            border: 2px solid white !important;
-            border-top: none !important;
-            border-left: none !important;
+
+        .ra-achievement-points {
+            font-size: calc(1.1rem * var(--scale-factor));
+            color: #fbbf24;
         }
     </style>
     <script>
@@ -1548,10 +838,6 @@
         <p>Retrying in <span id="retry-countdown">5</span> seconds...</p>
     </div>
     
-    <!-- Holiday Theme Overlay -->
-    <div class="holiday-overlay" id="holiday-overlay"></div>
-    <div class="particles-container" id="particles-container"></div>
-    
     <!-- Date/Time Screen -->
     <div class="screen datetime-screen" id="screen-0">
         <div class="datetime-container">
@@ -1608,20 +894,8 @@
         </div>
     </div>
     
-    <!-- Weather Alerts Screen -->
-    <div class="screen news-screen" id="screen-4">
-        <div class="news-container">
-            <h2 class="news-header">Weather Alerts</h2>
-            <div class="news-article" id="weather-alert-content">
-                <div class="news-source" id="alert-type"></div>
-                <div class="news-title" id="alert-headline"></div>
-                <div class="news-description" id="alert-description"></div>
-            </div>
-        </div>
-    </div>
-    
     <!-- Weather Radar Screen -->
-    <div class="screen radar-screen" id="screen-5">
+    <div class="screen radar-screen" id="screen-4">
         <div class="radar-container">
             <h2 class="radar-title">Weather Radar</h2>
             <img class="radar-image" id="radar-image" src="" alt="Weather Radar">
@@ -1629,7 +903,7 @@
     </div>
     
     <!-- News Screen -->
-    <div class="screen news-screen" id="screen-6">
+    <div class="screen news-screen" id="screen-5">
         <div class="news-container">
             <h2 class="news-header">Local News</h2>
             <div class="news-article" id="news-article">
@@ -1641,7 +915,7 @@
     </div>
     
     <!-- Joke Screen -->
-    <div class="screen joke-screen" id="screen-7">
+    <div class="screen joke-screen" id="screen-6">
         <div class="joke-container">
             <h2 class="joke-header">Daily Joke</h2>
             <div class="joke-card" id="joke-card">
@@ -1652,43 +926,32 @@
     </div>
     
     <!-- Calendar Screen -->
-    <div class="screen news-screen" id="screen-8">
+    <div class="screen news-screen" id="screen-7">
         <div class="news-container">
             <h2 class="news-header" id="calendar-header">Calendar</h2>
-            <div class="news-article" id="calendar-event-1">
-                <div class="news-source" id="calendar-source-1"></div>
-                <div class="news-title" id="calendar-title-1"></div>
-                <div class="news-description" id="calendar-details-1"></div>
-            </div>
-            <div class="news-article" id="calendar-event-2">
-                <div class="news-source" id="calendar-source-2"></div>
-                <div class="news-title" id="calendar-title-2"></div>
-                <div class="news-description" id="calendar-details-2"></div>
+            <div class="news-article" id="calendar-event">
+                <div class="news-source" id="calendar-source"></div>
+                <div class="news-title" id="calendar-title"></div>
+                <div class="news-description" id="calendar-details"></div>
             </div>
         </div>
     </div>
     
     <!-- Commute Screen -->
-    <div class="screen weather-screen" id="screen-9">
-        <div class="weather-container">
-            <h2 class="weather-location" id="commute-title">Commute</h2>
-            <div class="temperature" id="commute-time"></div>
-            <div class="weather-description" id="commute-route"></div>
-            <div class="weather-details" id="commute-details"></div>
-            <div class="traffic-alerts-container" id="traffic-alerts-container"></div>
-        </div>
-    </div>
-    
-    <!-- Commute Map Screen -->
-    <div class="screen radar-screen" id="screen-10">
-        <div class="radar-container">
-            <h2 class="radar-title">Commute Route</h2>
-            <div id="commute-map-rpi" style="width: 100%; height: calc(100% - 80px); border-radius: 10px;"></div>
+    <div class="screen commute-screen" id="screen-8">
+        <div class="commute-container">
+            <h2 class="commute-header" id="commute-title">Commute</h2>
+            <div class="commute-info">
+                <div class="temperature" id="commute-time"></div>
+                <div class="weather-description" id="commute-route"></div>
+                <div class="weather-details" id="commute-details"></div>
+            </div>
+            <div id="commute-map" style="width: 100%; height: 60%; margin-top: 1rem; border-radius: 10px; overflow: hidden;"></div>
         </div>
     </div>
     
     <!-- Air Quality Screen -->
-    <div class="screen weather-screen" id="screen-11">
+    <div class="screen weather-screen" id="screen-9">
         <div class="weather-container">
             <h2 class="weather-location">Air Quality</h2>
             <div class="temperature" id="aqi-number"></div>
@@ -1698,7 +961,7 @@
     </div>
     
     <!-- Quote Screen -->
-    <div class="screen joke-screen" id="screen-12">
+    <div class="screen joke-screen" id="screen-10">
         <div class="joke-container">
             <h2 class="joke-header">Daily Quote</h2>
             <div class="joke-card">
@@ -1709,7 +972,7 @@
     </div>
     
     <!-- Astronomy Screen -->
-    <div class="screen weather-screen" id="screen-13">
+    <div class="screen weather-screen" id="screen-11">
         <div class="weather-container">
             <h2 class="weather-location">Moon & Sun</h2>
             <div class="weather-icon" id="moon-icon"></div>
@@ -1728,7 +991,7 @@
     </div>
     
     <!-- Internet Speed Screen -->
-    <div class="screen weather-screen" id="screen-14">
+    <div class="screen weather-screen" id="screen-12">
         <div class="weather-container">
             <h2 class="weather-location">Internet Speed</h2>
             <div class="weather-details">
@@ -1750,82 +1013,71 @@
     </div>
     
     <!-- Sports Screen -->
-    <div class="screen sports-screen" id="screen-15">
-        <div class="sports-container">
-            <h2 class="sports-header">Sports Scores</h2>
-            <div class="sports-card" id="sports-event">
-                <div class="sports-status-badge" id="sports-status-badge"></div>
-                <div class="sports-league" id="sports-league"></div>
-                <div class="sports-teams-container" id="sports-teams-container">
-                    <div class="sports-team">
-                        <div class="sports-team-name" id="sports-team-home"></div>
-                        <div class="sports-team-score" id="sports-score-home"></div>
-                    </div>
-                    <div class="sports-score-container">
-                        <span class="sports-score-separator" id="sports-score-separator">-</span>
-                        <div class="sports-score" id="sports-score-display"></div>
-                    </div>
-                    <div class="sports-team">
-                        <div class="sports-team-name" id="sports-team-away"></div>
-                        <div class="sports-team-score" id="sports-score-away"></div>
-                    </div>
-                </div>
-                <div class="sports-game-info" id="sports-game-info">
-                    <div class="sports-game-date" id="sports-game-date"></div>
-                    <div class="sports-game-time" id="sports-game-time"></div>
-                </div>
-            </div>
-            <div class="sports-no-data" id="sports-no-data" style="display: none;">
-                <div class="sports-no-data-title">No scores available</div>
-                <div class="sports-no-data-description">Configure favorite teams in main dashboard</div>
+    <div class="screen news-screen" id="screen-13">
+        <div class="news-container">
+            <h2 class="news-header">Sports Scores</h2>
+            <div class="news-article" id="sports-event">
+                <div class="news-source" id="sports-team"></div>
+                <div class="news-title" id="sports-title"></div>
+                <div class="news-description" id="sports-details"></div>
             </div>
         </div>
     </div>
     
     <!-- Photo Gallery Screen -->
-    <div class="screen radar-screen" id="screen-16">
+    <div class="screen radar-screen" id="screen-14">
         <div class="radar-container">
             <h2 class="radar-title">Photo Gallery</h2>
             <img class="radar-image" id="gallery-photo" src="" alt="Gallery Photo">
         </div>
     </div>
-    
-    <!-- Package Tracking Screen -->
-    <div class="screen news-screen" id="screen-17">
-        <div class="news-container">
-            <h2 class="news-header">Package Tracking</h2>
-            <div class="news-article" id="package-content">
-                <div class="news-source" id="package-carrier"></div>
-                <div class="news-title" id="package-tracking"></div>
-                <div class="news-description" id="package-status"></div>
+
+    <!-- ROMM Library Screen -->
+    <div class="screen" id="screen-15">
+        <div class="gaming-screen">
+            <h2 class="gaming-title">🎮 ROMM Library</h2>
+            <div class="romm-library-stats" id="romm-library-container">
+                <div class="romm-stat-row">
+                    <span class="romm-stat-label">Total ROMs</span>
+                    <span class="romm-stat-value" id="romm-total-roms">--</span>
+                </div>
+                <div class="romm-stat-row">
+                    <span class="romm-stat-label">Platforms</span>
+                    <span class="romm-stat-value" id="romm-platforms">--</span>
+                </div>
+                <div class="romm-stat-row">
+                    <span class="romm-stat-label">Library Size</span>
+                    <span class="romm-stat-value" id="romm-size">--</span>
+                </div>
+                <div class="romm-platforms-list" id="romm-platform-list"></div>
+            </div>
+            <div class="game-status" id="romm-status"></div>
+        </div>
+    </div>
+
+    <!-- RetroAchievements Screen -->
+    <div class="screen" id="screen-16">
+        <div class="achievements-screen">
+            <h2 class="achievements-title">RetroAchievements</h2>
+            <div class="ra-stats-row">
+                <div class="ra-stat">
+                    <div class="ra-stat-value" id="ra-points">--</div>
+                    <div class="ra-stat-label">Points</div>
+                </div>
+                <div class="ra-stat">
+                    <div class="ra-stat-value" id="ra-rank">--</div>
+                    <div class="ra-stat-label">Rank</div>
+                </div>
+            </div>
+            <div class="ra-achievements-list" id="ra-achievements">
+                <div class="ra-achievement-item">
+                    <div class="ra-achievement-title">No recent achievements</div>
+                    <div class="ra-achievement-game">Configure RetroAchievements API</div>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- Home Assistant Screen -->
-    <div class="screen ha-screen" id="screen-18">
-        <div class="ha-container">
-            <h2 class="ha-header">Home Assistant</h2>
-            <div class="ha-devices-container" id="ha-devices-container"></div>
-        </div>
-    </div>
-    
-    <!-- Shopping List Screen -->
-    <div class="screen shopping-screen" id="screen-19">
-        <div class="shopping-container">
-            <h2 class="shopping-header">Shopping List</h2>
-            <div class="shopping-list-container" id="shopping-list-container"></div>
-        </div>
-    </div>
-    
-    <!-- SwitchBot Locks Screen -->
-    <div class="screen home-screen" id="screen-20">
-        <h1>SwitchBot Locks</h1>
-        <div class="locks-container" id="locks-container" style="display: flex; flex-direction: column; gap: 2rem; align-items: center; justify-content: center; padding: 2rem;">
-            <div style="text-align: center; color: #999;">Loading lock status...</div>
-        </div>
-    </div>
-    
+
     <div class="indicators">
         <div class="indicator" id="indicator-0"></div>
         <div class="indicator" id="indicator-1"></div>
@@ -1844,18 +1096,11 @@
         <div class="indicator" id="indicator-14"></div>
         <div class="indicator" id="indicator-15"></div>
         <div class="indicator" id="indicator-16"></div>
-        <div class="indicator" id="indicator-17"></div>
-        <div class="indicator" id="indicator-18"></div>
-        <div class="indicator" id="indicator-19"></div>
-        <div class="indicator" id="indicator-20"></div>
     </div>
     
     <script>
-        // Timezone configuration from backend
-        const TIMEZONE = '{{ timezone }}';
-        
         let currentScreen = 0;
-        let totalScreens = 21; // Will be adjusted based on available screens (0-20 possible)
+        const totalScreens = 17;
         const screenDuration = 10000; // 10 seconds per screen
         let data = {};
         let retryCount = 0;
@@ -1864,20 +1109,6 @@
         let screenRotationInterval = null;
         let dataFetchInterval = null;
         let clockInterval = null;
-        let commuteMapRpi = null;
-        let holidayTheme = null;
-        let particles = [];
-        let particleInterval = null;
-        let specialCharacterInterval = null;
-        let trafficScrollInterval = null;
-        let trafficScrollDirection = 1; // 1 for down, -1 for up
-        let trafficScrollPaused = false;
-        let haScrollInterval = null;
-        let haScrollDirection = 1; // 1 for down, -1 for up
-        let haScrollPaused = false;
-        let shoppingScrollInterval = null;
-        let shoppingScrollDirection = 1; // 1 for down, -1 for up
-        let shoppingScrollPaused = false;
         
         // Log detected screen size
         console.log(`Screen detected: ${screenWidth}x${screenHeight}, Scale factor: ${scaleFactor}`);
@@ -1888,256 +1119,14 @@
             document.getElementById('big-clock').textContent = now.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit',
-                hour12: true,
-                timeZone: TIMEZONE
+                hour12: true 
             });
             document.getElementById('big-date').textContent = now.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 month: 'long', 
                 day: 'numeric',
-                year: 'numeric',
-                timeZone: TIMEZONE
+                year: 'numeric'
             });
-        }
-        
-        // Auto-scroll traffic alerts container
-        function startTrafficAlertsAutoScroll() {
-            // Clear any existing scroll interval
-            if (trafficScrollInterval) {
-                clearInterval(trafficScrollInterval);
-                trafficScrollInterval = null;
-            }
-            
-            const container = document.getElementById('traffic-alerts-container');
-            if (!container) return;
-            
-            // Wait a bit for content to render
-            setTimeout(() => {
-                const scrollHeight = container.scrollHeight;
-                const clientHeight = container.clientHeight;
-                
-                // Only auto-scroll if content exceeds container height
-                if (scrollHeight <= clientHeight) {
-                    return;
-                }
-                
-                // Reset scroll position to top
-                container.scrollTop = 0;
-                trafficScrollDirection = 1;
-                trafficScrollPaused = false;
-                
-                // Scroll speed: 30px per second (adjustable)
-                const scrollSpeed = 30; // pixels per second
-                const scrollStep = scrollSpeed / 60; // pixels per frame (60fps)
-                const pauseDuration = 2000; // 2 seconds pause at top/bottom
-                let pauseStartTime = null;
-                
-                trafficScrollInterval = setInterval(() => {
-                    if (!container || container.scrollHeight <= container.clientHeight) {
-                        clearInterval(trafficScrollInterval);
-                        trafficScrollInterval = null;
-                        return;
-                    }
-                    
-                    // Check if we're paused
-                    if (trafficScrollPaused) {
-                        if (pauseStartTime && Date.now() - pauseStartTime >= pauseDuration) {
-                            trafficScrollPaused = false;
-                            pauseStartTime = null;
-                            trafficScrollDirection *= -1; // Reverse direction
-                        }
-                        return;
-                    }
-                    
-                    const currentScroll = container.scrollTop;
-                    const maxScroll = scrollHeight - clientHeight;
-                    
-                    // Check if we've reached the bottom
-                    if (trafficScrollDirection === 1 && currentScroll >= maxScroll - 1) {
-                        trafficScrollPaused = true;
-                        pauseStartTime = Date.now();
-                        return;
-                    }
-                    
-                    // Check if we've reached the top
-                    if (trafficScrollDirection === -1 && currentScroll <= 1) {
-                        trafficScrollPaused = true;
-                        pauseStartTime = Date.now();
-                        return;
-                    }
-                    
-                    // Scroll in the current direction
-                    container.scrollTop += scrollStep * trafficScrollDirection;
-                }, 1000 / 60); // ~60fps
-            }, 500);
-        }
-        
-        // Stop traffic alerts auto-scroll
-        function stopTrafficAlertsAutoScroll() {
-            if (trafficScrollInterval) {
-                clearInterval(trafficScrollInterval);
-                trafficScrollInterval = null;
-            }
-        }
-        
-        // Auto-scroll Home Assistant devices container
-        function startHAAutoScroll() {
-            // Clear any existing scroll interval
-            if (haScrollInterval) {
-                clearInterval(haScrollInterval);
-                haScrollInterval = null;
-            }
-            
-            const container = document.getElementById('ha-devices-container');
-            if (!container) return;
-            
-            // Wait a bit for content to render
-            setTimeout(() => {
-                const scrollHeight = container.scrollHeight;
-                const clientHeight = container.clientHeight;
-                
-                // Only auto-scroll if content exceeds container height
-                if (scrollHeight <= clientHeight) {
-                    return;
-                }
-                
-                // Reset scroll position to top
-                container.scrollTop = 0;
-                haScrollDirection = 1;
-                haScrollPaused = false;
-                
-                // Scroll speed: 30px per second (adjustable)
-                const scrollSpeed = 30; // pixels per second
-                const scrollStep = scrollSpeed / 60; // pixels per frame (60fps)
-                const pauseDuration = 2000; // 2 seconds pause at top/bottom
-                let pauseStartTime = null;
-                
-                haScrollInterval = setInterval(() => {
-                    if (!container || container.scrollHeight <= container.clientHeight) {
-                        clearInterval(haScrollInterval);
-                        haScrollInterval = null;
-                        return;
-                    }
-                    
-                    // Check if we're paused
-                    if (haScrollPaused) {
-                        if (pauseStartTime && Date.now() - pauseStartTime >= pauseDuration) {
-                            haScrollPaused = false;
-                            pauseStartTime = null;
-                            haScrollDirection *= -1; // Reverse direction
-                        }
-                        return;
-                    }
-                    
-                    const currentScroll = container.scrollTop;
-                    const maxScroll = scrollHeight - clientHeight;
-                    
-                    // Check if we've reached the bottom
-                    if (haScrollDirection === 1 && currentScroll >= maxScroll - 1) {
-                        haScrollPaused = true;
-                        pauseStartTime = Date.now();
-                        return;
-                    }
-                    
-                    // Check if we've reached the top
-                    if (haScrollDirection === -1 && currentScroll <= 1) {
-                        haScrollPaused = true;
-                        pauseStartTime = Date.now();
-                        return;
-                    }
-                    
-                    // Scroll in the current direction
-                    container.scrollTop += scrollStep * haScrollDirection;
-                }, 1000 / 60); // ~60fps
-            }, 500);
-        }
-        
-        // Stop Home Assistant auto-scroll
-        function stopHAAutoScroll() {
-            if (haScrollInterval) {
-                clearInterval(haScrollInterval);
-                haScrollInterval = null;
-            }
-        }
-        
-        // Auto-scroll shopping list container
-        function startShoppingListAutoScroll() {
-            // Clear any existing scroll interval
-            if (shoppingScrollInterval) {
-                clearInterval(shoppingScrollInterval);
-                shoppingScrollInterval = null;
-            }
-            
-            const container = document.getElementById('shopping-list-container');
-            if (!container) return;
-            
-            // Wait a bit for content to render
-            setTimeout(() => {
-                const scrollHeight = container.scrollHeight;
-                const clientHeight = container.clientHeight;
-                
-                // Only auto-scroll if content exceeds container height
-                if (scrollHeight <= clientHeight) {
-                    return;
-                }
-                
-                // Reset scroll position to top
-                container.scrollTop = 0;
-                shoppingScrollDirection = 1;
-                shoppingScrollPaused = false;
-                
-                // Scroll speed: 30px per second (adjustable)
-                const scrollSpeed = 30; // pixels per second
-                const scrollStep = scrollSpeed / 60; // pixels per frame (60fps)
-                const pauseDuration = 2000; // 2 seconds pause at top/bottom
-                let pauseStartTime = null;
-                
-                shoppingScrollInterval = setInterval(() => {
-                    if (!container || container.scrollHeight <= container.clientHeight) {
-                        clearInterval(shoppingScrollInterval);
-                        shoppingScrollInterval = null;
-                        return;
-                    }
-                    
-                    // Check if we're paused
-                    if (shoppingScrollPaused) {
-                        if (pauseStartTime && Date.now() - pauseStartTime >= pauseDuration) {
-                            shoppingScrollPaused = false;
-                            pauseStartTime = null;
-                            shoppingScrollDirection *= -1; // Reverse direction
-                        }
-                        return;
-                    }
-                    
-                    const currentScroll = container.scrollTop;
-                    const maxScroll = scrollHeight - clientHeight;
-                    
-                    // Check if we've reached the bottom
-                    if (shoppingScrollDirection === 1 && currentScroll >= maxScroll - 1) {
-                        shoppingScrollPaused = true;
-                        pauseStartTime = Date.now();
-                        return;
-                    }
-                    
-                    // Check if we've reached the top
-                    if (shoppingScrollDirection === -1 && currentScroll <= 1) {
-                        shoppingScrollPaused = true;
-                        pauseStartTime = Date.now();
-                        return;
-                    }
-                    
-                    // Scroll in the current direction
-                    container.scrollTop += scrollStep * shoppingScrollDirection;
-                }, 1000 / 60); // ~60fps
-            }, 500);
-        }
-        
-        // Stop shopping list auto-scroll
-        function stopShoppingListAutoScroll() {
-            if (shoppingScrollInterval) {
-                clearInterval(shoppingScrollInterval);
-                shoppingScrollInterval = null;
-            }
         }
         
         // Show error message with countdown
@@ -2156,6 +1145,94 @@
                     errorDiv.style.display = 'none';
                 }
             }, 1000);
+        }
+        
+        // Commute map instance
+        let commuteMap = null;
+        let commuteRouteLayer = null;
+        
+        // Initialize and update commute map
+        function updateCommuteMap(commuteData) {
+            const mapDiv = document.getElementById('commute-map');
+            if (!mapDiv) return;
+            
+            // Initialize map if it doesn't exist
+            if (!commuteMap) {
+                // Calculate center point
+                const centerLat = (parseFloat(commuteData.origin_lat) + parseFloat(commuteData.dest_lat)) / 2;
+                const centerLon = (parseFloat(commuteData.origin_lon) + parseFloat(commuteData.dest_lon)) / 2;
+                
+                commuteMap = L.map('commute-map', {
+                    zoomControl: false,
+                    attributionControl: false,
+                    dragging: false,
+                    touchZoom: false,
+                    doubleClickZoom: false,
+                    scrollWheelZoom: false,
+                    boxZoom: false,
+                    keyboard: false
+                }).setView([centerLat, centerLon], 11);
+                
+                // Add OpenStreetMap tiles with traffic overlay
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(commuteMap);
+                
+                // Try to add traffic layer (if available)
+                // Note: Free traffic layers are limited, but we can add a visual indicator
+            }
+            
+            // Clear existing route
+            if (commuteRouteLayer) {
+                commuteMap.removeLayer(commuteRouteLayer);
+            }
+            
+            // Add origin marker (red circle)
+            const originMarker = L.circleMarker([commuteData.origin_lat, commuteData.origin_lon], {
+                radius: 10,
+                fillColor: '#ef4444',
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(commuteMap);
+            originMarker.bindPopup(`<b>📍 Origin</b><br>${commuteData.origin}`);
+            
+            // Add destination marker (green circle)
+            const destMarker = L.circleMarker([commuteData.dest_lat, commuteData.dest_lon], {
+                radius: 10,
+                fillColor: '#22c55e',
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(commuteMap);
+            destMarker.bindPopup(`<b>🎯 Destination</b><br>${commuteData.destination}`);
+            
+            // Draw route if coordinates are available
+            if (commuteData.route_coordinates && commuteData.route_coordinates.length > 0) {
+                // Convert GeoJSON coordinates [lon, lat] to Leaflet format [lat, lon]
+                const routeLatLngs = commuteData.route_coordinates.map(coord => [coord[1], coord[0]]);
+                
+                commuteRouteLayer = L.polyline(routeLatLngs, {
+                    color: '#3b82f6',
+                    weight: 5,
+                    opacity: 0.8,
+                    smoothFactor: 1
+                }).addTo(commuteMap);
+                
+                // Fit map to show entire route
+                const bounds = L.latLngBounds(routeLatLngs);
+                commuteMap.fitBounds(bounds, { padding: [20, 20] });
+            } else {
+                // If no route coordinates, just show markers and fit to them
+                const bounds = L.latLngBounds([
+                    [commuteData.origin_lat, commuteData.origin_lon],
+                    [commuteData.dest_lat, commuteData.dest_lon]
+                ]);
+                commuteMap.fitBounds(bounds, { padding: [50, 50] });
+            }
         }
         
         // Fetch dashboard data with retry logic
@@ -2315,52 +1392,23 @@
                 document.getElementById('joke-updated').textContent = '';
             }
             
-            // Update calendar - show next two events
-            const calendarEvents = data.next_calendar_events || [];
-            
-            // First event
-            if (calendarEvents.length > 0) {
-                const event1 = calendarEvents[0];
-                document.getElementById('calendar-source-1').textContent = event1.source;
-                document.getElementById('calendar-title-1').textContent = event1.title;
-                document.getElementById('calendar-details-1').textContent = 
-                    `${event1.date} at ${event1.time}${event1.location ? ' • ' + event1.location : ''}`;
+            // Update calendar
+            if (data.random_calendar_event) {
+                document.getElementById('calendar-source').textContent = data.random_calendar_event.source;
+                document.getElementById('calendar-title').textContent = data.random_calendar_event.title;
+                document.getElementById('calendar-details').textContent = 
+                    `${data.random_calendar_event.date} at ${data.random_calendar_event.time}${data.random_calendar_event.location ? ' • ' + data.random_calendar_event.location : ''}`;
             } else {
-                document.getElementById('calendar-source-1').textContent = 'Calendar';
-                document.getElementById('calendar-title-1').textContent = 'No upcoming events';
-                document.getElementById('calendar-details-1').textContent = 'Add events or calendar feeds to see them here.';
-            }
-            
-            // Second event
-            if (calendarEvents.length > 1) {
-                const event2 = calendarEvents[1];
-                document.getElementById('calendar-event-2').style.display = 'block';
-                document.getElementById('calendar-source-2').textContent = event2.source;
-                document.getElementById('calendar-title-2').textContent = event2.title;
-                document.getElementById('calendar-details-2').textContent = 
-                    `${event2.date} at ${event2.time}${event2.location ? ' • ' + event2.location : ''}`;
-            } else {
-                // Hide second event if not available
-                document.getElementById('calendar-event-2').style.display = 'none';
+                document.getElementById('calendar-source').textContent = 'Calendar';
+                document.getElementById('calendar-title').textContent = 'No upcoming events';
+                document.getElementById('calendar-details').textContent = 'Add events or calendar feeds to see them here.';
             }
             
             // Update commute
             if (data.commute) {
-                // Show duration with traffic delay if any
-                let durationText = data.commute.duration_formatted;
-                if (data.commute.traffic_delay_min && data.commute.traffic_delay_min > 0) {
-                    durationText += ` (+${data.commute.traffic_delay_min}m delay)`;
-                }
-                document.getElementById('commute-time').textContent = durationText;
+                document.getElementById('commute-time').textContent = data.commute.duration_formatted;
                 document.getElementById('commute-route').textContent = `${data.commute.distance_miles} miles`;
                 const details = document.getElementById('commute-details');
-                const trafficContainer = document.getElementById('traffic-alerts-container');
-                
-                // Check if using real-time traffic data
-                const isRealTime = data.commute.traffic_source && data.commute.traffic_source.includes('TomTom');
-                const sourceLabel = isRealTime ? '🔴 LIVE' : 'Estimated';
-                
-                // Update commute details (origin/destination + traffic source)
                 details.innerHTML = `
                     <div class="weather-detail">
                         <div>From</div>
@@ -2370,109 +1418,23 @@
                         <div>To</div>
                         <div>${data.commute.destination}</div>
                     </div>
-                    <div class="weather-detail" style="grid-column: 1 / -1; text-align: center; margin-top: 0.5rem;">
-                        <div style="font-size: 0.8rem; opacity: 0.7;">Traffic: ${sourceLabel}</div>
-                    </div>
                 `;
                 
-                // Calculate overall traffic level from segments
-                let overallTraffic = 'light';
-                if (data.commute.route_segments && data.commute.route_segments.length > 0) {
-                    let heavyCount = 0, mediumCount = 0;
-                    data.commute.route_segments.forEach(seg => {
-                        if (seg.traffic_level === 'heavy') heavyCount++;
-                        else if (seg.traffic_level === 'medium') mediumCount++;
-                    });
-                    const total = data.commute.route_segments.length;
-                    if (heavyCount / total > 0.2) overallTraffic = 'heavy';
-                    else if ((heavyCount + mediumCount) / total > 0.3) overallTraffic = 'medium';
-                }
-                
-                // Always show overall traffic status first (based on actual route traffic flow, not incidents)
-                const statusColor = overallTraffic === 'heavy' ? '#f44336' : 
-                                   overallTraffic === 'medium' ? '#ffc107' : '#4caf50';
-                const statusIcon = overallTraffic === 'heavy' ? '🚨' : 
-                                  overallTraffic === 'medium' ? '⚠️' : '✓';
-                const statusText = overallTraffic === 'heavy' ? 'Heavy Traffic on Route' :
-                                  overallTraffic === 'medium' ? 'Moderate Traffic on Route' : 'Route is Clear';
-                
-                // Subtext changes based on whether there are nearby incidents
-                const hasIncidents = data.commute.traffic_events && data.commute.traffic_events.length > 0;
-                let statusSubtext = '';
-                if (overallTraffic === 'light') {
-                    statusSubtext = hasIncidents ? 'Your route is clear - nearby incidents shown below' : 'No traffic issues on your route';
-                } else if (overallTraffic === 'medium') {
-                    statusSubtext = 'Some slowdowns on your route';
-                } else {
-                    statusSubtext = 'Significant delays on your route';
-                }
-                
-                let trafficAlertsHTML = `
-                    <div class="traffic-alert-card" style="border-left-color: ${statusColor}; background: ${overallTraffic === 'heavy' ? 'rgba(244, 67, 54, 0.2)' : overallTraffic === 'medium' ? 'rgba(255, 193, 7, 0.2)' : 'rgba(76, 175, 80, 0.2)'}; text-align: center; margin-bottom: calc(10px * var(--scale-factor));">
-                        <div style="font-size: calc(1.3rem * var(--scale-factor)); font-weight: bold; color: ${statusColor};">${statusIcon} ${statusText}</div>
-                        <div style="font-size: calc(0.9rem * var(--scale-factor)); color: rgba(255,255,255,0.8); margin-top: calc(5px * var(--scale-factor));">${statusSubtext}</div>
-                    </div>
-                `;
-                
-                // Build traffic alerts with card-based layout
-                if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
-                    data.commute.traffic_events.forEach(event => {
-                        const levelColor = event.traffic_level === 'heavy' ? '#f44336' : event.traffic_level === 'medium' ? '#ffc107' : '#4caf50';
-                        const levelText = (event.traffic_level || 'unknown').charAt(0).toUpperCase() + (event.traffic_level || 'unknown').slice(1);
-                        
-                        // Determine icon and alert class
-                        let eventIcon = '📊';
-                        let alertClass = 'alert-light';
-                        if (event.type === 'crash') {
-                            eventIcon = '🚨';
-                            alertClass = 'alert-crash';
-                        } else if (event.type === 'closure') {
-                            eventIcon = '🚫';
-                            alertClass = 'alert-heavy';
-                        } else if (event.type === 'construction') {
-                            eventIcon = '🚧';
-                            alertClass = 'alert-medium';
-                        } else if (event.traffic_level === 'heavy') {
-                            eventIcon = '🚧';
-                            alertClass = 'alert-heavy';
-                        } else if (event.traffic_level === 'medium') {
-                            eventIcon = '⚠️';
-                            alertClass = 'alert-medium';
-                        } else {
-                            alertClass = 'alert-light';
-                        }
-                        
-                        trafficAlertsHTML += `
-                            <div class="traffic-alert-card ${alertClass}">
-                                <div class="traffic-alert-header">
-                                    <span class="traffic-alert-icon">${eventIcon}</span>
-                                    <span class="traffic-alert-level" style="color: ${levelColor};">
-                                        ${levelText}${event.type === 'crash' ? ' - CRASH' : event.type === 'closure' ? ' - CLOSED' : ''}
-                                    </span>
-                                    <span class="traffic-alert-time">${event.time || ''}</span>
-                                </div>
-                                ${event.location ? `<div class="traffic-alert-location">📍 ${event.location}</div>` : ''}
-                                <div class="traffic-alert-description">${event.description || ''}</div>
-                            </div>
-                        `;
-                    });
-                    trafficContainer.innerHTML = trafficAlertsHTML;
-                    // Reset scroll position to top
-                    trafficContainer.scrollTop = 0;
-                    // Start auto-scrolling if content exceeds container height
-                    startTrafficAlertsAutoScroll();
-                } else {
-                    // Just show the overall status (already in trafficAlertsHTML)
-                    trafficContainer.innerHTML = trafficAlertsHTML;
-                    stopTrafficAlertsAutoScroll();
+                // Update map if commute data has coordinates
+                if (data.commute.origin_lat && data.commute.origin_lon && 
+                    data.commute.dest_lat && data.commute.dest_lon) {
+                    updateCommuteMap(data.commute);
                 }
             } else {
                 document.getElementById('commute-time').textContent = 'Not Configured';
                 document.getElementById('commute-route').textContent = 'Set up commute route in main dashboard';
-                document.getElementById('traffic-alerts-container').innerHTML = '';
+                // Clear map if no commute data
+                const mapDiv = document.getElementById('commute-map');
+                if (mapDiv && window.commuteMap) {
+                    mapDiv.innerHTML = '';
+                    window.commuteMap = null;
+                }
             }
-            
-            // Commute map will be rendered when screen-9 is displayed (handled in switchScreen)
             
             // Update air quality
             if (data.air_quality) {
@@ -2494,6 +1456,10 @@
                         <div>${data.air_quality.no2} µg/m³</div>
                     </div>
                 `;
+            } else {
+                document.getElementById('aqi-number').textContent = 'N/A';
+                document.getElementById('aqi-level').textContent = 'Data unavailable';
+                document.getElementById('aqi-details').innerHTML = '<div class="weather-detail">Air quality data unavailable</div>';
             }
             
             // Update quote
@@ -2511,6 +1477,11 @@
                 document.getElementById('moon-phase').textContent = data.astronomy.moon_phase_name;
                 document.getElementById('sunrise-time').textContent = data.astronomy.sunrise;
                 document.getElementById('sunset-time').textContent = data.astronomy.sunset;
+            } else {
+                document.getElementById('moon-icon').textContent = '🌙';
+                document.getElementById('moon-phase').textContent = 'Data unavailable';
+                document.getElementById('sunrise-time').textContent = 'N/A';
+                document.getElementById('sunset-time').textContent = 'N/A';
             }
             
             // Update internet speed
@@ -2527,712 +1498,107 @@
             }
             
             // Update sports
-            const sportsEvent = document.getElementById('sports-event');
-            const sportsNoData = document.getElementById('sports-no-data');
-            
             if (data.sports_scores && data.sports_scores.length > 0) {
                 const score = data.sports_scores[0];
-                
-                // Show sports card, hide no data message
-                sportsEvent.style.display = 'block';
-                sportsNoData.style.display = 'none';
-                
-                // Parse event string to extract team names
-                // Common formats: "Team A vs Team B", "Team A v Team B", "Team A @ Team B"
-                let homeTeam = '';
-                let awayTeam = '';
-                const eventStr = score.event || '';
-                
-                // Try to parse team names from event string
-                const vsPatterns = [
-                    /^(.+?)\s+vs\.?\s+(.+)$/i,
-                    /^(.+?)\s+v\.?\s+(.+)$/i,
-                    /^(.+?)\s+@\s+(.+)$/i,
-                    /^(.+?)\s+at\s+(.+)$/i
-                ];
-                
-                let teamsParsed = false;
-                for (const pattern of vsPatterns) {
-                    const match = eventStr.match(pattern);
-                    if (match) {
-                        homeTeam = match[1].trim();
-                        awayTeam = match[2].trim();
-                        teamsParsed = true;
-                        break;
-                    }
-                }
-                
-                // If parsing failed, try to split by common separators
-                if (!teamsParsed) {
-                    const separators = [' vs ', ' v ', ' @ ', ' at '];
-                    for (const sep of separators) {
-                        if (eventStr.includes(sep)) {
-                            const parts = eventStr.split(sep);
-                            if (parts.length === 2) {
-                                homeTeam = parts[0].trim();
-                                awayTeam = parts[1].trim();
-                                teamsParsed = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                // Fallback: if we can't parse, use the event string as team name
-                if (!teamsParsed) {
-                    homeTeam = eventStr || score.team || 'Team 1';
-                    awayTeam = score.team || 'Team 2';
-                }
-                
-                // Update status badge
-                const statusBadge = document.getElementById('sports-status-badge');
-                const status = (score.status || '').toLowerCase();
-                statusBadge.textContent = status === 'completed' ? 'Final' : 
-                                         status === 'upcoming' ? 'Upcoming' : 
-                                         status === 'live' ? 'Live' : status;
-                statusBadge.className = 'sports-status-badge ' + 
-                    (status === 'completed' ? 'completed' : 
-                     status === 'live' ? 'live' : 'upcoming');
-                
-                // Update league
-                document.getElementById('sports-league').textContent = score.league || '';
-                
-                // Handle completed games with scores
-                if (status === 'completed' && score.score) {
-                    // Parse score string (format: "X - Y" or "X-Y")
-                    const scoreMatch = score.score.match(/(\d+)\s*[-–]\s*(\d+)/);
-                    let homeScore = '?';
-                    let awayScore = '?';
-                    
-                    if (scoreMatch) {
-                        homeScore = scoreMatch[1];
-                        awayScore = scoreMatch[2];
-                    }
-                    
-                    // Display teams with scores
-                    document.getElementById('sports-team-home').textContent = homeTeam;
-                    document.getElementById('sports-team-away').textContent = awayTeam;
-                    document.getElementById('sports-score-home').textContent = homeScore;
-                    document.getElementById('sports-score-away').textContent = awayScore;
-                    document.getElementById('sports-score-separator').textContent = '-';
-                    document.getElementById('sports-score-display').style.display = 'none';
-                    
-                    // Show individual team scores
-                    document.getElementById('sports-score-home').style.display = 'block';
-                    document.getElementById('sports-score-away').style.display = 'block';
-                } else {
-                    // For upcoming games or games without scores, show teams only
-                    document.getElementById('sports-team-home').textContent = homeTeam;
-                    document.getElementById('sports-team-away').textContent = awayTeam;
-                    document.getElementById('sports-score-home').style.display = 'none';
-                    document.getElementById('sports-score-away').style.display = 'none';
-                    document.getElementById('sports-score-separator').style.display = 'none';
-                    document.getElementById('sports-score-display').style.display = 'none';
-                }
-                
-                // Format and display date/time
-                const gameDateEl = document.getElementById('sports-game-date');
-                const gameTimeEl = document.getElementById('sports-game-time');
-                
-                if (score.date) {
-                    try {
-                        // Parse date string (format: "YYYY-MM-DD" or similar)
-                        const dateObj = new Date(score.date);
-                        if (!isNaN(dateObj.getTime())) {
-                            const today = new Date();
-                            const tomorrow = new Date(today);
-                            tomorrow.setDate(tomorrow.getDate() + 1);
-                            
-                            let dateStr = '';
-                            if (dateObj.toDateString() === today.toDateString()) {
-                                dateStr = 'Today';
-                            } else if (dateObj.toDateString() === tomorrow.toDateString()) {
-                                dateStr = 'Tomorrow';
-                            } else {
-                                dateStr = dateObj.toLocaleDateString('en-US', { 
-                                    weekday: 'long', 
-                                    month: 'long', 
-                                    day: 'numeric' 
-                                });
-                            }
-                            
-                            gameDateEl.textContent = dateStr;
-                        } else {
-                            gameDateEl.textContent = score.date;
-                        }
-                    } catch (e) {
-                        gameDateEl.textContent = score.date;
-                    }
-                } else {
-                    gameDateEl.textContent = '';
-                }
-                
-                if (score.time) {
-                    // Format time (assuming format like "HH:MM:SS" or "HH:MM")
-                    try {
-                        const timeParts = score.time.split(':');
-                        if (timeParts.length >= 2) {
-                            const hours = parseInt(timeParts[0]);
-                            const minutes = timeParts[1];
-                            const ampm = hours >= 12 ? 'PM' : 'AM';
-                            const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
-                            gameTimeEl.textContent = `${displayHours}:${minutes} ${ampm}`;
-                        } else {
-                            gameTimeEl.textContent = score.time;
-                        }
-                    } catch (e) {
-                        gameTimeEl.textContent = score.time;
-                    }
-                } else if (status === 'completed') {
-                    gameTimeEl.textContent = 'Game Finished';
-                } else {
-                    gameTimeEl.textContent = '';
-                }
+                document.getElementById('sports-team').textContent = score.team;
+                document.getElementById('sports-title').textContent = score.event;
+                document.getElementById('sports-details').textContent = 
+                    `${score.status}${score.score ? ' • ' + score.score : ''}${score.date ? ' • ' + score.date : ''}`;
             } else {
-                // No sports data available
-                sportsEvent.style.display = 'none';
-                sportsNoData.style.display = 'block';
+                document.getElementById('sports-team').textContent = 'Sports';
+                document.getElementById('sports-title').textContent = 'No scores available';
+                document.getElementById('sports-details').textContent = 'Configure favorite teams in main dashboard';
             }
             
             // Update photo gallery
             if (data.random_photo) {
                 const galleryPhoto = document.getElementById('gallery-photo');
                 galleryPhoto.src = data.random_photo.url + '?t=' + new Date().getTime();
-            }
-            
-            
-            // Update package tracking
-            if (data.packages && data.packages.length > 0) {
-                const pkg = data.packages[0]; // Show first package
-                const statusColor = pkg.status === 'Delivered' ? '#4caf50' : 
-                                   pkg.status === 'Error' ? '#f44336' : '#2196F3';
-                document.getElementById('package-carrier').textContent = pkg.carrier;
-                document.getElementById('package-tracking').textContent = `${pkg.description || 'Package'} - ${pkg.tracking_number}`;
-                document.getElementById('package-status').textContent = 
-                    `Status: ${pkg.status}${pkg.last_location ? `\nLocation: ${pkg.last_location}` : ''}${pkg.estimated_delivery ? `\nETA: ${pkg.estimated_delivery}` : ''}`;
-                document.getElementById('package-status').style.color = statusColor;
+                galleryPhoto.style.display = 'block';
             } else {
-                document.getElementById('package-carrier').textContent = 'Package Tracking';
-                document.getElementById('package-tracking').textContent = 'No packages being tracked';
-                document.getElementById('package-status').textContent = 'Add packages on the main dashboard';
+                const galleryPhoto = document.getElementById('gallery-photo');
+                galleryPhoto.style.display = 'none';
+                const container = document.querySelector('#screen-14 .radar-container');
+                if (container && !container.querySelector('.no-photos')) {
+                    const noPhotos = document.createElement('div');
+                    noPhotos.className = 'no-photos';
+                    noPhotos.style.cssText = 'text-align: center; padding: 2rem; color: #fff; font-size: 1.5rem;';
+                    noPhotos.textContent = 'No photos available. Upload photos in main dashboard.';
+                    container.appendChild(noPhotos);
+                }
             }
-            
-            // Update SwitchBot locks - render immediately if screen 20 is active
-            if (currentScreen === 20 || (data.switchbot_locks && data.switchbot_locks.length > 0)) {
-                renderSwitchbotLocks();
+
+            // Update ROMM - Library Stats
+            if (data.romm_playing && data.romm_playing.type === 'library') {
+                const romm = data.romm_playing;
+                document.getElementById('romm-total-roms').textContent = romm.total_roms;
+                document.getElementById('romm-platforms').textContent = romm.total_platforms;
+                document.getElementById('romm-size').textContent = romm.total_size_gb + ' GB';
+                document.getElementById('romm-platform-list').textContent = romm.platforms.join(' • ');
+                document.getElementById('romm-status').textContent = 'v' + romm.version;
+                document.getElementById('romm-status').style.color = '#a855f7';
+            } else if (!data.romm_playing) {
+                document.getElementById('romm-total-roms').textContent = '--';
+                document.getElementById('romm-platforms').textContent = '--';
+                document.getElementById('romm-size').textContent = '--';
+                document.getElementById('romm-platform-list').textContent = 'Configure ROMM in .env';
+                document.getElementById('romm-status').textContent = '';
             }
-            
-            // Adjust total screens based on available content
-            // Note: totalScreens is the COUNT, so screens 0-20 = 21 screens
-            totalScreens = 19; // Base screens (0-18, weather alerts is now screen-4, HA is screen-18)
-            console.log('Initial totalScreens:', totalScreens);
-            if (data.packages && data.packages.length > 0) {
-                totalScreens++; // Add package tracking screen (screen-17)
-                console.log('Added packages screen, totalScreens now:', totalScreens);
-            }
-            if (data.shopping_list && data.shopping_list.length > 0) {
-                totalScreens++; // Add shopping list screen (screen-19)
-                console.log('Added shopping screen, totalScreens now:', totalScreens);
-            }
-            if (data.switchbot_locks && data.switchbot_locks.length > 0) {
-                totalScreens++; // Add SwitchBot locks screen (screen-20) - this makes totalScreens = 21 for screens 0-20
-                console.log('Adding screen 20 to rotation. Total screens:', totalScreens, 'Locks:', data.switchbot_locks);
+
+            // Update RetroAchievements
+            if (data.retroachievements) {
+                const ra = data.retroachievements;
+                if (ra.summary) {
+                    document.getElementById('ra-points').textContent = ra.summary.total_points?.toLocaleString() || '--';
+                    document.getElementById('ra-rank').textContent = ra.summary.rank || '--';
+                }
+                const achList = document.getElementById('ra-achievements');
+                if (ra.achievements && ra.achievements.length > 0) {
+                    achList.innerHTML = ra.achievements.slice(0, 4).map(a => `
+                        <div class="ra-achievement-item">
+                            <img class="ra-achievement-badge" src="${a.badge_url}" alt="Badge" onerror="this.style.display='none'">
+                            <div class="ra-achievement-info">
+                                <div class="ra-achievement-title">${a.title}</div>
+                                <div class="ra-achievement-game">${a.game_title} (${a.console})</div>
+                            </div>
+                            <div class="ra-achievement-points">${a.points} pts</div>
+                        </div>
+                    `).join('');
+                } else {
+                    achList.innerHTML = '<div class="ra-achievement-item"><div class="ra-achievement-info"><div class="ra-achievement-title">No recent achievements</div><div class="ra-achievement-game">Keep playing!</div></div></div>';
+                }
             } else {
-                console.log('NOT adding screen 20. Locks data:', data.switchbot_locks);
+                document.getElementById('ra-points').textContent = '--';
+                document.getElementById('ra-rank').textContent = '--';
+                document.getElementById('ra-achievements').innerHTML = '<div class="ra-achievement-item"><div class="ra-achievement-info"><div class="ra-achievement-title">Not configured</div><div class="ra-achievement-game">Add API key to .env</div></div></div>';
             }
-            console.log('Final totalScreens:', totalScreens, 'Will rotate through screens 0 to', totalScreens - 1);
-            
-            // CRITICAL FIX: If we have screen 20, totalScreens MUST be at least 21
-            if (data.switchbot_locks && data.switchbot_locks.length > 0 && totalScreens < 21) {
-                console.warn('FIXING: totalScreens should be 21 for screen 20, but was', totalScreens);
-                totalScreens = 21;
-                console.log('Fixed totalScreens to:', totalScreens);
-            }
-            // HA screen (screen-18) is always included if HA is configured
-            
-            // Load Home Assistant data
-            loadHAData();
-            
-            // Load and render SwitchBot locks data immediately
-            if (data.switchbot_locks && data.switchbot_locks.length > 0) {
-                renderSwitchbotLocks();
-            }
-            
+
             // Hide loading
             document.querySelector('.loading').style.display = 'none';
-        }
-        
-        // Load and render Home Assistant data for dashboard
-        async function loadHAData() {
-            try {
-                const response = await fetch('/api/home-assistant/dashboard', {
-                    method: 'GET',
-                    headers: {
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const haData = await response.json();
-                renderHAScreen(haData);
-                
-            } catch (error) {
-                console.error('Error fetching Home Assistant data:', error);
-                const container = document.getElementById('ha-devices-container');
-                if (container) {
-                    container.innerHTML = '<div class="no-ha-data-message">Unable to load Home Assistant data</div>';
-                }
-            }
-        }
-        
-        // Render Home Assistant screen with filtered data
-        function renderHAScreen(haData) {
-            const container = document.getElementById('ha-devices-container');
-            if (!container) return;
-            
-            let html = '';
-            
-            // Combine devices and battery sensors
-            const allItems = [];
-            
-            // Add devices that are on
-            if (haData.devices && haData.devices.length > 0) {
-                haData.devices.forEach(device => {
-                    const friendlyName = device.attributes?.friendly_name || device.entity_id;
-                    allItems.push({
-                        type: 'device',
-                        name: friendlyName,
-                        entity_id: device.entity_id,
-                        state: device.state
-                    });
-                });
-            }
-            
-            // Add battery sensors below 25%
-            if (haData.battery_sensors && haData.battery_sensors.length > 0) {
-                haData.battery_sensors.forEach(sensor => {
-                    const friendlyName = sensor.attributes?.friendly_name || sensor.entity_id;
-                    allItems.push({
-                        type: 'battery',
-                        name: friendlyName,
-                        entity_id: sensor.entity_id,
-                        battery_level: sensor.battery_level
-                    });
-                });
-            }
-            
-            if (allItems.length > 0) {
-                allItems.forEach(item => {
-                    if (item.type === 'device') {
-                        html += `
-                            <div class="ha-device-card">
-                                <div class="ha-device-name">${item.name}</div>
-                                <div class="ha-device-state">ON</div>
-                                <div class="ha-device-entity">${item.entity_id}</div>
-                            </div>
-                        `;
-                    } else if (item.type === 'battery') {
-                        html += `
-                            <div class="ha-device-card ha-battery-card">
-                                <div class="ha-device-name">${item.name}</div>
-                                <div class="ha-device-state ha-battery-level">${item.battery_level}% Battery</div>
-                                <div class="ha-device-entity">${item.entity_id}</div>
-                            </div>
-                        `;
-                    }
-                });
-            } else {
-                html = '<div class="no-ha-data-message">No devices on or low battery sensors</div>';
-            }
-            
-            container.innerHTML = html;
-            
-            // Reset scroll position to top
-            container.scrollTop = 0;
-            
-            // Start auto-scrolling if content exceeds container height
-            startHAAutoScroll();
-        }
-        
-        // Render commute map for RPi dashboard
-        function renderCommuteMapRpi() {
-            if (!data.commute || !data.commute.route_coordinates || data.commute.route_coordinates.length === 0) {
-                return;
-            }
-            
-            // Clear any existing map
-            if (commuteMapRpi) {
-                commuteMapRpi.remove();
-                commuteMapRpi = null;
-            }
-            
-            const mapDiv = document.getElementById('commute-map-rpi');
-            if (!mapDiv) {
-                return;
-            }
-            
-            // Wait a bit to ensure map container is ready (fixes MutationObserver error)
-            setTimeout(() => {
-                try {
-                    // Calculate bounds from route coordinates
-                    const latLngs = data.commute.route_coordinates.map(coord => [coord[1], coord[0]]);
-                    const bounds = L.latLngBounds(latLngs);
-                    
-                    // Create map - don't set view initially, let fitBounds handle it
-                    commuteMapRpi = L.map('commute-map-rpi', {
-                        zoomControl: true,
-                        preferCanvas: false
-                    });
-                    
-                    // Add OpenStreetMap tiles
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap contributors',
-                        maxZoom: 19
-                    }).addTo(commuteMapRpi);
-                    
-                    // Add origin marker with always-visible tooltip
-                    const originMarker = L.marker([data.commute.origin_lat, data.commute.origin_lon])
-                        .addTo(commuteMapRpi)
-                        .bindTooltip(`<strong>📍 Start</strong><br>${data.commute.origin}`, {
-                            permanent: true,
-                            direction: 'top',
-                            className: 'marker-tooltip marker-tooltip-start',
-                            offset: [0, -10]
-                        })
-                        .openTooltip();
-                    
-                    // Add destination marker with always-visible tooltip
-                    const destMarker = L.marker([data.commute.dest_lat, data.commute.dest_lon])
-                        .addTo(commuteMapRpi)
-                        .bindTooltip(`<strong>🏁 Finish</strong><br>${data.commute.destination}`, {
-                            permanent: true,
-                            direction: 'top',
-                            className: 'marker-tooltip marker-tooltip-finish',
-                            offset: [0, -10]
-                        })
-                        .openTooltip();
-                    
-                    // Add traffic incident markers with type-specific icons
-                    if (data.commute.traffic_events && data.commute.traffic_events.length > 0) {
-                        // Traffic level colors - NEVER blue
-                        const TRAFFIC_COLORS = {
-                            light: '#4caf50',   // Green
-                            medium: '#ffc107',  // Yellow/Amber
-                            heavy: '#f44336'    // Red
-                        };
-                        
-                        console.log(`Rendering ${data.commute.traffic_events.length} traffic incidents on RPi map`);
-                        
-                        data.commute.traffic_events.forEach(event => {
-                            if (event.lat && event.lon) {
-                                const eventColor = TRAFFIC_COLORS[event.traffic_level] || TRAFFIC_COLORS.medium;
-                                
-                                // Get icon based on incident type
-                                let emoji = '⚠️';
-                                let pulseAnim = '';
-                                let markerSize = 28;
-                                
-                                switch (event.type) {
-                                    case 'crash':
-                                        emoji = '🚨';
-                                        pulseAnim = 'animation: pulse-crash 1.5s infinite;';
-                                        markerSize = 32;
-                                        break;
-                                    case 'closure':
-                                        emoji = '🚫';
-                                        pulseAnim = 'animation: pulse-crash 2s infinite;';
-                                        markerSize = 32;
-                                        break;
-                                    case 'construction':
-                                        emoji = '🚧';
-                                        break;
-                                    case 'weather':
-                                        emoji = '🌧️';
-                                        break;
-                                    case 'incident':
-                                        emoji = '⚠️';
-                                        break;
-                                    case 'traffic':
-                                        emoji = '🚗';
-                                        break;
-                                    default:
-                                        emoji = event.traffic_level === 'heavy' ? '🚧' : '⚠️';
-                                }
-                                
-                                const eventTitle = event.type ? event.type.charAt(0).toUpperCase() + event.type.slice(1) : 'Traffic Alert';
-                                
-                                const eventIcon = L.divIcon({
-                                    className: 'traffic-incident-marker',
-                                    html: `<div style="background-color: ${eventColor}; width: ${markerSize}px; height: ${markerSize}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: ${markerSize * 0.55}px; ${pulseAnim}">${emoji}</div>`,
-                                    iconSize: [markerSize, markerSize],
-                                    iconAnchor: [markerSize / 2, markerSize / 2]
-                                });
-                                
-                                L.marker([event.lat, event.lon], { icon: eventIcon })
-                                    .addTo(commuteMapRpi)
-                                    .bindPopup(`
-                                        <div style="min-width: 150px;">
-                                            <strong style="color: ${eventColor}; font-size: 14px;">${emoji} ${eventTitle.toUpperCase()}</strong><br>
-                                            <span style="font-size: 12px;">${event.description || ''}</span><br>
-                                            ${event.location ? `<small style="color: #666;">📍 ${event.location}</small><br>` : ''}
-                                            ${event.time ? `<small style="color: #999;">${event.time}</small>` : ''}
-                                        </div>
-                                    `, {
-                                        className: 'traffic-popup'
-                                    });
-                                
-                                console.log(`Incident marker: ${event.type} at ${event.lat}, ${event.lon}`);
-                            }
-                        });
-                    }
-                    
-                    // Draw route with color-coded segments - ONLY use colored segments
-                    if (data.commute.route_segments && data.commute.route_segments.length > 0) {
-                        // Draw each segment with appropriate color based on traffic level
-                        data.commute.route_segments.forEach(segment => {
-                            if (segment.coordinates && segment.coordinates.length > 0) {
-                                // Determine color based on traffic level
-                                let color = '#4caf50'; // Green for light traffic (default)
-                                if (segment.traffic_level === 'medium') {
-                                    color = '#ffc107'; // Yellow for medium traffic
-                                } else if (segment.traffic_level === 'heavy') {
-                                    color = '#f44336'; // Red for heavy traffic
-                                }
-                                
-                                // Convert coordinates from [lon, lat] to [lat, lon] for Leaflet
-                                const segmentLatLngs = segment.coordinates.map(coord => [coord[1], coord[0]]);
-                                
-                                // Draw the segment with the traffic color
-                                L.polyline(segmentLatLngs, {
-                                    color: color,
-                                    weight: 6,
-                                    opacity: 0.9
-                                }).addTo(commuteMapRpi);
-                            }
-                        });
-                    } else {
-                        // If no segments, divide route into equal parts and show as light traffic (green)
-                        // This should rarely happen, but ensures we always show something
-                        const numSegments = Math.max(1, Math.floor(latLngs.length / 10));
-                        const segmentSize = Math.floor(latLngs.length / numSegments);
-                        for (let i = 0; i < latLngs.length; i += segmentSize) {
-                            const segment = latLngs.slice(i, i + segmentSize);
-                            if (segment.length > 1) {
-                                L.polyline(segment, {
-                                    color: '#4caf50', // Green for light traffic
-                                    weight: 6,
-                                    opacity: 0.9
-                                }).addTo(commuteMapRpi);
-                            }
-                        }
-                    }
-                    
-                    // Fit map bounds to show entire route with padding - this will set the zoom
-                    commuteMapRpi.fitBounds(bounds, {
-                        padding: [30, 30],
-                        maxZoom: 15
-                    });
-                } catch (error) {
-                    console.error('Error rendering commute map:', error);
-                }
-            }, 200);
         }
         
         // Switch screens
         function switchScreen() {
             // Hide current screen
-            const currentScreenEl = document.getElementById(`screen-${currentScreen}`);
-            const currentIndicatorEl = document.getElementById(`indicator-${currentScreen}`);
-            if (currentScreenEl) currentScreenEl.classList.remove('active');
-            if (currentIndicatorEl) currentIndicatorEl.classList.remove('active');
+            document.getElementById(`screen-${currentScreen}`).classList.remove('active');
+            document.getElementById(`indicator-${currentScreen}`).classList.remove('active');
             
-            // Skip screens that shouldn't be shown
-            let nextScreen = (currentScreen + 1) % totalScreens;
-            let attempts = 0;
-            
-            // Skip weather alerts screen (4) if no alerts
-            while (attempts < totalScreens) {
-                if (nextScreen === 4 && (!data.weather_alerts || data.weather_alerts.length === 0)) {
-                    nextScreen = (nextScreen + 1) % totalScreens;
-                    attempts++;
-                    continue;
-                }
-                // Skip package screen (17) if no packages
-                if (nextScreen === 17 && (!data.packages || data.packages.length === 0)) {
-                    nextScreen = (nextScreen + 1) % totalScreens;
-                    attempts++;
-                    continue;
-                }
-                // Skip shopping list screen (19) if no items
-                if (nextScreen === 19 && (!data.shopping_list || data.shopping_list.length === 0)) {
-                    nextScreen = (nextScreen + 1) % totalScreens;
-                    attempts++;
-                    continue;
-                }
-                // Skip SwitchBot locks screen (20) if no locks
-                if (nextScreen === 20 && (!data.switchbot_locks || data.switchbot_locks.length === 0)) {
-                    nextScreen = (nextScreen + 1) % totalScreens;
-                    attempts++;
-                    continue;
-                }
-                break;
-            }
-            
-            currentScreen = nextScreen;
-            console.log('Switching to screen:', currentScreen, 'Total screens:', totalScreens);
-            const nextScreenEl = document.getElementById(`screen-${currentScreen}`);
-            const nextIndicatorEl = document.getElementById(`indicator-${currentScreen}`);
-            if (nextScreenEl) {
-                nextScreenEl.classList.add('active');
-                if (currentScreen === 20) console.log('*** SCREEN 20 ACTIVATED ***');
-            } else {
-                console.error('Screen element not found:', `screen-${currentScreen}`);
-            }
-            if (nextIndicatorEl) nextIndicatorEl.classList.add('active');
+            // Show next screen
+            currentScreen = (currentScreen + 1) % totalScreens;
+            document.getElementById(`screen-${currentScreen}`).classList.add('active');
+            document.getElementById(`indicator-${currentScreen}`).classList.add('active');
             
             // Refresh radar image when showing radar screen
-            if (currentScreen === 5 && data.weather_radar_url) {
+            if (currentScreen === 4 && data.weather_radar_url) {
                 const radarImage = document.getElementById('radar-image');
                 radarImage.src = data.weather_radar_url + '?t=' + new Date().getTime();
             }
             
-            // Render SwitchBot locks when showing locks screen
-            if (currentScreen === 20) {
-                console.log('*** Screen 20 is active! Rendering locks ***');
-                if (data && data.switchbot_locks) {
-                    renderSwitchbotLocks();
-                } else {
-                    console.error('No switchbot_locks data when screen 20 active');
-                }
-            }
-            
-            // Update weather alerts when showing alerts screen
-            if (currentScreen === 4 && data.weather_alerts && data.weather_alerts.length > 0) {
-                const alert = data.weather_alerts[0];
-                const severityColor = alert.severity === 'Extreme' ? '#f44336' : 
-                                     alert.severity === 'Severe' ? '#ff9800' : 
-                                     alert.severity === 'Moderate' ? '#ffc107' : '#2196F3';
-                document.getElementById('alert-type').textContent = `${alert.severity} - ${alert.type}`;
-                document.getElementById('alert-type').style.color = severityColor;
-                document.getElementById('alert-headline').textContent = alert.headline || 'Weather Alert';
-                document.getElementById('alert-description').textContent = 
-                    `${alert.area || ''}\n\n${alert.description.substring(0, 500)}${alert.description.length > 500 ? '...' : ''}`;
-            }
-            
-            // Start/stop traffic alerts auto-scroll when showing/hiding commute screen
-            if (currentScreen === 9 && data.commute) {
-                // Start auto-scrolling when entering commute screen
-                startTrafficAlertsAutoScroll();
-            } else {
-                // Stop auto-scrolling when leaving commute screen
-                stopTrafficAlertsAutoScroll();
-            }
-            
-            // Render commute map when showing commute map screen
-            if (currentScreen === 10 && data.commute) {
-                renderCommuteMapRpi();
-            } else if (commuteMapRpi) {
-                // Clean up map when leaving commute map screen
-                commuteMapRpi.remove();
-                commuteMapRpi = null;
-            }
-            
             // Refresh photo when showing photo gallery screen
-            if (currentScreen === 16 && data.random_photo) {
+            if (currentScreen === 14 && data.random_photo) {
                 const galleryPhoto = document.getElementById('gallery-photo');
                 galleryPhoto.src = data.random_photo.url + '?t=' + new Date().getTime();
             }
-            
-            // Start/stop Home Assistant auto-scroll when showing/hiding HA screen
-            if (currentScreen === 18) {
-                // Start auto-scrolling when entering HA screen
-                startHAAutoScroll();
-            } else {
-                // Stop auto-scrolling when leaving HA screen
-                stopHAAutoScroll();
-            }
-            
-            // Render shopping list when showing shopping list screen
-            if (currentScreen === 19 && data.shopping_list) {
-                const container = document.getElementById('shopping-list-container');
-                if (container && data.shopping_list.length > 0) {
-                    container.innerHTML = data.shopping_list.map(item => {
-                        const completedClass = item.completed ? 'completed' : '';
-                        const checkmark = item.completed ? '✓' : '';
-                        return `
-                            <div class="shopping-list-item ${completedClass}">
-                                <span class="shopping-list-item-checkbox">${checkmark}</span>
-                                <span class="shopping-list-item-name">${item.item_name}</span>
-                            </div>
-                        `;
-                    }).join('');
-                    // Start auto-scrolling after rendering
-                    startShoppingListAutoScroll();
-                } else if (container) {
-                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.7);">No items in shopping list</div>';
-                }
-            } else {
-                // Stop auto-scrolling when leaving shopping list screen
-                stopShoppingListAutoScroll();
-            }
-            
-            // Render SwitchBot locks when showing locks screen
-            if (currentScreen === 20) {
-                console.log('Screen 20 active, rendering locks. Data:', data ? data.switchbot_locks : 'no data');
-                if (data && data.switchbot_locks) {
-                    renderSwitchbotLocks();
-                } else {
-                    console.error('No data available when screen 20 is active');
-                }
-            }
-        }
-        
-        // Render SwitchBot locks
-        function renderSwitchbotLocks() {
-            const container = document.getElementById('locks-container');
-            if (!container) {
-                console.error('locks-container not found');
-                return;
-            }
-            
-            if (!data || !data.switchbot_locks) {
-                console.error('No switchbot_locks data:', data);
-                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7);">No lock data available</div>';
-                return;
-            }
-            
-            if (data.switchbot_locks.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7);">No locks configured</div>';
-                return;
-            }
-            
-            console.log('Rendering locks:', data.switchbot_locks);
-            
-            container.innerHTML = data.switchbot_locks.map(lock => {
-                const statusIcon = lock.status === 'locked' ? '🔒' : 
-                                  lock.status === 'unlocked' ? '🔓' : '❓';
-                const statusText = lock.status.charAt(0).toUpperCase() + lock.status.slice(1);
-                const statusColor = lock.status === 'locked' ? '#4caf50' : 
-                                   lock.status === 'unlocked' ? '#f44336' : '#ff9800';
-                
-                return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; width: 90%; padding: calc(1.5rem * var(--scale-factor)); background: rgba(255,255,255,0.1); border-radius: calc(10px * var(--scale-factor)); border: 2px solid ${statusColor};">
-                        <div style="display: flex; align-items: center; gap: calc(1rem * var(--scale-factor));">
-                            <span style="font-size: calc(3rem * var(--scale-factor));">${statusIcon}</span>
-                            <div>
-                                <div style="font-size: calc(1.5rem * var(--scale-factor)); font-weight: 600; color: #fff;">${lock.name}</div>
-                                <div style="font-size: calc(1rem * var(--scale-factor)); color: rgba(255,255,255,0.7);">${lock.device_id}</div>
-                            </div>
-                        </div>
-                        <div style="font-size: calc(1.8rem * var(--scale-factor)); font-weight: 600; color: ${statusColor}; white-space: nowrap; padding-left: calc(1rem * var(--scale-factor));">
-                            ${statusText}
-                        </div>
-                    </div>
-                `;
-            }).join('');
         }
         
         // Start screen rotation
@@ -3245,390 +1611,11 @@
             screenRotationInterval = setInterval(switchScreen, screenDuration);
         }
         
-        // ==================== HOLIDAY THEMING FUNCTIONS ====================
-        function clearParticles() {
-            const container = document.getElementById('particles-container');
-            if (container) {
-                container.innerHTML = '';
-            }
-            particles = [];
-            if (particleInterval) {
-                clearInterval(particleInterval);
-                particleInterval = null;
-            }
-        }
-        
-        function clearSpecialCharacters() {
-            const existing = document.querySelectorAll('.special-character');
-            existing.forEach(el => el.remove());
-            if (specialCharacterInterval) {
-                clearInterval(specialCharacterInterval);
-                specialCharacterInterval = null;
-            }
-        }
-        
-        function createSpecialCharacter(characterType) {
-            const character = document.createElement('div');
-            character.className = `special-character ${characterType}-flying`;
-            
-            // Set emoji based on character type
-            const emojis = {
-                'santa': '🎅',
-                'cupid': '💘',
-                'turkey': '🦃',
-                'leprechaun': '🧙'
-            };
-            character.textContent = emojis[characterType] || '🎉';
-            
-            // Define animation directions
-            const directions = [
-                'flyLeftToRight',
-                'flyRightToLeft',
-                'flyTopToBottom',
-                'flyBottomToTop',
-                'flyDiagonalTopLeft',
-                'flyDiagonalTopRight',
-                'flyDiagonalBottomLeft',
-                'flyDiagonalBottomRight'
-            ];
-            
-            // Randomly select a direction
-            const direction = directions[Math.floor(Math.random() * directions.length)];
-            
-            // Set starting position - completely random across the page
-            let startLeft, startTop;
-            
-            // For horizontal movements, randomize vertical position
-            if (direction === 'flyLeftToRight') {
-                startTop = 10 + Math.random() * 80;
-                startLeft = -100;
-                character.style.top = startTop + '%';
-                character.style.left = startLeft + 'px';
-            }
-            else if (direction === 'flyRightToLeft') {
-                startTop = 10 + Math.random() * 80;
-                startLeft = 100;
-                character.style.top = startTop + '%';
-                character.style.left = 'calc(100% + 100px)';
-            }
-            // For vertical movements, randomize horizontal position
-            else if (direction === 'flyTopToBottom') {
-                startLeft = Math.random() * 100;
-                startTop = -100;
-                character.style.left = startLeft + '%';
-                character.style.top = startTop + 'px';
-            }
-            else if (direction === 'flyBottomToTop') {
-                startLeft = Math.random() * 100;
-                startTop = 100;
-                character.style.left = startLeft + '%';
-                character.style.top = 'calc(100% + 100px)';
-            }
-            // For diagonal movements, start from completely random position
-            else {
-                // Random starting position anywhere on the page
-                startLeft = Math.random() * 100;
-                startTop = Math.random() * 100;
-                character.style.left = startLeft + '%';
-                character.style.top = startTop + '%';
-                
-                // Calculate diagonal distance to opposite corner
-                // Store as CSS variables for animation
-                const endX = direction.includes('Right') ? -200 : 200;
-                const endY = direction.includes('Bottom') ? -200 : 200;
-                character.style.setProperty('--end-x', endX + 'vw');
-                character.style.setProperty('--end-y', endY + 'vh');
-            }
-            
-            // Set animation
-            character.style.animationName = direction;
-            character.style.animationTimingFunction = 'linear';
-            character.style.animationFillMode = 'forwards';
-            
-            // Random delay before appearing (0-2 seconds)
-            character.style.animationDelay = Math.random() * 2 + 's';
-            
-            // Random animation duration (5-9 seconds)
-            const duration = 5 + Math.random() * 4;
-            character.style.animationDuration = duration + 's';
-            
-            document.body.appendChild(character);
-            
-            // Remove after animation completes
-            setTimeout(() => {
-                if (character.parentNode) {
-                    character.remove();
-                }
-            }, (duration + 2) * 1000);
-        }
-        
-        function startSpecialCharacterAnimation(characterType) {
-            clearSpecialCharacters();
-            
-            if (!characterType) return;
-            
-            // Create first character after short delay (0.5-2 seconds)
-            setTimeout(() => {
-                createSpecialCharacter(characterType);
-            }, 500 + Math.random() * 1500);
-            
-            // Continue creating characters more frequently (every 5-12 seconds)
-            specialCharacterInterval = setInterval(() => {
-                if (Math.random() > 0.1) { // 90% chance to create a character
-                    createSpecialCharacter(characterType);
-                }
-            }, 5000 + Math.random() * 7000);
-        }
-        
-        function createSnowParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle snow-particle';
-            particle.textContent = '❄';
-            // More random positioning and timing
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 4 + 1.5) + 's'; // 1.5-5.5s
-            particle.style.animationDelay = Math.random() * 3 + 's';
-            particle.style.fontSize = (Math.random() * 0.8 + 0.6) + 'rem'; // 0.6-1.4rem
-            // Random horizontal drift
-            const drift = (Math.random() - 0.5) * 50;
-            particle.style.setProperty('--drift', drift + 'px');
-            return particle;
-        }
-        
-        function createLeafParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle leaf-particle';
-            // Random leaf emoji
-            const leaves = ['🍂', '🍃', '🍁'];
-            particle.textContent = leaves[Math.floor(Math.random() * leaves.length)];
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 5 + 2) + 's'; // 2-7s
-            particle.style.animationDelay = Math.random() * 3 + 's';
-            particle.style.fontSize = (Math.random() * 0.6 + 1) + 'rem'; // 1-1.6rem
-            // Random horizontal drift
-            const drift = (Math.random() - 0.5) * 80;
-            particle.style.setProperty('--drift', drift + 'px');
-            return particle;
-        }
-        
-        function createConfettiParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle confetti-particle';
-            const colors = ['#FFD700', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#00FFFF', '#FFFFFF'];
-            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            return particle;
-        }
-        
-        function createHeartParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle heart-particle';
-            particle.textContent = '❤️';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 4 + 3) + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            return particle;
-        }
-        
-        function createStarParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle star-particle';
-            particle.textContent = '⭐';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            const colors = ['#FF0000', '#FFFFFF', '#0000FF'];
-            particle.style.color = colors[Math.floor(Math.random() * colors.length)];
-            return particle;
-        }
-        
-        function createShamrockParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle shamrock-particle';
-            particle.textContent = '☘️';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 4 + 3) + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            return particle;
-        }
-        
-        function createEggParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle egg-particle';
-            particle.textContent = '🥚';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 4 + 3) + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            return particle;
-        }
-        
-        function createBatParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle bat-particle';
-            particle.textContent = '🦇';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 5 + 4) + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            return particle;
-        }
-        
-        function startParticleEffect(particleType) {
-            clearParticles();
-            const container = document.getElementById('particles-container');
-            if (!container) return;
-            
-            // Calculate particle count based on screen size - increased for better visibility
-            // For snow and leaves, use more particles
-            let baseCount = Math.floor((screenWidth * screenHeight) / 30000);
-            if (particleType === 'snow' || particleType === 'leaves') {
-                baseCount = Math.floor((screenWidth * screenHeight) / 20000); // More particles for snow/leaves
-            }
-            const particleCount = Math.min(baseCount, 80); // Increased max from 50 to 80
-            
-            let createParticle;
-            switch(particleType) {
-                case 'snow':
-                    createParticle = createSnowParticle;
-                    break;
-                case 'leaves':
-                    createParticle = createLeafParticle;
-                    break;
-                case 'confetti':
-                    createParticle = createConfettiParticle;
-                    break;
-                case 'hearts':
-                    createParticle = createHeartParticle;
-                    break;
-                case 'stars':
-                    createParticle = createStarParticle;
-                    break;
-                case 'shamrocks':
-                    createParticle = createShamrockParticle;
-                    break;
-                case 'eggs':
-                    createParticle = createEggParticle;
-                    break;
-                case 'bats':
-                    createParticle = createBatParticle;
-                    break;
-                default:
-                    return;
-            }
-            
-            // Create initial particles
-            for (let i = 0; i < particleCount; i++) {
-                const particle = createParticle();
-                container.appendChild(particle);
-                particles.push(particle);
-            }
-            
-            // Continuously add new particles - more frequently for snow/leaves
-            const refreshInterval = (particleType === 'snow' || particleType === 'leaves') ? 500 : 1000;
-            particleInterval = setInterval(() => {
-                // Remove old particles that are off screen
-                particles = particles.filter(p => {
-                    if (!p.parentNode || (p.offsetTop && p.offsetTop > screenHeight + 100)) {
-                        if (p.parentNode) p.remove();
-                        return false;
-                    }
-                    return true;
-                });
-                
-                // Add new particles to maintain count - add more randomly for snow/leaves
-                const targetCount = particleCount;
-                const currentCount = particles.length;
-                if (currentCount < targetCount) {
-                    // Add 1-3 particles at a time for snow/leaves, 1 for others
-                    const addCount = (particleType === 'snow' || particleType === 'leaves') 
-                        ? Math.min(1 + Math.floor(Math.random() * 3), targetCount - currentCount)
-                        : 1;
-                    for (let i = 0; i < addCount; i++) {
-                        const particle = createParticle();
-                        container.appendChild(particle);
-                        particles.push(particle);
-                    }
-                }
-            }, refreshInterval);
-        }
-        
-        async function loadHolidayTheme() {
-            try {
-                // Check for test holiday in URL parameter
-                const urlParams = new URLSearchParams(window.location.search);
-                const testHoliday = urlParams.get('test-holiday');
-                
-                let url = '/api/holiday-theme';
-                if (testHoliday) {
-                    url += `?test-holiday=${testHoliday}`;
-                }
-                
-                const response = await fetch(url);
-                const theme = await response.json();
-                
-                holidayTheme = theme;
-                
-                if (theme.active) {
-                    // Apply background gradient
-                    const overlay = document.getElementById('holiday-overlay');
-                    if (overlay) {
-                        overlay.style.background = theme.background_gradient;
-                        overlay.style.opacity = '0.3';
-                    }
-                    
-                    // Apply to all screens
-                    const screens = document.querySelectorAll('.screen');
-                    screens.forEach(screen => {
-                        screen.style.background = theme.background_gradient;
-                    });
-                    
-                    // Start particle effect
-                    if (theme.particle_type) {
-                        startParticleEffect(theme.particle_type);
-                    }
-                    
-                    // Start special character animations based on holiday
-                    const holidayName = theme.holiday.toLowerCase();
-                    let specialCharacter = null;
-                    if (holidayName.includes('christmas')) {
-                        specialCharacter = 'santa';
-                    } else if (holidayName.includes('valentine')) {
-                        specialCharacter = 'cupid';
-                    } else if (holidayName.includes('thanksgiving')) {
-                        specialCharacter = 'turkey';
-                    } else if (holidayName.includes('patrick')) {
-                        specialCharacter = 'leprechaun';
-                    }
-                    
-                    if (specialCharacter) {
-                        startSpecialCharacterAnimation(specialCharacter);
-                    }
-                    
-                    console.log(`Holiday theme active: ${theme.holiday}`);
-                } else {
-                    // Clear holiday theme
-                    clearParticles();
-                    clearSpecialCharacters();
-                    const overlay = document.getElementById('holiday-overlay');
-                    if (overlay) {
-                        overlay.style.background = 'transparent';
-                        overlay.style.opacity = '0';
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading holiday theme:', error);
-            }
-        }
-        
         // Initialize
         function init() {
             // Start clock updates
             updateBigClock();
             clockInterval = setInterval(updateBigClock, 1000);
-            
-            // Load holiday theme
-            loadHolidayTheme();
             
             // Fetch data immediately
             fetchData();
@@ -3637,11 +1624,6 @@
             dataFetchInterval = setInterval(() => {
                 fetchData();
             }, 300000); // 5 minutes
-            
-            // Refresh holiday theme every hour (in case date changes)
-            setInterval(() => {
-                loadHolidayTheme();
-            }, 3600000); // 1 hour
         }
         
         // Clean up on page unload
@@ -3650,10 +1632,6 @@
             if (screenRotationInterval) clearInterval(screenRotationInterval);
             if (dataFetchInterval) clearInterval(dataFetchInterval);
             if (clockInterval) clearInterval(clockInterval);
-            stopTrafficAlertsAutoScroll();
-            stopHAAutoScroll();
-            clearParticles();
-            clearSpecialCharacters();
         });
         
         // Start when page loads

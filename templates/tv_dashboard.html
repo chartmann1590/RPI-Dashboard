@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --accent-purple: #a855f7;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Control Buttons */
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1000;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .controls:hover {
+            opacity: 1;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .control-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .last-refresh {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .last-refresh .refresh-time {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .last-refresh.refreshing {
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Grid Mode Container - 2x2 layout */
+        .grid-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .grid-wrapper.hidden {
+            display: none;
+        }
+
+        .grid-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 1fr 1fr auto;
+            gap: 20px;
+            padding: 70px 30px 30px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        .grid-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Widget Card */
+        .widget {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .widget-header {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .widget-header .icon {
+            font-size: 1.2rem;
+        }
+
+        .widget-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Auto-scrolling for overflow content */
+        .widget-content.auto-scroll {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .widget-content.auto-scroll .scroll-inner {
+            animation: scrollUp 8s linear infinite;
+        }
+
+        @keyframes scrollUp {
+            0%, 20% { transform: translateY(0); }
+            80%, 100% { transform: translateY(-50%); }
+        }
+
+        .widget-content.auto-scroll:hover .scroll-inner {
+            animation-play-state: paused;
+        }
+
+        /* Time/Date Widget */
+        .time-widget .time {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .time-widget .date {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Weather Widget */
+        .weather-widget .temp {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .weather-widget .weather-icon {
+            font-size: 3rem;
+            margin-bottom: 3px;
+        }
+
+        .weather-widget .description {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+        }
+
+        .weather-widget .details {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Forecast Widget */
+        .forecast-widget .forecast-days {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .forecast-day {
+            text-align: center;
+            padding: 10px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            flex: 1;
+        }
+
+        .forecast-day .day-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .forecast-day .day-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .forecast-day .day-temps {
+            font-size: 1rem;
+        }
+
+        /* Who's Home Widget */
+        .home-widget .devices-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .device-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+
+        .device-badge.home {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid var(--accent-green);
+        }
+
+        .device-badge.away {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid var(--accent-red);
+        }
+
+        .device-badge .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .device-badge.home .status-dot { background: var(--accent-green); }
+        .device-badge.away .status-dot { background: var(--accent-red); }
+
+        /* Calendar Widget */
+        .calendar-widget .event {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .calendar-widget .event-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .calendar-widget .event-time {
+            font-size: 0.95rem;
+            color: var(--accent-blue);
+        }
+
+        .calendar-widget .event-location {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* News Widget */
+        .news-widget .news-item {
+            width: 100%;
+            text-align: left;
+        }
+
+        .news-widget .news-source {
+            font-size: 0.75rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .news-widget .news-title {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-widget .news-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Commute Widget */
+        .commute-widget .commute-time {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .commute-widget .commute-distance {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .commute-widget .commute-route {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        /* Traffic Widget */
+        .traffic-widget .traffic-status {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .traffic-widget .traffic-label {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .traffic-widget .traffic-details {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Sports Widget */
+        .sports-widget .team-name {
+            font-size: 0.85rem;
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .sports-widget .game-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sports-widget .game-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Quote/Joke Widget */
+        .quote-widget .quote-text {
+            font-size: 1rem;
+            font-style: italic;
+            line-height: 1.3;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .quote-widget .quote-author {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Air Quality Widget */
+        .aqi-widget .aqi-value {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .aqi-widget .aqi-level {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .aqi-widget .aqi-details {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Astronomy Widget */
+        .astro-widget .moon-icon {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+
+        .astro-widget .moon-phase {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .astro-widget .sun-times {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+        }
+
+        .astro-widget .sun-time {
+            text-align: center;
+        }
+
+        .astro-widget .sun-label {
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            font-size: 0.8rem;
+        }
+
+        .astro-widget .sun-value {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Internet Speed Widget */
+        .speed-widget .speed-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .speed-widget .speed-stat {
+            text-align: center;
+        }
+
+        .speed-widget .speed-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+
+        .speed-widget .speed-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .speed-widget .speed-updated {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        /* Radar Widget */
+        .radar-widget .radar-image {
+            max-width: 100%;
+            max-height: 85%;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        /* Photo Widget */
+        .photo-widget .gallery-photo {
+            max-width: 100%;
+            max-height: 85%;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        /* Gaming Widget - Currently Playing */
+        .gaming-widget .game-cover {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .gaming-widget .game-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .gaming-widget .game-platform {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .gaming-widget .playing-status {
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            margin-top: 5px;
+        }
+
+        /* ROMM Library Stats */
+        .gaming-widget .library-stats {
+            text-align: left;
+            width: 100%;
+        }
+
+        .gaming-widget .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.95rem;
+        }
+
+        .gaming-widget .stat-label {
+            color: var(--text-muted);
+        }
+
+        .gaming-widget .stat-value {
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        .gaming-widget .platforms-list {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* RetroAchievements Widget */
+        .achievements-widget .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        .achievements-widget .achievement-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+
+        .achievements-widget .achievement-info {
+            flex: 1;
+            text-align: left;
+            overflow: hidden;
+        }
+
+        .achievements-widget .achievement-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .achievements-widget .achievement-game {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .achievements-widget .achievement-points {
+            font-size: 0.85rem;
+            color: var(--accent-yellow);
+            flex-shrink: 0;
+        }
+
+        .achievements-widget .ra-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .achievements-widget .ra-stat {
+            text-align: center;
+        }
+
+        .achievements-widget .ra-stat-value {
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+
+        .achievements-widget .ra-stat-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Smart Home Widget */
+        .smart-home-widget .ha-device {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            width: 100%;
+        }
+
+        .smart-home-widget .ha-device-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .smart-home-widget .ha-device-state {
+            font-size: 0.85rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .smart-home-widget .ha-device-state.off {
+            background: var(--text-muted);
+        }
+
+        .smart-home-widget .lock-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        .smart-home-widget .lock-name {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .smart-home-widget .lock-status {
+            font-size: 1.5rem;
+        }
+
+        .smart-home-widget .lock-status.locked {
+            color: var(--accent-green);
+        }
+
+        .smart-home-widget .lock-status.unlocked {
+            color: var(--accent-red);
+        }
+
+        .smart-home-widget .battery-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            width: 100%;
+        }
+
+        .smart-home-widget .battery-level {
+            font-weight: 600;
+            color: var(--accent-red);
+        }
+
+        .smart-home-widget .no-data {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Bottom Ticker */
+        .ticker-container {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 12px 20px;
+            overflow: hidden;
+            height: 55px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker-content {
+            display: flex;
+            animation: ticker 60s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 50px;
+            font-size: 1.1rem;
+        }
+
+        .ticker-item .icon { font-size: 1.2rem; }
+        .ticker-item.alert { color: var(--accent-yellow); }
+
+        /* Grid Indicators */
+        .grid-indicators {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .grid-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .grid-indicator.active {
+            background: white;
+            transform: scale(1.3);
+        }
+
+        /* ========== CAROUSEL MODE ========== */
+        .carousel-container {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        .carousel-container.active {
+            display: block;
+        }
+
+        .carousel-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        .carousel-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .carousel-screen .big-time {
+            font-size: 14rem;
+            font-weight: bold;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .carousel-screen .big-date {
+            font-size: 3.5rem;
+            color: var(--text-secondary);
+        }
+
+        .carousel-screen h1 {
+            font-size: 3.5rem;
+            margin-bottom: 40px;
+        }
+
+        .carousel-screen .carousel-weather-icon {
+            font-size: 10rem;
+            margin-bottom: 20px;
+        }
+
+        .carousel-screen .carousel-temp {
+            font-size: 7rem;
+            font-weight: bold;
+        }
+
+        .carousel-screen .carousel-desc {
+            font-size: 2.5rem;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+        }
+
+        .carousel-screen .carousel-location {
+            font-size: 2rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .carousel-screen .carousel-details {
+            display: flex;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .carousel-screen .carousel-detail {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px 35px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .carousel-screen .carousel-detail-label {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .carousel-screen .carousel-detail-value {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        /* Carousel Devices Grid */
+        .carousel-devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .carousel-device-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .carousel-device-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .carousel-device-status {
+            font-size: 1.3rem;
+            padding: 8px 20px;
+            border-radius: 25px;
+            display: inline-block;
+        }
+
+        /* Carousel Forecast */
+        .carousel-forecast-container {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .carousel-hourly-section, .carousel-daily-section {
+            margin-bottom: 30px;
+        }
+
+        .carousel-section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .carousel-forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .carousel-forecast-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .carousel-forecast-time {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .carousel-forecast-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .carousel-forecast-temp {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .carousel-forecast-desc {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Carousel Card (News, Quote, etc) */
+        .carousel-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 50px;
+            border-radius: 25px;
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .carousel-card .source {
+            color: var(--accent-blue);
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .carousel-card .title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .carousel-card .description {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Carousel Commute with Map */
+        .carousel-commute-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .carousel-commute-info {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .carousel-commute-time {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .carousel-commute-distance {
+            font-size: 1.8rem;
+            color: var(--text-secondary);
+        }
+
+        #carousel-commute-map {
+            width: 100%;
+            flex: 1;
+            min-height: 400px;
+            border-radius: 15px;
+            margin-top: 15px;
+        }
+
+        /* Carousel Radar/Photo */
+        .carousel-image {
+            max-width: 85%;
+            max-height: 70%;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Carousel Indicators */
+        .carousel-indicators {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .carousel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .carousel-indicator.active {
+            background: white;
+            transform: scale(1.3);
+        }
+
+        /* Background variations */
+        .bg-gradient-1 { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); }
+        .bg-gradient-2 { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+        .bg-gradient-3 { background: linear-gradient(135deg, #2b5876, #4e4376); }
+        .bg-gradient-4 { background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b); }
+        .bg-gradient-5 { background: linear-gradient(135deg, #232526, #414345); }
+        .bg-gradient-6 { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .bg-gradient-7 { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+        .bg-gradient-8 { background: linear-gradient(135deg, #134e5e, #71b280); }
+
+        /* Weather icons */
+        .weather-icon-01d::before { content: "☀️"; }
+        .weather-icon-01n::before { content: "🌙"; }
+        .weather-icon-02d::before { content: "⛅"; }
+        .weather-icon-02n::before { content: "☁️"; }
+        .weather-icon-03d::before, .weather-icon-03n::before,
+        .weather-icon-04d::before, .weather-icon-04n::before { content: "☁️"; }
+        .weather-icon-09d::before, .weather-icon-09n::before { content: "🌧️"; }
+        .weather-icon-10d::before, .weather-icon-10n::before { content: "🌦️"; }
+        .weather-icon-11d::before, .weather-icon-11n::before { content: "⛈️"; }
+        .weather-icon-13d::before, .weather-icon-13n::before { content: "❄️"; }
+        .weather-icon-50d::before, .weather-icon-50n::before { content: "🌫️"; }
+
+        /* Loading state */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 12, 41, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            font-size: 2rem;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        /* Fullscreen adjustments */
+        :fullscreen .controls {
+            opacity: 0;
+        }
+        :fullscreen .controls:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loading">Loading Dashboard...</div>
+
+    <!-- Control Buttons -->
+    <div class="controls">
+        <div class="control-group">
+            <button class="control-btn active" id="gridModeBtn" onclick="setViewMode('grid')">
+                <span>⊞</span> Grid View
+            </button>
+            <button class="control-btn" id="carouselModeBtn" onclick="setViewMode('carousel')">
+                <span>↻</span> Carousel View
+            </button>
+        </div>
+        <div class="last-refresh" id="lastRefresh">
+            <span>🔄</span> Last updated: <span class="refresh-time" id="refreshTime">--:--:--</span>
+        </div>
+        <button class="control-btn" onclick="toggleFullscreen()">
+            <span>⛶</span> Fullscreen
+        </button>
+    </div>
+
+    <!-- ========== GRID VIEW ========== -->
+    <div class="grid-wrapper" id="gridWrapper">
+        <!-- Grid Screen 1: Time, Weather, Forecast, Who's Home -->
+        <div class="grid-screen active" id="grid-screen-0">
+            <div class="widget time-widget">
+                <div class="widget-header"><span class="icon">🕐</span> Time & Date</div>
+                <div class="widget-content">
+                    <div class="time" id="grid-time">--:--</div>
+                    <div class="date" id="grid-date">Loading...</div>
+                </div>
+            </div>
+            <div class="widget weather-widget">
+                <div class="widget-header"><span class="icon">🌤️</span> Weather</div>
+                <div class="widget-content">
+                    <div class="weather-icon" id="grid-weather-icon"></div>
+                    <div class="temp" id="grid-temp">--°F</div>
+                    <div class="description" id="grid-weather-desc">Loading...</div>
+                    <div class="details">
+                        <span id="grid-feels-like">Feels: --°F</span>
+                        <span id="grid-humidity">Humidity: --%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="widget forecast-widget">
+                <div class="widget-header"><span class="icon">📅</span> 3-Day Forecast</div>
+                <div class="widget-content">
+                    <div class="forecast-days" id="grid-forecast"></div>
+                </div>
+            </div>
+            <div class="widget home-widget">
+                <div class="widget-header"><span class="icon">🏠</span> Who's Home</div>
+                <div class="widget-content">
+                    <div class="devices-list" id="grid-devices"></div>
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-0"></div></div>
+        </div>
+
+        <!-- Grid Screen 2: Commute, Traffic, Calendar, Sports -->
+        <div class="grid-screen" id="grid-screen-1">
+            <div class="widget commute-widget">
+                <div class="widget-header"><span class="icon">🚗</span> Commute</div>
+                <div class="widget-content">
+                    <div class="commute-time" id="grid-commute-time">--</div>
+                    <div class="commute-distance" id="grid-commute-distance"></div>
+                    <div class="commute-route" id="grid-commute-route"></div>
+                </div>
+            </div>
+            <div class="widget traffic-widget">
+                <div class="widget-header"><span class="icon">🚦</span> Traffic</div>
+                <div class="widget-content">
+                    <div class="traffic-status" id="grid-traffic-status">Normal</div>
+                    <div class="traffic-label">Current Conditions</div>
+                    <div class="traffic-details" id="grid-traffic-details">No delays reported</div>
+                </div>
+            </div>
+            <div class="widget calendar-widget">
+                <div class="widget-header"><span class="icon">📆</span> Next Event</div>
+                <div class="widget-content">
+                    <div class="event" id="grid-calendar">
+                        <div class="event-title">No upcoming events</div>
+                        <div class="event-time"></div>
+                        <div class="event-location"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget sports-widget">
+                <div class="widget-header"><span class="icon">🏀</span> Sports</div>
+                <div class="widget-content">
+                    <div class="team-name" id="grid-sports-team">No scores</div>
+                    <div class="game-title" id="grid-sports-title">Check back later</div>
+                    <div class="game-details" id="grid-sports-details"></div>
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-1"></div></div>
+        </div>
+
+        <!-- Grid Screen 3: News (large), Quote -->
+        <div class="grid-screen" id="grid-screen-2">
+            <div class="widget news-widget" style="grid-column: span 2;">
+                <div class="widget-header"><span class="icon">📰</span> <span id="grid-news-type">News</span></div>
+                <div class="widget-content" style="align-items: flex-start;">
+                    <div class="news-item" id="grid-news" style="width: 100%;">
+                        <div class="news-source">Loading...</div>
+                        <div class="news-title" style="font-size: 1.3rem; -webkit-line-clamp: 3;">Fetching news...</div>
+                        <div class="news-desc" style="font-size: 1rem; -webkit-line-clamp: 3;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget quote-widget">
+                <div class="widget-header"><span class="icon">💬</span> Quote</div>
+                <div class="widget-content">
+                    <div class="quote-text" id="grid-quote-text">"Loading..."</div>
+                    <div class="quote-author" id="grid-quote-author"></div>
+                </div>
+            </div>
+            <div class="widget quote-widget">
+                <div class="widget-header"><span class="icon">😂</span> Joke</div>
+                <div class="widget-content">
+                    <div class="quote-text" id="grid-joke-text">Loading...</div>
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-2"></div></div>
+        </div>
+
+        <!-- Grid Screen 4: Air Quality, Astronomy, Internet Speed, Radar -->
+        <div class="grid-screen" id="grid-screen-3">
+            <div class="widget aqi-widget">
+                <div class="widget-header"><span class="icon">🌬️</span> Air Quality</div>
+                <div class="widget-content">
+                    <div class="aqi-value" id="grid-aqi">--</div>
+                    <div class="aqi-level" id="grid-aqi-level">Loading...</div>
+                    <div class="aqi-details" id="grid-aqi-details"></div>
+                </div>
+            </div>
+            <div class="widget astro-widget">
+                <div class="widget-header"><span class="icon">🌙</span> Moon & Sun</div>
+                <div class="widget-content">
+                    <div class="moon-icon" id="grid-moon-icon">🌙</div>
+                    <div class="moon-phase" id="grid-moon-phase">Loading...</div>
+                    <div class="sun-times">
+                        <div class="sun-time">
+                            <div class="sun-label">Sunrise</div>
+                            <div class="sun-value" id="grid-sunrise">--:--</div>
+                        </div>
+                        <div class="sun-time">
+                            <div class="sun-label">Sunset</div>
+                            <div class="sun-value" id="grid-sunset">--:--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget speed-widget">
+                <div class="widget-header"><span class="icon">📶</span> Internet Speed</div>
+                <div class="widget-content">
+                    <div class="speed-stats">
+                        <div class="speed-stat">
+                            <div class="speed-label">Download</div>
+                            <div class="speed-value" id="grid-speed-down">--</div>
+                        </div>
+                        <div class="speed-stat">
+                            <div class="speed-label">Upload</div>
+                            <div class="speed-value" id="grid-speed-up">--</div>
+                        </div>
+                        <div class="speed-stat">
+                            <div class="speed-label">Ping</div>
+                            <div class="speed-value" id="grid-speed-ping">--</div>
+                        </div>
+                    </div>
+                    <div class="speed-updated" id="grid-speed-updated"></div>
+                </div>
+            </div>
+            <div class="widget radar-widget">
+                <div class="widget-header"><span class="icon">📡</span> Weather Radar</div>
+                <div class="widget-content">
+                    <img class="radar-image" id="grid-radar-image" src="" alt="Radar">
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-3"></div></div>
+        </div>
+
+        <!-- Grid Screen 5: Photo Gallery (large) -->
+        <div class="grid-screen" id="grid-screen-4">
+            <div class="widget photo-widget" style="grid-column: span 2; grid-row: span 2;">
+                <div class="widget-header"><span class="icon">🖼️</span> Photo Gallery</div>
+                <div class="widget-content">
+                    <img class="gallery-photo" id="grid-gallery-photo" src="" alt="Gallery">
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-4"></div></div>
+        </div>
+
+        <!-- Grid Screen 6: Route Map (Full Width) -->
+        <div class="grid-screen" id="grid-screen-5">
+            <div class="widget" style="grid-column: span 2; grid-row: span 2;">
+                <div class="widget-header"><span class="icon">🗺️</span> Route Map</div>
+                <div class="widget-content" style="padding: 0;">
+                    <div id="grid-commute-map" style="width: 100%; height: 100%; border-radius: 15px;"></div>
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-5"></div></div>
+        </div>
+
+        <!-- Grid Screen 7: Gaming (ROMM + RetroAchievements) -->
+        <div class="grid-screen" id="grid-screen-6">
+            <div class="widget gaming-widget">
+                <div class="widget-header"><span class="icon">🎮</span> ROMM Library</div>
+                <div class="widget-content" id="grid-romm-playing">
+                    <div class="game-name">No game playing</div>
+                    <div class="game-platform">Connect ROMM server</div>
+                </div>
+            </div>
+            <div class="widget achievements-widget">
+                <div class="widget-header"><span class="icon">🏆</span> RetroAchievements</div>
+                <div class="widget-content" id="grid-ra-summary">
+                    <div class="ra-stats">
+                        <div class="ra-stat">
+                            <div class="ra-stat-value" id="grid-ra-points">--</div>
+                            <div class="ra-stat-label">Points</div>
+                        </div>
+                        <div class="ra-stat">
+                            <div class="ra-stat-value" id="grid-ra-rank">--</div>
+                            <div class="ra-stat-label">Rank</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="widget achievements-widget" style="grid-column: span 2;">
+                <div class="widget-header"><span class="icon">⭐</span> Recent Achievements</div>
+                <div class="widget-content" style="justify-content: flex-start; overflow-y: auto;" id="grid-ra-achievements">
+                    <div class="achievement-item">
+                        <div class="achievement-info">
+                            <div class="achievement-title">No recent achievements</div>
+                            <div class="achievement-game">Configure RetroAchievements API</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-6"></div></div>
+        </div>
+
+        <!-- Grid Screen 8: Smart Home (HA + Locks) -->
+        <div class="grid-screen" id="grid-screen-7">
+            <div class="widget smart-home-widget">
+                <div class="widget-header"><span class="icon">🏠</span> Home Assistant</div>
+                <div class="widget-content" id="grid-ha-devices">
+                    <div class="ha-loading">Loading devices...</div>
+                </div>
+            </div>
+            <div class="widget smart-home-widget">
+                <div class="widget-header"><span class="icon">🔋</span> Low Battery</div>
+                <div class="widget-content" id="grid-ha-battery">
+                    <div class="ha-loading">Loading...</div>
+                </div>
+            </div>
+            <div class="widget smart-home-widget" style="grid-column: span 2;">
+                <div class="widget-header"><span class="icon">🔐</span> SwitchBot Locks</div>
+                <div class="widget-content" id="grid-switchbot-locks">
+                    <div class="lock-loading">Loading locks...</div>
+                </div>
+            </div>
+            <div class="ticker-container"><div class="ticker-content" id="ticker-content-7"></div></div>
+        </div>
+
+        <!-- Grid Indicators -->
+        <div class="grid-indicators" id="grid-indicators">
+            <div class="grid-indicator active" id="grid-ind-0" onclick="showGridScreen(0)"></div>
+            <div class="grid-indicator" id="grid-ind-1" onclick="showGridScreen(1)"></div>
+            <div class="grid-indicator" id="grid-ind-2" onclick="showGridScreen(2)"></div>
+            <div class="grid-indicator" id="grid-ind-3" onclick="showGridScreen(3)"></div>
+            <div class="grid-indicator" id="grid-ind-4" onclick="showGridScreen(4)"></div>
+            <div class="grid-indicator" id="grid-ind-5" onclick="showGridScreen(5)"></div>
+            <div class="grid-indicator" id="grid-ind-6" onclick="showGridScreen(6)"></div>
+            <div class="grid-indicator" id="grid-ind-7" onclick="showGridScreen(7)"></div>
+        </div>
+    </div>
+
+    <!-- ========== CAROUSEL VIEW (15 screens like RPI) ========== -->
+    <div class="carousel-container" id="carouselContainer">
+        <!-- 0: Time/Date -->
+        <div class="carousel-screen bg-gradient-1" id="carousel-0">
+            <div class="big-time" id="carousel-time">--:--</div>
+            <div class="big-date" id="carousel-date">Loading...</div>
+        </div>
+
+        <!-- 1: Who's Home -->
+        <div class="carousel-screen bg-gradient-2" id="carousel-1">
+            <h1>Who's Home</h1>
+            <div class="carousel-devices-grid" id="carousel-devices"></div>
+        </div>
+
+        <!-- 2: Weather -->
+        <div class="carousel-screen bg-gradient-3" id="carousel-2">
+            <div class="carousel-location" id="carousel-weather-location">Loading...</div>
+            <div class="carousel-weather-icon" id="carousel-weather-icon"></div>
+            <div class="carousel-temp" id="carousel-temp">--°F</div>
+            <div class="carousel-desc" id="carousel-weather-desc">Loading...</div>
+            <div class="carousel-details">
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Feels Like</div>
+                    <div class="carousel-detail-value" id="carousel-feels-like">--°F</div>
+                </div>
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Humidity</div>
+                    <div class="carousel-detail-value" id="carousel-humidity">--%</div>
+                </div>
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Wind</div>
+                    <div class="carousel-detail-value" id="carousel-wind">-- mph</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: Forecast -->
+        <div class="carousel-screen bg-gradient-4" id="carousel-3">
+            <h1>Weather Forecast</h1>
+            <div class="carousel-forecast-container">
+                <div class="carousel-hourly-section">
+                    <div class="carousel-section-title">Next 3 Hours</div>
+                    <div class="carousel-forecast-grid" id="carousel-hourly"></div>
+                </div>
+                <div class="carousel-daily-section">
+                    <div class="carousel-section-title">Next 3 Days</div>
+                    <div class="carousel-forecast-grid" id="carousel-daily"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4: Weather Radar -->
+        <div class="carousel-screen bg-gradient-7" id="carousel-4">
+            <h1>Weather Radar</h1>
+            <img class="carousel-image" id="carousel-radar-image" src="" alt="Radar">
+        </div>
+
+        <!-- 5: News -->
+        <div class="carousel-screen bg-gradient-5" id="carousel-5">
+            <h1 id="carousel-news-type">News</h1>
+            <div class="carousel-card">
+                <div class="source" id="carousel-news-source">Loading...</div>
+                <div class="title" id="carousel-news-title">Fetching news...</div>
+                <div class="description" id="carousel-news-desc"></div>
+            </div>
+        </div>
+
+        <!-- 6: Joke -->
+        <div class="carousel-screen bg-gradient-6" id="carousel-6">
+            <h1>Daily Joke</h1>
+            <div class="carousel-card">
+                <div class="title" id="carousel-joke-text">Loading...</div>
+                <div class="description" id="carousel-joke-updated"></div>
+            </div>
+        </div>
+
+        <!-- 7: Calendar -->
+        <div class="carousel-screen bg-gradient-5" id="carousel-7">
+            <h1>Calendar</h1>
+            <div class="carousel-card">
+                <div class="source" id="carousel-calendar-source">Calendar</div>
+                <div class="title" id="carousel-calendar-title">No events</div>
+                <div class="description" id="carousel-calendar-details"></div>
+            </div>
+        </div>
+
+        <!-- 8: Commute Info -->
+        <div class="carousel-screen bg-gradient-2" id="carousel-8">
+            <h1>Commute</h1>
+            <div class="carousel-card" style="max-width: 1000px;">
+                <div style="font-size: 6rem; font-weight: bold; color: var(--accent-green);" id="carousel-commute-time">--</div>
+                <div style="font-size: 2rem; color: var(--text-secondary); margin: 20px 0;" id="carousel-commute-distance"></div>
+                <div class="carousel-details" id="carousel-commute-details"></div>
+                <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                    <div style="font-size: 1.5rem; color: var(--text-muted); margin-bottom: 10px;">Traffic Conditions</div>
+                    <div style="font-size: 2rem;" id="carousel-traffic-status">Normal Traffic</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9: Commute Map (Full Screen) -->
+        <div class="carousel-screen bg-gradient-7" id="carousel-9">
+            <h1>Route Map</h1>
+            <div id="carousel-commute-map" style="width: 90%; height: 70vh; border-radius: 15px;"></div>
+        </div>
+
+        <!-- 10: Air Quality -->
+        <div class="carousel-screen bg-gradient-8" id="carousel-10">
+            <h1>Air Quality</h1>
+            <div style="font-size: 6rem; font-weight: bold;" id="carousel-aqi">--</div>
+            <div style="font-size: 2rem; margin-top: 10px;" id="carousel-aqi-level">Loading...</div>
+            <div class="carousel-details" id="carousel-aqi-details"></div>
+        </div>
+
+        <!-- 11: Quote -->
+        <div class="carousel-screen bg-gradient-6" id="carousel-11">
+            <h1>Daily Quote</h1>
+            <div class="carousel-card">
+                <div class="title" id="carousel-quote-text">"Loading..."</div>
+                <div class="description" id="carousel-quote-author"></div>
+            </div>
+        </div>
+
+        <!-- 12: Astronomy -->
+        <div class="carousel-screen bg-gradient-7" id="carousel-12">
+            <h1>Moon & Sun</h1>
+            <div style="font-size: 8rem; margin-bottom: 20px;" id="carousel-moon-icon">🌙</div>
+            <div style="font-size: 2.5rem; margin-bottom: 30px;" id="carousel-moon-phase">Loading...</div>
+            <div class="carousel-details">
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Sunrise</div>
+                    <div class="carousel-detail-value" id="carousel-sunrise">--:--</div>
+                </div>
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Sunset</div>
+                    <div class="carousel-detail-value" id="carousel-sunset">--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13: Internet Speed -->
+        <div class="carousel-screen bg-gradient-3" id="carousel-13">
+            <h1>Internet Speed</h1>
+            <div class="carousel-details">
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Download</div>
+                    <div class="carousel-detail-value" id="carousel-speed-down">-- Mbps</div>
+                </div>
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Upload</div>
+                    <div class="carousel-detail-value" id="carousel-speed-up">-- Mbps</div>
+                </div>
+                <div class="carousel-detail">
+                    <div class="carousel-detail-label">Ping</div>
+                    <div class="carousel-detail-value" id="carousel-speed-ping">-- ms</div>
+                </div>
+            </div>
+            <div style="margin-top: 30px; font-size: 1.3rem; color: var(--text-muted);" id="carousel-speed-updated"></div>
+        </div>
+
+        <!-- 14: Sports -->
+        <div class="carousel-screen bg-gradient-5" id="carousel-14">
+            <h1>Sports Scores</h1>
+            <div class="carousel-card">
+                <div class="source" id="carousel-sports-team">No scores</div>
+                <div class="title" id="carousel-sports-title">Check back later</div>
+                <div class="description" id="carousel-sports-details"></div>
+            </div>
+        </div>
+
+        <!-- 15: Photo Gallery -->
+        <div class="carousel-screen bg-gradient-7" id="carousel-15">
+            <h1>Photo Gallery</h1>
+            <img class="carousel-image" id="carousel-gallery-photo" src="" alt="Gallery">
+        </div>
+
+        <!-- 16: ROMM Library -->
+        <div class="carousel-screen bg-gradient-4" id="carousel-16">
+            <h1>🎮 ROMM Library</h1>
+            <div class="carousel-card" style="max-width: 600px;">
+                <img id="carousel-romm-cover" src="" alt="Game Cover" style="width: 200px; height: 200px; border-radius: 15px; object-fit: cover; margin-bottom: 20px; display: none;">
+                <div class="title" id="carousel-romm-game">No game playing</div>
+                <div class="description" id="carousel-romm-platform">Connect your ROMM server</div>
+                <div id="carousel-romm-status" style="margin-top: 15px; font-size: 1.5rem; color: var(--accent-green);"></div>
+            </div>
+        </div>
+
+        <!-- 17: RetroAchievements -->
+        <div class="carousel-screen bg-gradient-5" id="carousel-17">
+            <h1>RetroAchievements</h1>
+            <div style="display: flex; gap: 40px; margin-bottom: 30px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 4rem; font-weight: bold; color: var(--accent-yellow);" id="carousel-ra-points">--</div>
+                    <div style="font-size: 1.2rem; color: var(--text-muted);">Points</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 4rem; font-weight: bold;" id="carousel-ra-rank">--</div>
+                    <div style="font-size: 1.2rem; color: var(--text-muted);">Rank</div>
+                </div>
+            </div>
+            <div id="carousel-ra-achievements" style="max-width: 800px; width: 90%;"></div>
+        </div>
+
+        <div class="carousel-indicators" id="carousel-indicators"></div>
+    </div>
+
+    <script>
+        let viewMode = 'grid';
+        let data = {};
+        let currentGridScreen = 0;
+        const totalGridScreens = 8;
+        const gridDuration = 10000;
+        let gridInterval = null;
+
+        let currentCarouselScreen = 0;
+        const totalCarouselScreens = 18;
+        const carouselDuration = 10000;
+        let carouselInterval = null;
+
+        let dataRefreshInterval = null;
+        let clockInterval = null;
+
+        // Maps
+        let gridCommuteMap = null;
+        let carouselCommuteMap = null;
+
+        function initCarouselIndicators() {
+            const container = document.getElementById('carousel-indicators');
+            container.innerHTML = '';
+            for (let i = 0; i < totalCarouselScreens; i++) {
+                const ind = document.createElement('div');
+                ind.className = 'carousel-indicator' + (i === 0 ? ' active' : '');
+                ind.id = `carousel-ind-${i}`;
+                container.appendChild(ind);
+            }
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('gridModeBtn').classList.toggle('active', mode === 'grid');
+            document.getElementById('carouselModeBtn').classList.toggle('active', mode === 'carousel');
+            document.getElementById('gridWrapper').classList.toggle('hidden', mode !== 'grid');
+            document.getElementById('carouselContainer').classList.toggle('active', mode === 'carousel');
+
+            if (mode === 'carousel') {
+                stopGridRotation();
+                startCarousel();
+            } else {
+                stopCarousel();
+                startGridRotation();
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            document.getElementById('grid-time').textContent = timeStr;
+            document.getElementById('grid-date').textContent = dateStr;
+            document.getElementById('carousel-time').textContent = timeStr;
+            document.getElementById('carousel-date').textContent = dateStr;
+        }
+
+        async function fetchData() {
+            const refreshEl = document.getElementById('lastRefresh');
+            refreshEl.classList.add('refreshing');
+            try {
+                const response = await fetch('/api/dashboard-data', { headers: { 'Cache-Control': 'no-cache' } });
+                if (!response.ok) throw new Error('Failed');
+                data = await response.json();
+                updateAllWidgets();
+                updateLastRefreshTime();
+                document.getElementById('loading').classList.add('hidden');
+            } catch (e) {
+                console.error('Fetch error:', e);
+            }
+            setTimeout(() => refreshEl.classList.remove('refreshing'), 1000);
+        }
+
+        function updateLastRefreshTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            document.getElementById('refreshTime').textContent = timeStr;
+        }
+
+        function updateAllWidgets() {
+            updateWeather();
+            updateForecast();
+            updateDevices();
+            updateCalendar();
+            updateNews();
+            updateCommute();
+            updateSports();
+            updateQuote();
+            updateJoke();
+            updateAirQuality();
+            updateAstronomy();
+            updateInternetSpeed();
+            updateRadar();
+            updatePhotoGallery();
+            updateGaming();
+            updateSmartHome();
+            updateTicker();
+        }
+
+        function updateWeather() {
+            if (!data.weather) return;
+            const w = data.weather;
+            // Grid
+            document.getElementById('grid-weather-icon').className = `weather-icon weather-icon-${w.icon}`;
+            document.getElementById('grid-temp').textContent = `${w.temp}°F`;
+            document.getElementById('grid-weather-desc').textContent = w.description;
+            document.getElementById('grid-feels-like').textContent = `Feels: ${w.feels_like}°F`;
+            document.getElementById('grid-humidity').textContent = `Humidity: ${w.humidity}%`;
+            // Carousel
+            document.getElementById('carousel-weather-icon').className = `weather-icon weather-icon-${w.icon}`;
+            document.getElementById('carousel-weather-location').textContent = `${w.location}, ${w.country}`;
+            document.getElementById('carousel-temp').textContent = `${w.temp}°F`;
+            document.getElementById('carousel-weather-desc').textContent = w.description;
+            document.getElementById('carousel-feels-like').textContent = `${w.feels_like}°F`;
+            document.getElementById('carousel-humidity').textContent = `${w.humidity}%`;
+            document.getElementById('carousel-wind').textContent = `${w.wind_speed} mph`;
+        }
+
+        function updateForecast() {
+            if (!data.forecast) return;
+            const daily = (data.forecast.daily || []).slice(0, 3);
+            const hourly = (data.forecast.hourly || []).slice(0, 3);
+
+            // Grid daily
+            document.getElementById('grid-forecast').innerHTML = daily.map(d => `
+                <div class="forecast-day">
+                    <div class="day-name">${d.day}</div>
+                    <div class="day-icon weather-icon weather-icon-${d.icon}"></div>
+                    <div class="day-temps"><span style="font-weight:bold">${d.high}°</span>/${d.low}°</div>
+                </div>
+            `).join('');
+
+            // Carousel hourly
+            document.getElementById('carousel-hourly').innerHTML = hourly.map(h => `
+                <div class="carousel-forecast-item">
+                    <div class="carousel-forecast-time">${h.time}</div>
+                    <div class="carousel-forecast-icon weather-icon weather-icon-${h.icon}"></div>
+                    <div class="carousel-forecast-temp">${h.temp}°F</div>
+                    <div class="carousel-forecast-desc">${h.description}</div>
+                </div>
+            `).join('');
+
+            // Carousel daily
+            document.getElementById('carousel-daily').innerHTML = daily.map(d => `
+                <div class="carousel-forecast-item">
+                    <div class="carousel-forecast-time">${d.day}</div>
+                    <div class="carousel-forecast-icon weather-icon weather-icon-${d.icon}"></div>
+                    <div class="carousel-forecast-temp"><span style="font-weight:bold">${d.high}°</span> / ${d.low}°</div>
+                    <div class="carousel-forecast-desc">${d.description}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateDevices() {
+            if (!data.devices) return;
+            document.getElementById('grid-devices').innerHTML = data.devices.map(d => `
+                <div class="device-badge ${d.status}"><div class="status-dot"></div><span>${d.name}</span></div>
+            `).join('');
+            document.getElementById('carousel-devices').innerHTML = data.devices.map(d => `
+                <div class="carousel-device-card">
+                    <div class="carousel-device-name">${d.name}</div>
+                    <div class="carousel-device-status" style="background: ${d.status === 'home' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}">${d.status.toUpperCase()}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateCalendar() {
+            const ev = data.random_calendar_event;
+            if (ev) {
+                document.getElementById('grid-calendar').innerHTML = `
+                    <div class="event-title">${ev.title}</div>
+                    <div class="event-time">${ev.date} at ${ev.time}</div>
+                    <div class="event-location">${ev.location || ''}</div>
+                `;
+                document.getElementById('carousel-calendar-source').textContent = ev.source || 'Calendar';
+                document.getElementById('carousel-calendar-title').textContent = ev.title;
+                document.getElementById('carousel-calendar-details').textContent = `${ev.date} at ${ev.time}${ev.location ? ' • ' + ev.location : ''}`;
+            } else {
+                document.getElementById('grid-calendar').innerHTML = `<div class="event-title">No upcoming events</div>`;
+                document.getElementById('carousel-calendar-title').textContent = 'No upcoming events';
+                document.getElementById('carousel-calendar-details').textContent = '';
+            }
+        }
+
+        function updateNews() {
+            const news = data.random_news;
+            if (news) {
+                document.getElementById('grid-news-type').textContent = news.news_type || 'News';
+                document.getElementById('grid-news').innerHTML = `
+                    <div class="news-source">${news.source || ''}</div>
+                    <div class="news-title">${news.title}</div>
+                    <div class="news-desc">${news.description || ''}</div>
+                `;
+                document.getElementById('carousel-news-type').textContent = news.news_type || 'News';
+                document.getElementById('carousel-news-source').textContent = news.source || '';
+                document.getElementById('carousel-news-title').textContent = news.title;
+                document.getElementById('carousel-news-desc').textContent = news.description || '';
+            }
+        }
+
+        function updateCommute() {
+            const c = data.commute;
+            if (c) {
+                // Grid - Commute info widget
+                document.getElementById('grid-commute-time').textContent = c.duration_formatted;
+                document.getElementById('grid-commute-distance').textContent = `${c.distance_miles} miles`;
+                document.getElementById('grid-commute-route').textContent = `${c.origin} → ${c.destination}`;
+
+                // Carousel - Commute info screen
+                document.getElementById('carousel-commute-time').textContent = c.duration_formatted;
+                document.getElementById('carousel-commute-distance').textContent = `${c.distance_miles} miles`;
+                document.getElementById('carousel-commute-details').innerHTML = `
+                    <div class="carousel-detail"><div class="carousel-detail-label">From</div><div class="carousel-detail-value">${c.origin}</div></div>
+                    <div class="carousel-detail"><div class="carousel-detail-label">To</div><div class="carousel-detail-value">${c.destination}</div></div>
+                `;
+
+                // Traffic status (based on commute duration)
+                const trafficStatus = c.duration_minutes > 45 ? 'Heavy Traffic' : c.duration_minutes > 30 ? 'Moderate Traffic' : 'Normal Traffic';
+                const trafficColor = c.duration_minutes > 45 ? 'var(--accent-red)' : c.duration_minutes > 30 ? 'var(--accent-yellow)' : 'var(--accent-green)';
+                const trafficDetails = c.duration_minutes > 30
+                    ? `Est. delay: ${c.duration_minutes - 20} min above normal`
+                    : 'No significant delays';
+
+                const gridTraffic = document.getElementById('grid-traffic-status');
+                const gridTrafficDetails = document.getElementById('grid-traffic-details');
+                const carouselTraffic = document.getElementById('carousel-traffic-status');
+
+                if (gridTraffic) {
+                    gridTraffic.textContent = trafficStatus;
+                    gridTraffic.style.color = trafficColor;
+                }
+                if (gridTrafficDetails) {
+                    gridTrafficDetails.textContent = trafficDetails;
+                }
+                if (carouselTraffic) {
+                    carouselTraffic.textContent = trafficStatus;
+                    carouselTraffic.style.color = trafficColor;
+                }
+
+                // Initialize maps
+                if (c.origin_lat && c.dest_lat) {
+                    updateCommuteMap('grid-commute-map', c, 'gridCommuteMap');
+                    updateCommuteMap('carousel-commute-map', c, 'carouselCommuteMap');
+                }
+            } else {
+                document.getElementById('grid-commute-time').textContent = 'N/A';
+                document.getElementById('grid-commute-distance').textContent = 'Not configured';
+                document.getElementById('grid-commute-route').textContent = '';
+                document.getElementById('carousel-commute-time').textContent = 'Not Configured';
+                document.getElementById('carousel-commute-distance').textContent = 'Set up in dashboard settings';
+            }
+        }
+
+        function updateCommuteMap(mapId, commuteData, mapVarName) {
+            const mapDiv = document.getElementById(mapId);
+            if (!mapDiv) return;
+
+            let map = window[mapVarName];
+            if (!map) {
+                const centerLat = (parseFloat(commuteData.origin_lat) + parseFloat(commuteData.dest_lat)) / 2;
+                const centerLon = (parseFloat(commuteData.origin_lon) + parseFloat(commuteData.dest_lon)) / 2;
+                map = L.map(mapId, {
+                    zoomControl: false, attributionControl: false, dragging: false,
+                    touchZoom: false, doubleClickZoom: false, scrollWheelZoom: false
+                }).setView([centerLat, centerLon], 11);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+                window[mapVarName] = map;
+            }
+
+            // Clear layers
+            map.eachLayer(layer => { if (layer instanceof L.CircleMarker || layer instanceof L.Polyline) map.removeLayer(layer); });
+
+            L.circleMarker([commuteData.origin_lat, commuteData.origin_lon], {
+                radius: 8, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 0.8
+            }).addTo(map);
+            L.circleMarker([commuteData.dest_lat, commuteData.dest_lon], {
+                radius: 8, fillColor: '#22c55e', color: '#fff', weight: 2, fillOpacity: 0.8
+            }).addTo(map);
+
+            if (commuteData.route_coordinates && commuteData.route_coordinates.length > 0) {
+                const routeLatLngs = commuteData.route_coordinates.map(coord => [coord[1], coord[0]]);
+                L.polyline(routeLatLngs, { color: '#3b82f6', weight: 4, opacity: 0.8 }).addTo(map);
+                map.fitBounds(L.latLngBounds(routeLatLngs), { padding: [50, 50], maxZoom: 12 });
+            } else {
+                map.fitBounds([[commuteData.origin_lat, commuteData.origin_lon], [commuteData.dest_lat, commuteData.dest_lon]], { padding: [60, 60], maxZoom: 12 });
+            }
+        }
+
+        function updateSports() {
+            const scores = data.sports_scores;
+            if (scores && scores.length > 0) {
+                const s = scores[0];
+                document.getElementById('grid-sports-team').textContent = s.team;
+                document.getElementById('grid-sports-title').textContent = s.event;
+                document.getElementById('grid-sports-details').textContent = `${s.status}${s.score ? ' • ' + s.score : ''}`;
+                document.getElementById('carousel-sports-team').textContent = s.team;
+                document.getElementById('carousel-sports-title').textContent = s.event;
+                document.getElementById('carousel-sports-details').textContent = `${s.status}${s.score ? ' • ' + s.score : ''}${s.date ? ' • ' + s.date : ''}`;
+            } else {
+                document.getElementById('grid-sports-team').textContent = 'No scores';
+                document.getElementById('grid-sports-title').textContent = 'Check back later';
+                document.getElementById('carousel-sports-title').textContent = 'No scores available';
+            }
+        }
+
+        function updateQuote() {
+            const q = data.quote;
+            if (q) {
+                document.getElementById('grid-quote-text').textContent = `"${q.text}"`;
+                document.getElementById('grid-quote-author').textContent = `— ${q.author}`;
+                document.getElementById('carousel-quote-text').textContent = `"${q.text}"`;
+                document.getElementById('carousel-quote-author').textContent = `— ${q.author}`;
+            }
+        }
+
+        function updateJoke() {
+            const j = data.joke;
+            if (j) {
+                document.getElementById('grid-joke-text').textContent = j.text;
+                document.getElementById('carousel-joke-text').textContent = j.text;
+                document.getElementById('carousel-joke-updated').textContent = j.updated ? `Updated: ${j.updated}` : '';
+            }
+        }
+
+        function updateAirQuality() {
+            const a = data.air_quality;
+            if (a) {
+                document.getElementById('grid-aqi').textContent = a.aqi;
+                document.getElementById('grid-aqi').style.color = a.color || 'inherit';
+                document.getElementById('grid-aqi-level').textContent = a.level;
+                document.getElementById('grid-aqi-details').innerHTML = `<span>PM2.5: ${a.pm25}</span><span>PM10: ${a.pm10}</span><span>NO₂: ${a.no2}</span>`;
+
+                document.getElementById('carousel-aqi').textContent = a.aqi;
+                document.getElementById('carousel-aqi').style.color = a.color || 'inherit';
+                document.getElementById('carousel-aqi-level').textContent = a.level;
+                document.getElementById('carousel-aqi-details').innerHTML = `
+                    <div class="carousel-detail"><div class="carousel-detail-label">PM2.5</div><div class="carousel-detail-value">${a.pm25} µg/m³</div></div>
+                    <div class="carousel-detail"><div class="carousel-detail-label">PM10</div><div class="carousel-detail-value">${a.pm10} µg/m³</div></div>
+                    <div class="carousel-detail"><div class="carousel-detail-label">NO₂</div><div class="carousel-detail-value">${a.no2} µg/m³</div></div>
+                `;
+            }
+        }
+
+        function updateAstronomy() {
+            const a = data.astronomy;
+            if (a) {
+                document.getElementById('grid-moon-icon').textContent = a.moon_icon;
+                document.getElementById('grid-moon-phase').textContent = a.moon_phase_name;
+                document.getElementById('grid-sunrise').textContent = a.sunrise;
+                document.getElementById('grid-sunset').textContent = a.sunset;
+                document.getElementById('carousel-moon-icon').textContent = a.moon_icon;
+                document.getElementById('carousel-moon-phase').textContent = a.moon_phase_name;
+                document.getElementById('carousel-sunrise').textContent = a.sunrise;
+                document.getElementById('carousel-sunset').textContent = a.sunset;
+            }
+        }
+
+        function updateInternetSpeed() {
+            const s = data.internet_speed;
+            if (s) {
+                document.getElementById('grid-speed-down').textContent = `${s.download_mbps} Mbps`;
+                document.getElementById('grid-speed-up').textContent = `${s.upload_mbps} Mbps`;
+                document.getElementById('grid-speed-ping').textContent = `${s.ping_ms} ms`;
+                document.getElementById('grid-speed-updated').textContent = s.last_test ? `Last: ${s.last_test}` : '';
+
+                document.getElementById('carousel-speed-down').textContent = `${s.download_mbps} Mbps`;
+                document.getElementById('carousel-speed-up').textContent = `${s.upload_mbps} Mbps`;
+                document.getElementById('carousel-speed-ping').textContent = `${s.ping_ms} ms`;
+                document.getElementById('carousel-speed-updated').textContent = s.last_test ? `Last test: ${s.last_test}` : '';
+            }
+        }
+
+        function updateRadar() {
+            if (data.weather_radar_url) {
+                const ts = '?t=' + Date.now();
+                document.getElementById('grid-radar-image').src = data.weather_radar_url + ts;
+                document.getElementById('carousel-radar-image').src = data.weather_radar_url + ts;
+            }
+        }
+
+        function updatePhotoGallery() {
+            if (data.random_photo) {
+                const ts = '?t=' + Date.now();
+                document.getElementById('grid-gallery-photo').src = data.random_photo.url + ts;
+                document.getElementById('carousel-gallery-photo').src = data.random_photo.url + ts;
+            }
+        }
+
+        function updateGaming() {
+            // ROMM - Library Stats
+            const romm = data.romm_playing;
+            const gridRomm = document.getElementById('grid-romm-playing');
+            const carouselRommGame = document.getElementById('carousel-romm-game');
+            const carouselRommPlatform = document.getElementById('carousel-romm-platform');
+            const carouselRommCover = document.getElementById('carousel-romm-cover');
+            const carouselRommStatus = document.getElementById('carousel-romm-status');
+
+            if (romm && romm.type === 'library') {
+                // Display library stats
+                gridRomm.innerHTML = `
+                    <div class="library-stats">
+                        <div class="stat-row"><span class="stat-label">ROMs:</span> <span class="stat-value">${romm.total_roms}</span></div>
+                        <div class="stat-row"><span class="stat-label">Platforms:</span> <span class="stat-value">${romm.total_platforms}</span></div>
+                        <div class="stat-row"><span class="stat-label">Size:</span> <span class="stat-value">${romm.total_size_gb} GB</span></div>
+                        <div class="platforms-list">${romm.platforms.join(' • ')}</div>
+                    </div>
+                `;
+                carouselRommGame.textContent = `${romm.total_roms} ROMs`;
+                carouselRommPlatform.textContent = `${romm.total_platforms} Platforms • ${romm.total_size_gb} GB`;
+                carouselRommCover.style.display = 'none';
+                carouselRommStatus.textContent = `v${romm.version}`;
+                carouselRommStatus.style.color = 'var(--accent-purple)';
+            } else if (romm) {
+                // Fallback for game data if available
+                gridRomm.innerHTML = `
+                    ${romm.cover_url ? `<img class="game-cover" src="${romm.cover_url}" alt="Cover" onerror="this.style.display='none'">` : ''}
+                    <div class="game-name">${romm.game_name}</div>
+                    <div class="game-platform">${romm.platform}</div>
+                `;
+                carouselRommGame.textContent = romm.game_name;
+                carouselRommPlatform.textContent = romm.platform;
+                if (romm.cover_url) {
+                    carouselRommCover.src = romm.cover_url;
+                    carouselRommCover.style.display = 'block';
+                }
+            } else {
+                gridRomm.innerHTML = `
+                    <div class="game-name">No ROMM data</div>
+                    <div class="game-platform">Configure ROMM in .env</div>
+                `;
+                carouselRommGame.textContent = 'No ROMM data';
+                carouselRommPlatform.textContent = 'Configure ROMM server in .env file';
+                carouselRommCover.style.display = 'none';
+                carouselRommStatus.textContent = '';
+            }
+
+            // RetroAchievements
+            const ra = data.retroachievements;
+            const gridRaPoints = document.getElementById('grid-ra-points');
+            const gridRaRank = document.getElementById('grid-ra-rank');
+            const gridRaAchievements = document.getElementById('grid-ra-achievements');
+            const carouselRaPoints = document.getElementById('carousel-ra-points');
+            const carouselRaRank = document.getElementById('carousel-ra-rank');
+            const carouselRaAchievements = document.getElementById('carousel-ra-achievements');
+
+            if (ra && ra.summary) {
+                gridRaPoints.textContent = ra.summary.total_points?.toLocaleString() || '--';
+                gridRaRank.textContent = ra.summary.rank || '--';
+                carouselRaPoints.textContent = ra.summary.total_points?.toLocaleString() || '--';
+                carouselRaRank.textContent = ra.summary.rank || '--';
+
+                if (ra.achievements && ra.achievements.length > 0) {
+                    // Grid - show max 3
+                    gridRaAchievements.innerHTML = ra.achievements.slice(0, 3).map(a => `
+                        <div class="achievement-item">
+                            <img class="achievement-badge" src="${a.badge_url}" alt="Badge" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23333%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22%23999%22>?</text></svg>'">
+                            <div class="achievement-info">
+                                <div class="achievement-title">${a.title}</div>
+                                <div class="achievement-game">${a.game_title} (${a.console})</div>
+                            </div>
+                            <div class="achievement-points">${a.points} pts</div>
+                        </div>
+                    `).join('');
+
+                    // Carousel - show max 5
+                    carouselRaAchievements.innerHTML = ra.achievements.slice(0, 5).map(a => `
+                        <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 10px;">
+                            <img src="${a.badge_url}" alt="Badge" style="width: 60px; height: 60px; border-radius: 8px;" onerror="this.style.display='none'">
+                            <div style="flex: 1; text-align: left;">
+                                <div style="font-size: 1.3rem; font-weight: 600;">${a.title}</div>
+                                <div style="font-size: 1rem; color: var(--text-muted);">${a.game_title} (${a.console})</div>
+                            </div>
+                            <div style="font-size: 1.4rem; color: var(--accent-yellow);">${a.points} pts</div>
+                        </div>
+                    `).join('');
+                } else {
+                    gridRaAchievements.innerHTML = '<div class="achievement-item"><div class="achievement-info"><div class="achievement-title">No recent achievements</div><div class="achievement-game">Keep playing!</div></div></div>';
+                    carouselRaAchievements.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 1.5rem;">No achievements in last 24 hours</div>';
+                }
+            } else {
+                gridRaPoints.textContent = '--';
+                gridRaRank.textContent = '--';
+                carouselRaPoints.textContent = '--';
+                carouselRaRank.textContent = '--';
+                gridRaAchievements.innerHTML = '<div class="achievement-item"><div class="achievement-info"><div class="achievement-title">Not configured</div><div class="achievement-game">Add RetroAchievements API key to .env</div></div></div>';
+                carouselRaAchievements.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 1.5rem;">Configure RetroAchievements in .env file</div>';
+            }
+        }
+
+        function updateSmartHome() {
+            // Home Assistant Devices
+            const haDevices = document.getElementById('grid-ha-devices');
+            const haBattery = document.getElementById('grid-ha-battery');
+            const locksContainer = document.getElementById('grid-switchbot-locks');
+
+            if (data.home_assistant && data.home_assistant.devices) {
+                if (data.home_assistant.devices.length > 0) {
+                    haDevices.innerHTML = data.home_assistant.devices.slice(0, 5).map(d => {
+                        const name = d.attributes?.friendly_name || d.entity_id.split('.')[1].replace(/_/g, ' ');
+                        return `<div class="ha-device">
+                            <span class="ha-device-name">${name}</span>
+                            <span class="ha-device-state">${d.state}</span>
+                        </div>`;
+                    }).join('');
+                } else {
+                    haDevices.innerHTML = '<div class="no-data">All devices off</div>';
+                }
+            } else {
+                haDevices.innerHTML = '<div class="no-data">HA not configured</div>';
+            }
+
+            // Battery Sensors
+            if (data.home_assistant && data.home_assistant.battery_sensors) {
+                if (data.home_assistant.battery_sensors.length > 0) {
+                    haBattery.innerHTML = data.home_assistant.battery_sensors.map(s => {
+                        const name = s.attributes?.friendly_name || s.entity_id.split('.')[1].replace(/_/g, ' ');
+                        return `<div class="battery-item">
+                            <span>🔋</span>
+                            <span>${name}</span>
+                            <span class="battery-level">${Math.round(s.battery_level)}%</span>
+                        </div>`;
+                    }).join('');
+                } else {
+                    haBattery.innerHTML = '<div class="no-data">All batteries OK</div>';
+                }
+            } else {
+                haBattery.innerHTML = '<div class="no-data">No battery data</div>';
+            }
+
+            // SwitchBot Locks
+            if (data.switchbot_locks && data.switchbot_locks.length > 0) {
+                locksContainer.innerHTML = data.switchbot_locks.map(lock => {
+                    const icon = lock.status === 'locked' ? '🔒' : lock.status === 'unlocked' ? '🔓' : '❓';
+                    const statusClass = lock.status === 'locked' ? 'locked' : lock.status === 'unlocked' ? 'unlocked' : '';
+                    return `<div class="lock-item">
+                        <span class="lock-name">${lock.name}</span>
+                        <span class="lock-status ${statusClass}">${icon}</span>
+                    </div>`;
+                }).join('');
+            } else {
+                locksContainer.innerHTML = '<div class="no-data">No locks configured</div>';
+            }
+        }
+
+        function updateTicker() {
+            let items = [];
+            if (data.air_quality) items.push(`<span class="ticker-item"><span class="icon">🌬️</span> Air: ${data.air_quality.level} (AQI: ${data.air_quality.aqi})</span>`);
+            if (data.internet_speed) items.push(`<span class="ticker-item"><span class="icon">📶</span> Internet: ↓${data.internet_speed.download_mbps} ↑${data.internet_speed.upload_mbps} Mbps</span>`);
+            if (data.astronomy) items.push(`<span class="ticker-item"><span class="icon">${data.astronomy.moon_icon}</span> ${data.astronomy.moon_phase_name} • ☀️ ${data.astronomy.sunrise} - ${data.astronomy.sunset}</span>`);
+            if (data.calendar_events?.length) items.push(`<span class="ticker-item"><span class="icon">📅</span> ${data.calendar_events.length} event(s)</span>`);
+            if (data.devices) {
+                const home = data.devices.filter(d => d.status === 'home').length;
+                items.push(`<span class="ticker-item"><span class="icon">🏠</span> ${home} home, ${data.devices.length - home} away</span>`);
+            }
+            if (!items.length) items.push(`<span class="ticker-item"><span class="icon">📡</span> Dashboard connected</span>`);
+            const content = items.join('') + items.join('');
+            for (let i = 0; i < totalGridScreens; i++) {
+                const t = document.getElementById(`ticker-content-${i}`);
+                if (t) t.innerHTML = content;
+            }
+        }
+
+        function startGridRotation() {
+            if (gridInterval) return;
+            showGridScreen(0);
+            gridInterval = setInterval(() => {
+                currentGridScreen = (currentGridScreen + 1) % totalGridScreens;
+                showGridScreen(currentGridScreen);
+            }, gridDuration);
+        }
+
+        function stopGridRotation() {
+            if (gridInterval) { clearInterval(gridInterval); gridInterval = null; }
+        }
+
+        function showGridScreen(index) {
+            currentGridScreen = index;
+            for (let i = 0; i < totalGridScreens; i++) {
+                document.getElementById(`grid-screen-${i}`)?.classList.remove('active');
+                document.getElementById(`grid-ind-${i}`)?.classList.remove('active');
+            }
+            document.getElementById(`grid-screen-${index}`)?.classList.add('active');
+            document.getElementById(`grid-ind-${index}`)?.classList.add('active');
+
+            // Invalidate map on screen 5 (Route Map)
+            if (index === 5 && window.gridCommuteMap) {
+                setTimeout(() => window.gridCommuteMap.invalidateSize(), 100);
+            }
+
+            if (gridInterval) {
+                clearInterval(gridInterval);
+                gridInterval = setInterval(() => {
+                    currentGridScreen = (currentGridScreen + 1) % totalGridScreens;
+                    showGridScreen(currentGridScreen);
+                }, gridDuration);
+            }
+        }
+
+        function startCarousel() {
+            if (carouselInterval) return;
+            showCarouselScreen(0);
+            carouselInterval = setInterval(() => {
+                currentCarouselScreen = (currentCarouselScreen + 1) % totalCarouselScreens;
+                showCarouselScreen(currentCarouselScreen);
+            }, carouselDuration);
+        }
+
+        function stopCarousel() {
+            if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null; }
+        }
+
+        function showCarouselScreen(index) {
+            for (let i = 0; i < totalCarouselScreens; i++) {
+                document.getElementById(`carousel-${i}`)?.classList.remove('active');
+                document.getElementById(`carousel-ind-${i}`)?.classList.remove('active');
+            }
+            document.getElementById(`carousel-${index}`)?.classList.add('active');
+            document.getElementById(`carousel-ind-${index}`)?.classList.add('active');
+
+            // Refresh radar on screen 4
+            if (index === 4 && data.weather_radar_url) {
+                document.getElementById('carousel-radar-image').src = data.weather_radar_url + '?t=' + Date.now();
+            }
+            // Invalidate/reinitialize map on screen 9 (Route Map)
+            if (index === 9 && window.carouselCommuteMap) {
+                setTimeout(() => window.carouselCommuteMap.invalidateSize(), 100);
+            }
+            // Refresh photo on screen 15
+            if (index === 15 && data.random_photo) {
+                document.getElementById('carousel-gallery-photo').src = data.random_photo.url + '?t=' + Date.now();
+            }
+        }
+
+        function init() {
+            initCarouselIndicators();
+            updateClock();
+            clockInterval = setInterval(updateClock, 1000);
+            fetchData();
+            dataRefreshInterval = setInterval(fetchData, 60000);
+            startGridRotation();
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (gridInterval) clearInterval(gridInterval);
+            if (carouselInterval) clearInterval(carouselInterval);
+            if (dataRefreshInterval) clearInterval(dataRefreshInterval);
+            if (clockInterval) clearInterval(clockInterval);
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+            else if (e.key === 'g' || e.key === 'G') setViewMode('grid');
+            else if (e.key === 'c' || e.key === 'C') setViewMode('carousel');
+            else if (e.key === 'ArrowLeft' && viewMode === 'grid') showGridScreen((currentGridScreen - 1 + totalGridScreens) % totalGridScreens);
+            else if (e.key === 'ArrowRight' && viewMode === 'grid') showGridScreen((currentGridScreen + 1) % totalGridScreens);
+        });
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
