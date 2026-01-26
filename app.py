@@ -3075,15 +3075,72 @@ def get_retroachievements(use_cache=True):
             return cached_data
         return None
 
+def get_recent_jokes(limit=5):
+    """Get recent jokes from history to avoid repetition"""
+    try:
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("SELECT joke_text FROM joke_history ORDER BY timestamp DESC LIMIT ?", (limit,))
+        jokes = [row[0] for row in c.fetchall()]
+        conn.close()
+        return jokes
+    except Exception as e:
+        logging.error(f"Error fetching recent jokes: {e}")
+        return []
+
 def get_joke(use_cache=True, retry_count=3):
     """Fetch a random joke from Ollama AI with caching and retry logic, with fallback server"""
+    import random
+
     cache_key = "joke_data"
 
-    # Try to get cached data first (jokes cache for 2 hours max)
+    # Try to get cached data first (jokes cache for 1 hour)
     if use_cache:
-        cached_data = get_cached_data(cache_key, max_age_hours=2)
+        cached_data = get_cached_data(cache_key, max_age_hours=1)
         if cached_data:
             return cached_data
+
+    # Joke categories for variety - randomly select one each time
+    joke_categories = [
+        "a clever wordplay or pun joke",
+        "a silly knock-knock joke",
+        "a witty one-liner",
+        "a funny observation about everyday life",
+        "a playful riddle with a humorous answer",
+        "a joke about animals being silly",
+        "a dad joke that's so bad it's good",
+        "a joke about food or cooking",
+        "a joke about technology or computers",
+        "a joke about the weather or seasons",
+        "a joke involving a funny misunderstanding",
+        "a joke about sports or exercise",
+        "a joke about school or learning",
+        "a joke about music or musicians",
+        "a classic setup-punchline joke",
+        "a joke about professions or jobs",
+        "a joke about traveling or vacations",
+        "a lighthearted science joke",
+        "a joke about time or being late",
+        "a joke about shopping or money",
+    ]
+
+    # Pick a random category
+    category = random.choice(joke_categories)
+
+    # Get recent jokes to avoid repetition
+    recent_jokes = get_recent_jokes(5)
+    avoid_text = ""
+    if recent_jokes:
+        # Create a brief summary of recent jokes to avoid
+        avoid_text = "\n\nDO NOT tell any of these jokes or similar ones:\n" + "\n".join([f"- {j[:100]}..." if len(j) > 100 else f"- {j}" for j in recent_jokes])
+
+    # Build a more specific and varied prompt
+    prompt = f"""Tell me {category}. Requirements:
+- Must be family-friendly and appropriate for all ages
+- Be creative and original - no common or overused jokes
+- Keep it concise (2-4 sentences max)
+- Just tell the joke directly, no introduction like "Here's a joke" or "Sure!"
+- Make it genuinely funny{avoid_text}"""
 
     # List of Ollama servers to try (primary first, then fallback)
     ollama_servers = [OLLAMA_URL, OLLAMA_FALLBACK_URL]
@@ -3096,34 +3153,46 @@ def get_joke(use_cache=True, retry_count=3):
                 url = f"{server_url}/api/generate"
                 payload = {
                     "model": OLLAMA_MODEL,
-                    "prompt": "Tell me a unique, funny, family-friendly joke I haven't heard before. Be creative and original. Keep it short and appropriate for all ages. Just tell the joke, no introduction.",
+                    "prompt": prompt,
                     "stream": False
                 }
-                
-                logging.info(f"Attempting to fetch joke from {server_url} (attempt {attempt + 1}/{retry_count})")
+
+                logging.info(f"Attempting to fetch joke ({category}) from {server_url} (attempt {attempt + 1}/{retry_count})")
                 response = requests.post(url, json=payload, timeout=60)
                 response.raise_for_status()
                 data = response.json()
-                
+
                 # Extract joke text from response
                 joke_text = data.get('response', '').strip()
-                
+
+                # Clean up common AI prefixes
+                prefixes_to_remove = [
+                    "Here's", "Here is", "Sure!", "Okay,", "Alright,",
+                    "Here you go:", "How about this:", "Try this one:"
+                ]
+                for prefix in prefixes_to_remove:
+                    if joke_text.lower().startswith(prefix.lower()):
+                        joke_text = joke_text[len(prefix):].strip()
+                        if joke_text.startswith(':'):
+                            joke_text = joke_text[1:].strip()
+
                 if joke_text:
                     joke_data = {
                         'text': joke_text,
+                        'category': category,
                         'updated': datetime.now().strftime('%I:%M %p')
                     }
-                    
+
                     # Save to history
                     save_joke_to_history(joke_text)
-                    
+
                     # Cache the successful response
                     set_cached_data(cache_key, joke_data)
                     logging.info(f"Successfully fetched joke from Ollama server: {server_url}")
                     return joke_data
                 else:
                     logging.warning(f"Ollama server {server_url} returned empty joke response")
-                    
+
             except requests.exceptions.RequestException as e:
                 logging.error(f"Failed to fetch joke from {server_url} (attempt {attempt + 1}/{retry_count}): {e}")
                 # Continue to next server or retry
@@ -3132,17 +3201,17 @@ def get_joke(use_cache=True, retry_count=3):
                 logging.error(f"Error processing joke response from {server_url} (attempt {attempt + 1}/{retry_count}): {e}")
                 # Continue to next server or retry
                 continue
-        
+
         # If all servers failed for this attempt, wait before retrying
         if attempt < retry_count - 1:
             time.sleep(2)  # Wait before retry
-    
+
     # If all attempts failed, try to return cached data even if expired
     cached_data = get_cached_data(cache_key)
     if cached_data:
         logging.info("Using expired cache due to API failure")
         return cached_data
-    
+
     # If everything fails, return a helpful error message
     logging.error("Failed to fetch joke from all Ollama servers")
     return {
