@@ -2782,7 +2782,11 @@ def add_device():
     return render_template('add_device.html')
 
 def periodic_speed_test():
-    """Run speed test every hour"""
+    """Run speed test every hour, starting immediately"""
+    # Run immediately on startup
+    logging.info("Running initial speed test...")
+    run_speed_test()
+    # Then run every hour
     while True:
         time.sleep(60 * 60)  # 1 hour
         logging.info("Running periodic speed test...")
